@@ -1,0 +1,15 @@
+/**
+ * Styles Index
+ * 
+ * This file can be used to import all component styles if needed.
+ * Currently, components use Bootstrap 5, but custom styles are available here.
+ */
+
+/* Component Styles */
+@import './components/Layout.css';
+@import './components/Dashboard.css';
+@import './components/Auth.css';
+@import './components/UserDropdown.css';
+@import './components/FacultySchedule.css';
+@import './components/PagePlaceholder.css';
+
