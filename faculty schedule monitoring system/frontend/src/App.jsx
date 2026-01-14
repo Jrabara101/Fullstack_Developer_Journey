@@ -2,7 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 import Dashboard from './components/Dashboard';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import AcademyDashboard from './components/AcademyDashboard';
 import FacultySchedule from './components/FacultySchedule';
+import FacultyPortal from './components/FacultyPortal';
 import Login from './components/Login';
 import Register from './components/Register';
 import Profile from './components/Profile';
@@ -31,11 +34,41 @@ function App() {
             }
           />
           <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AnalyticsDashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/academy"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AcademyDashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/schedule"
             element={
               <ProtectedRoute>
                 <Layout>
                   <FacultySchedule />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faculty-portal"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <FacultyPortal />
                 </Layout>
               </ProtectedRoute>
             }

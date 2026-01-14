@@ -38,3 +38,5 @@ import AccountSettings from '../profile/components/AccountSettings';
 - **Account Deletion**: Secure account deactivation with confirmation
 - **Bootstrap 5**: Uses Bootstrap for responsive design
 
+
+
