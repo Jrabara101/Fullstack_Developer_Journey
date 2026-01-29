@@ -15,7 +15,7 @@ class FacultyController extends Controller
      */
     public function index(): JsonResponse
     {
-        $faculties = Faculty::with('schedules')->get();
+        $faculties = Faculty::with(['schedules', 'user'])->get();
         return response()->json($faculties);
     }
 
@@ -26,6 +26,7 @@ class FacultyController extends Controller
     {
         try {
             $validated = $request->validate([
+                'user_id' => 'nullable|exists:users,id',
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:faculties,email',
                 'department' => 'required|string|max:255',
@@ -33,8 +34,19 @@ class FacultyController extends Controller
                 'office_location' => 'nullable|string',
             ]);
 
+            // If user_id is provided, check if faculty already exists for that user
+            if (isset($validated['user_id'])) {
+                $existingFaculty = Faculty::where('user_id', $validated['user_id'])->first();
+                if ($existingFaculty) {
+                    return response()->json([
+                        'message' => 'Faculty record already exists for this user',
+                        'faculty' => $existingFaculty
+                    ], 409);
+                }
+            }
+
             $faculty = Faculty::create($validated);
-            return response()->json($faculty, 201);
+            return response()->json($faculty->load('user'), 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         }
@@ -45,7 +57,7 @@ class FacultyController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $faculty = Faculty::with('schedules')->findOrFail($id);
+        $faculty = Faculty::with(['schedules', 'user'])->findOrFail($id);
         return response()->json($faculty);
     }
 
@@ -58,6 +70,7 @@ class FacultyController extends Controller
             $faculty = Faculty::findOrFail($id);
             
             $validated = $request->validate([
+                'user_id' => 'sometimes|nullable|exists:users,id',
                 'name' => 'sometimes|required|string|max:255',
                 'email' => 'sometimes|required|email|unique:faculties,email,' . $id,
                 'department' => 'sometimes|required|string|max:255',

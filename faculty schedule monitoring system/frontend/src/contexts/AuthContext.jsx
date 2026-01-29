@@ -55,13 +55,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password, password_confirmation) => {
+  const register = async (name, email, password, password_confirmation, role = 'user') => {
     try {
       const response = await api.post('/api/register', {
         name,
         email,
         password,
         password_confirmation,
+        role,
       });
       const { user: userData, token } = response.data;
       

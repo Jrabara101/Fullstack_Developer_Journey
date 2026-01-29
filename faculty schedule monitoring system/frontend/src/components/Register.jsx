@@ -7,6 +7,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [role, setRole] = useState('user');
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +28,7 @@ const Register = () => {
 
     setLoading(true);
 
-    const result = await register(name, email, password, passwordConfirmation);
+    const result = await register(name, email, password, passwordConfirmation, role);
 
     if (result.success) {
       navigate('/');
@@ -131,6 +132,25 @@ const Register = () => {
               />
               {errors.email && (
                 <div className="invalid-feedback">{errors.email[0]}</div>
+              )}
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="role" className="form-label text-uppercase small fw-semibold text-muted">
+                Role
+              </label>
+              <select
+                id="role"
+                className={`form-select form-select-lg ${errors.role ? 'is-invalid' : ''}`}
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+              {errors.role && (
+                <div className="invalid-feedback">{errors.role[0]}</div>
               )}
             </div>
 

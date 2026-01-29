@@ -47,4 +47,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the faculty record associated with the user.
+     */
+    public function faculty()
+    {
+        return $this->hasOne(Faculty::class);
+    }
 }

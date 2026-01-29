@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 const FacultyCard = ({ faculty, onClick }) => {
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -16,12 +14,6 @@ const FacultyCard = ({ faculty, onClick }) => {
     const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140'];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
-  };
-
-  const getStatusColor = (attendance) => {
-    if (attendance >= 95) return 'success';
-    if (attendance >= 85) return 'warning';
-    return 'danger';
   };
 
   return (
@@ -60,12 +52,6 @@ const FacultyCard = ({ faculty, onClick }) => {
             <span className="text-muted small">Email:</span>
             <span className="small">{faculty.email}</span>
           </div>
-          <div className="d-flex justify-content-between align-items-center">
-            <span className="text-muted small">Attendance:</span>
-            <span className={`badge bg-${getStatusColor(faculty.attendance)}`}>
-              {faculty.attendance}%
-            </span>
-          </div>
           {faculty.phone && (
             <div className="d-flex justify-content-between align-items-center">
               <span className="text-muted small">Phone:</span>
@@ -78,25 +64,7 @@ const FacultyCard = ({ faculty, onClick }) => {
               <span className="small">{faculty.office_location}</span>
             </div>
           )}
-          {faculty.totalClasses && (
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="text-muted small">Classes:</span>
-              <span className="badge bg-info">{faculty.totalClasses}</span>
-            </div>
-          )}
         </div>
-        
-        {faculty.status && (
-          <div className="mt-3 pt-3 border-top">
-            <span className={`badge ${
-              faculty.status === 'active' ? 'bg-success' :
-              faculty.status === 'on-leave' ? 'bg-warning' :
-              'bg-secondary'
-            }`}>
-              {faculty.status}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

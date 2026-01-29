@@ -5,63 +5,13 @@ const Profile = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Mock data - replace with actual API calls
-  const [connections] = useState([
-    { id: 1, name: 'Cecilia Payne', connections: 45, avatar: null },
-    { id: 2, name: 'Curtis Fletcher', connections: 1320, avatar: null },
-    { id: 3, name: 'Alice Stone', connections: 125, avatar: null },
-    { id: 4, name: 'Darrell Barnes', connections: 456, avatar: null },
-    { id: 5, name: 'Eugenia Moore', connections: 1200, avatar: null },
-  ]);
+  const [connections] = useState([]);
 
-  const [teams] = useState([
-    { id: 1, name: 'React Developers', members: 72, role: 'DEVELOPER', icon: 'react', color: 'primary' },
-    { id: 2, name: 'Support Team', members: 122, role: 'SUPPORT', icon: 'support', color: 'success' },
-    { id: 3, name: 'UI Designers', members: 7, role: 'DESIGNER', icon: 'figma', color: 'info' },
-    { id: 4, name: 'Vue.js Developers', members: 289, role: 'DEVELOPER', icon: 'vue', color: 'success' },
-    { id: 5, name: 'Digital Marketing', members: 24, role: 'MARKETING', icon: 'twitter', color: 'warning' },
-  ]);
+  const [teams] = useState([]);
 
-  const [activityTimeline] = useState([
-    {
-      id: 1,
-      title: 'Client Meeting',
-      description: 'Project meeting with john @10:15am',
-      date: 'Today',
-      type: 'meeting',
-      client: { name: 'Lester McCarthy (Client)', role: 'CEO of Infibeam', avatar: null },
-    },
-    {
-      id: 2,
-      title: 'Create a new project for client',
-      description: 'Add files to new design folder',
-      date: '2 Day Ago',
-      type: 'project',
-    },
-    {
-      id: 3,
-      title: 'Shared 2 New Project Files',
-      description: 'Sent by Mollie Dixon',
-      date: '6 Day Ago',
-      type: 'share',
-      files: [
-        { name: 'App Guidelines', type: 'PDF' },
-        { name: 'Testing Results', type: 'DOC' },
-      ],
-    },
-    {
-      id: 4,
-      title: 'Project status updated',
-      description: 'Woocommerce iOS App Completed',
-      date: '10 Day Ago',
-      type: 'update',
-    },
-  ]);
+  const [activityTimeline] = useState([]);
 
-  const [userTeams] = useState([
-    { id: 1, name: 'Backend Developer', members: 126, icon: 'gear' },
-    { id: 2, name: 'React Developer', members: 98, icon: 'react' },
-  ]);
+  const [userTeams] = useState([]);
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -81,11 +31,11 @@ const Profile = () => {
   };
 
   const getUserName = () => {
-    return user?.name || 'John Doe';
+    return user?.name || '';
   };
 
   const getUserEmail = () => {
-    return user?.email || 'john.doe@example.com';
+    return user?.email || '';
   };
 
   return (
@@ -139,20 +89,24 @@ const Profile = () => {
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
                   </svg>
-                  <span>UX Designer</span>
+                  <span>{user?.role || ''}</span>
                 </div>
+                {user?.location && (
                 <div className="d-flex align-items-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
                   </svg>
-                  <span>Vatican City</span>
+                  <span>{user.location}</span>
                 </div>
+                )}
+                {user?.joined_date && (
                 <div className="d-flex align-items-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                   </svg>
-                  <span>Joined April 2021</span>
+                  <span>Joined {user.joined_date}</span>
                 </div>
+                )}
               </div>
             </div>
 
@@ -254,17 +208,23 @@ const Profile = () => {
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
                     </svg>
+                    {user?.country && (
+                    <>
                     <span className="text-muted">Country:</span>
-                    <span className="fw-semibold">USA</span>
+                    <span className="fw-semibold">{user.country}</span>
+                    </>
+                    )}
                   </div>
+                  {user?.languages && (
                   <div className="d-flex align-items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
                     </svg>
                     <span className="text-muted">Languages:</span>
-                    <span className="fw-semibold">English</span>
+                    <span className="fw-semibold">{user.languages}</span>
                   </div>
-                </div>
+                  )}
+                  </div>
 
                 <h6 className="fw-semibold mb-3">CONTACTS</h6>
                 <div className="mb-4">
@@ -273,14 +233,14 @@ const Profile = () => {
                       <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122L9.65 12.5a.678.678 0 0 1-.58-.122L6.5 10.43a.678.678 0 0 1-.122-.58l.122-1.034a.678.678 0 0 0-.122-.58L4.654 6.328a.678.678 0 0 0-.58-.122l-1.034.122a.678.678 0 0 1-.58-.122z"/>
                     </svg>
                     <span className="text-muted">Contact:</span>
-                    <span>(123) 456-7890</span>
+                    <span>{user?.phone || ''}</span>
                   </div>
                   <div className="d-flex align-items-center gap-2 mb-2">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
                     <span className="text-muted">Skype:</span>
-                    <span>john.doe</span>
+                    <span>{user?.skype || ''}</span>
                   </div>
                   <div className="d-flex align-items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -405,7 +365,7 @@ const Profile = () => {
                     </svg>
                     <div>
                       <div className="fw-semibold">Task Compiled</div>
-                      <div className="text-muted small">13.5k</div>
+                      <div className="text-muted small">{user?.tasks_compiled || '0'}</div>
                     </div>
                   </div>
                   <div className="d-flex align-items-center gap-2">
@@ -414,7 +374,7 @@ const Profile = () => {
                     </svg>
                     <div>
                       <div className="fw-semibold">Projects Compiled</div>
-                      <div className="text-muted small">146</div>
+                      <div className="text-muted small">{user?.projects_compiled || '0'}</div>
                     </div>
                   </div>
                   <div className="d-flex align-items-center gap-2">
@@ -423,7 +383,7 @@ const Profile = () => {
                     </svg>
                     <div>
                       <div className="fw-semibold">Connections</div>
-                      <div className="text-muted small">897</div>
+                      <div className="text-muted small">{connections.length || '0'}</div>
                     </div>
                   </div>
                 </div>

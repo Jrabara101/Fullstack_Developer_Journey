@@ -8,27 +8,19 @@ const AnalyticsDashboard = () => {
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for demonstration - replace with actual API calls
   const [stats] = useState({
-    totalFaculty: 45,
-    activeSchedules: 120,
-    todayClasses: 28,
-    pendingRequests: 8,
+    totalFaculty: 0,
+    activeSchedules: 0,
+    todayClasses: 0,
+    pendingRequests: 0,
   });
 
-  const [attendanceData] = useState([
-    { month: 'Jan', present: 85, absent: 5, late: 10 },
-    { month: 'Feb', present: 90, absent: 3, late: 7 },
-    { month: 'Mar', present: 88, absent: 4, late: 8 },
-    { month: 'Apr', present: 92, absent: 2, late: 6 },
-    { month: 'May', present: 89, absent: 4, late: 7 },
-    { month: 'Jun', present: 91, absent: 3, late: 6 },
-  ]);
+  const [attendanceData] = useState([]);
 
   const [payrollData] = useState({
-    totalPayroll: 245000,
-    paid: 230000,
-    pending: 15000,
+    totalPayroll: 0,
+    paid: 0,
+    pending: 0,
   });
 
   useEffect(() => {
@@ -37,18 +29,9 @@ const AnalyticsDashboard = () => {
 
   const fetchFaculties = async () => {
     try {
-      // Replace with actual API call
-      const mockFaculties = [
-        { id: 1, name: 'Dr. Sarah Johnson', department: 'Computer Science', email: 'sarah.j@university.edu', attendance: 95, salary: 8500, avatar: null },
-        { id: 2, name: 'Prof. Michael Chen', department: 'Mathematics', email: 'michael.c@university.edu', attendance: 92, salary: 8200, avatar: null },
-        { id: 3, name: 'Dr. Emily Rodriguez', department: 'Physics', email: 'emily.r@university.edu', attendance: 98, salary: 9000, avatar: null },
-        { id: 4, name: 'Prof. David Kim', department: 'Chemistry', email: 'david.k@university.edu', attendance: 89, salary: 8000, avatar: null },
-        { id: 5, name: 'Dr. Lisa Anderson', department: 'Biology', email: 'lisa.a@university.edu', attendance: 94, salary: 8600, avatar: null },
-      ];
-      setFaculties(mockFaculties);
-      if (mockFaculties.length > 0) {
-        setSelectedFaculty(mockFaculties[0]);
-      }
+      // TODO: Replace with actual API call
+      setFaculties([]);
+      setSelectedFaculty(null);
     } catch (error) {
       console.error('Error fetching faculties:', error);
     } finally {
@@ -73,28 +56,13 @@ const AnalyticsDashboard = () => {
     return colors[index];
   };
 
-  const activityTimeline = selectedFaculty ? [
-    { id: 1, title: 'Class Scheduled', description: 'CS 101 - Introduction to Programming', time: '9:00 AM', date: 'Today', type: 'schedule' },
-    { id: 2, title: 'Meeting Completed', description: 'Department meeting with faculty', time: '2:00 PM', date: 'Yesterday', type: 'meeting' },
-    { id: 3, title: 'Assignment Graded', description: 'Graded 45 assignments for CS 101', time: '4:30 PM', date: '2 days ago', type: 'grade' },
-    { id: 4, title: 'Office Hours', description: 'Conducted office hours with students', time: '1:00 PM', date: '3 days ago', type: 'office' },
-  ] : [];
+  const activityTimeline = [];
 
-  const notifications = [
-    { id: 1, message: '3 new schedule requests pending approval', type: 'warning', time: '5 min ago' },
-    { id: 2, message: 'Dr. Sarah Johnson submitted attendance for last week', type: 'info', time: '15 min ago' },
-    { id: 3, message: 'Payroll processed for 40 faculty members', type: 'success', time: '1 hour ago' },
-    { id: 4, message: 'System maintenance scheduled for tonight', type: 'info', time: '2 hours ago' },
-  ];
+  const notifications = [];
 
-  const upcomingSchedules = selectedFaculty ? [
-    { id: 1, title: 'CS 101 - Introduction to Programming', date: '2024-01-15', time: '9:00 AM - 10:30 AM', room: 'Room 201', type: 'class' },
-    { id: 2, title: 'CS 205 - Data Structures', date: '2024-01-15', time: '11:00 AM - 12:30 PM', room: 'Room 203', type: 'class' },
-    { id: 3, title: 'Faculty Meeting', date: '2024-01-16', time: '2:00 PM - 3:00 PM', room: 'Conference Hall', type: 'meeting' },
-    { id: 4, title: 'Office Hours', date: '2024-01-15', time: '3:00 PM - 5:00 PM', room: 'Office 305', type: 'office' },
-  ] : [];
+  const upcomingSchedules = [];
 
-  const maxAttendance = Math.max(...attendanceData.map(d => d.present + d.absent + d.late));
+  const maxAttendance = attendanceData.length > 0 ? Math.max(...attendanceData.map(d => d.present + d.absent + d.late)) : 0;
 
   return (
     <div className="container-fluid py-4">

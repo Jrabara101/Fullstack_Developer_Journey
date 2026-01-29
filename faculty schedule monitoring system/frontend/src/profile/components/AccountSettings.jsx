@@ -11,14 +11,14 @@ const AccountSettings = ({ initialTab = 'account' }) => {
     setActiveTab(initialTab);
   }, [initialTab]);
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: user?.email || 'john.doe@example.com',
-    organization: 'Pixinvent',
-    phone: 'US (+1) 202 555 0111',
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    organization: '',
+    phone: '',
     address: '',
-    zipCode: '231465',
-    state: 'California',
+    zipCode: '',
+    state: '',
     country: '',
     language: '',
     timezone: '',
@@ -41,128 +41,40 @@ const AccountSettings = ({ initialTab = 'account' }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [apiKeyType, setApiKeyType] = useState('');
   const [apiKeyName, setApiKeyName] = useState('');
-  const [apiKeys, setApiKeys] = useState([
-    {
-      id: 1,
-      name: 'Server Key 1',
-      accessLevel: 'FULL ACCESS',
-      key: '23eaf7f0-f4f7-495e-8b86-fad3261282ac',
-      createdAt: '28 Apr 2021, 18:20 GTM+4:10',
-    },
-    {
-      id: 2,
-      name: 'Server Key 2',
-      accessLevel: 'READ ONLY',
-      key: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-      createdAt: '15 May 2021, 10:30 GTM+4:10',
-    },
-    {
-      id: 3,
-      name: 'Mobile Key 1',
-      accessLevel: 'FULL ACCESS',
-      key: '98765432-1098-7654-3210-fedcba987654',
-      createdAt: '20 Jun 2021, 14:45 GTM+4:10',
-    },
-  ]);
-  const [recentDevices] = useState([
-    {
-      browser: 'Chrome',
-      os: 'Windows',
-      device: 'HP Spectre 360',
-      location: 'Switzerland',
-      date: '10 July 2021 20:07',
-      icon: 'windows',
-    },
-    {
-      browser: 'Chrome',
-      os: 'iPhone',
-      device: 'iPhone 12x',
-      location: 'Australia',
-      date: '13 July 2021 10:10',
-      icon: 'apple',
-    },
-    {
-      browser: 'Chrome',
-      os: 'Android',
-      device: 'Oneplus 9 Pro',
-      location: 'Dubai',
-      date: '14 July 2021 15:15',
-      icon: 'android',
-    },
-    {
-      browser: 'Chrome',
-      os: 'MacOS',
-      device: 'Apple iMac',
-      location: 'India',
-      date: '16 July 2021 16:17',
-      icon: 'apple',
-    },
-    {
-      browser: 'Chrome',
-      os: 'Windows',
-      device: 'HP Spectre 360',
-      location: 'Switzerland',
-      date: '20 July 2021 21:01',
-      icon: 'windows',
-    },
-    {
-      browser: 'Chrome',
-      os: 'Android',
-      device: 'Oneplus 9 Pro',
-      location: 'Dubai',
-      date: '21 July 2021 12:22',
-      icon: 'android',
-    },
-  ]);
+  const [apiKeys, setApiKeys] = useState([]);
+  const [recentDevices] = useState([]);
 
   // Billing tab states
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [cardData, setCardData] = useState({
-    cardNumber: '1356 3215 6548 7898',
-    name: 'John Doe',
+    cardNumber: '',
+    name: user?.name || '',
     expDate: '',
-    cvv: '654',
-    saveCard: true,
+    cvv: '',
+    saveCard: false,
   });
-  const [savedCards, setSavedCards] = useState([
-    {
-      id: 1,
-      type: 'mastercard',
-      name: 'Tom McBride',
-      number: '9856',
-      expiry: '12/26',
-      isPrimary: true,
-    },
-    {
-      id: 2,
-      type: 'visa',
-      name: 'Mildred Wagner',
-      number: '5896',
-      expiry: '10/27',
-      isPrimary: false,
-    },
-  ]);
+  const [savedCards, setSavedCards] = useState([]);
   const [billingAddress, setBillingAddress] = useState({
-    companyName: 'Pixinvent',
+    companyName: '',
     taxId: '',
-    mobile: 'US (+1) 202 555 0111',
+    mobile: '',
     billingAddress: '',
-    state: 'California',
-    billingEmail: 'john.doe@example.com',
+    state: '',
+    billingEmail: user?.email || '',
     vatNumber: '',
-    country: 'USA',
-    zipCode: '231465',
+    country: '',
+    zipCode: '',
   });
   const [currentPlan] = useState({
-    name: 'Basic',
-    description: 'A simple start for everyone.',
-    activeUntil: 'Dec 09, 2021',
-    price: '$199',
-    period: 'Per Month',
-    tag: 'POPULAR',
-    description2: 'Standard plan for small to medium businesses.',
-    daysRemaining: 6,
-    totalDays: 30,
+    name: '',
+    description: '',
+    activeUntil: '',
+    price: '',
+    period: '',
+    tag: '',
+    description2: '',
+    daysRemaining: 0,
+    totalDays: 0,
   });
 
   // Notifications tab states
@@ -176,16 +88,16 @@ const AccountSettings = ({ initialTab = 'account' }) => {
 
   // Connections tab states
   const [connectedAccounts, setConnectedAccounts] = useState({
-    google: true,
+    google: false,
     slack: false,
-    github: true,
-    mailchimp: true,
+    github: false,
+    mailchimp: false,
     asana: false,
   });
   const [socialAccounts, setSocialAccounts] = useState({
     facebook: { connected: false, username: null },
-    twitter: { connected: true, username: '@Pixinvent' },
-    instagram: { connected: true, username: '@Pixinvent' },
+    twitter: { connected: false, username: null },
+    instagram: { connected: false, username: null },
     dribbble: { connected: false, username: null },
     behance: { connected: false, username: null },
   });

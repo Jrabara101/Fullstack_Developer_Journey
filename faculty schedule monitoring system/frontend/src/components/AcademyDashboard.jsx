@@ -1,58 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import UpcomingNavigation from './UpcomingNavigation';
+import FacultyCard from './FacultyCard';
+import api from '../services/api';
 
 const AcademyDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
+  const [scheduleError, setScheduleError] = useState(null);
+  const [facultyList, setFacultyList] = useState([]);
+  const [loadingFaculty, setLoadingFaculty] = useState(true);
+  const [facultyError, setFacultyError] = useState(null);
+  const [facultySearch, setFacultySearch] = useState('');
+  const [facultyDepartment, setFacultyDepartment] = useState('all');
 
-  // Mock data - replace with actual API calls
-  const [upcomingSchedules] = useState([
-    { id: 1, title: 'CS 101 - Introduction to Programming', date: '2024-01-15', time: '9:00 AM - 10:30 AM', room: 'Room 201', type: 'class', mode: 'on-site' },
-    { id: 2, title: 'CS 205 - Data Structures', date: '2024-01-15', time: '11:00 AM - 12:30 PM', room: 'Room 203', type: 'class', mode: 'on-site' },
-    { id: 3, title: 'Office Hours', date: '2024-01-15', time: '3:00 PM - 5:00 PM', room: 'Office 305', type: 'office', mode: 'on-site' },
-    { id: 4, title: 'CS 301 - Advanced Algorithms', date: '2024-01-16', time: '9:00 AM - 10:30 AM', room: 'Online (Zoom)', type: 'class', mode: 'online' },
-  ]);
+  const [meetings] = useState([]);
 
-  const [meetings] = useState([
-    { id: 1, title: 'Faculty Meeting', date: '2024-01-16', time: '2:00 PM - 3:00 PM', location: 'Conference Hall', type: 'meeting', participants: 15 },
-    { id: 2, title: 'Department Review', date: '2024-01-18', time: '10:00 AM - 11:30 AM', location: 'Board Room', type: 'meeting', participants: 8 },
-    { id: 3, title: 'Curriculum Planning', date: '2024-01-20', time: '1:00 PM - 2:30 PM', location: 'Online (Teams)', type: 'meeting', participants: 12 },
-  ]);
+  const [projects] = useState([]);
 
-  const [projects] = useState([
-    { id: 1, title: 'Research Project: AI in Education', status: 'in-progress', deadline: '2024-03-15', progress: 65 },
-    { id: 2, title: 'Course Material Development', status: 'in-progress', deadline: '2024-02-28', progress: 80 },
-    { id: 3, title: 'Student Mentoring Program', status: 'planning', deadline: '2024-04-01', progress: 30 },
-  ]);
+  const [events] = useState([]);
 
-  const [events] = useState([
-    { id: 1, title: 'Science Fair 2024', date: '2024-01-25', time: '9:00 AM - 5:00 PM', location: 'Main Hall', type: 'event' },
-    { id: 2, title: 'Guest Lecture Series', date: '2024-02-01', time: '3:00 PM - 5:00 PM', location: 'Auditorium', type: 'event' },
-    { id: 3, title: 'Faculty Development Workshop', date: '2024-02-10', time: '10:00 AM - 4:00 PM', location: 'Training Center', type: 'event' },
-  ]);
+  const [holidays] = useState([]);
 
-  const [holidays] = useState([
-    { id: 1, title: 'New Year', date: '2024-01-01', type: 'holiday' },
-    { id: 2, title: 'Martin Luther King Day', date: '2024-01-15', type: 'holiday' },
-    { id: 3, title: 'Spring Break', date: '2024-03-18', type: 'holiday', duration: '7 days' },
-  ]);
+  const [classrooms, setClassrooms] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(true);
+  const [roomError, setRoomError] = useState(null);
 
-  const [classrooms] = useState([
-    { id: 1, name: 'Room 201', capacity: 50, floor: 2, building: 'Main Building', status: 'available', equipment: ['Projector', 'Whiteboard', 'WiFi'] },
-    { id: 2, name: 'Room 203', capacity: 40, floor: 2, building: 'Main Building', status: 'occupied', equipment: ['Projector', 'Whiteboard', 'WiFi', 'Smart Board'] },
-    { id: 3, name: 'Room 301', capacity: 60, floor: 3, building: 'Main Building', status: 'available', equipment: ['Projector', 'Whiteboard', 'WiFi', 'Sound System'] },
-    { id: 4, name: 'Lab 101', capacity: 30, floor: 1, building: 'Science Building', status: 'available', equipment: ['Computers', 'Projector', 'WiFi'] },
-    { id: 5, name: 'Conference Hall', capacity: 100, floor: 1, building: 'Main Building', status: 'occupied', equipment: ['Projector', 'Sound System', 'WiFi', 'Stage'] },
-  ]);
-
-  const [sections] = useState([
-    { id: 1, code: 'CS 101-A', course: 'Introduction to Programming', students: 45, schedule: 'Mon, Wed, Fri 9:00 AM', room: 'Room 201' },
-    { id: 2, code: 'CS 205-B', course: 'Data Structures', students: 38, schedule: 'Mon, Wed, Fri 11:00 AM', room: 'Room 203' },
-    { id: 3, code: 'CS 301-A', course: 'Advanced Algorithms', students: 32, schedule: 'Tue, Thu 9:00 AM', room: 'Online (Zoom)' },
-  ]);
+  const [sections] = useState([]);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleForm, setScheduleForm] = useState({
@@ -65,25 +43,307 @@ const AcademyDashboard = () => {
     room: '',
     description: '',
   });
+  const [submittingSchedule, setSubmittingSchedule] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [requiresFacultyProfile, setRequiresFacultyProfile] = useState(false);
+  const [facultyProfileForm, setFacultyProfileForm] = useState({
+    name: '',
+    email: '',
+    department: '',
+  });
+  const [creatingFacultyProfile, setCreatingFacultyProfile] = useState(false);
+  const [facultyProfileError, setFacultyProfileError] = useState(null);
+  const [facultyProfileSuccess, setFacultyProfileSuccess] = useState(null);
 
-  const handleScheduleSubmit = (e) => {
+  const [showRoomModal, setShowRoomModal] = useState(false);
+  const [roomForm, setRoomForm] = useState({
+    name: '',
+    building: '',
+    floor: '',
+    capacity: '',
+    status: 'available',
+    equipment: [],
+  });
+  const [equipmentInput, setEquipmentInput] = useState('');
+  const [submittingRoom, setSubmittingRoom] = useState(false);
+  const [roomSubmitError, setRoomSubmitError] = useState(null);
+
+  // Fetch schedules and rooms from API
+  useEffect(() => {
+    fetchSchedules();
+    fetchRooms();
+    fetchFaculties();
+  }, []);
+
+  const fetchSchedules = async () => {
+    try {
+      setLoadingSchedules(true);
+      setScheduleError(null);
+      const response = await api.get('/api/schedules');
+      const schedules = response.data;
+      
+      // Transform backend schedule format to frontend format
+      const transformedSchedules = schedules.map(schedule => {
+        // Convert start_time and end_time to display format
+        const startTime = new Date(`2000-01-01T${schedule.start_time}`).toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        const endTime = new Date(`2000-01-01T${schedule.end_time}`).toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        
+        // Determine mode based on room
+        const mode = schedule.room.toLowerCase().includes('online') || 
+                     schedule.room.toLowerCase().includes('zoom') || 
+                     schedule.room.toLowerCase().includes('teams') 
+                     ? 'online' : 'on-site';
+
+        // Determine type from course_name or notes
+        let type = 'class';
+        if (schedule.notes) {
+          const notesLower = schedule.notes.toLowerCase();
+          if (notesLower.includes('meeting')) type = 'meeting';
+          else if (notesLower.includes('office')) type = 'office';
+        }
+
+        // Get next occurrence date for the day_of_week
+        const today = new Date();
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const targetDay = daysOfWeek.indexOf(schedule.day_of_week);
+        const currentDay = today.getDay();
+        let daysUntilTarget = (targetDay - currentDay + 7) % 7;
+        if (daysUntilTarget === 0) daysUntilTarget = 7; // Next week if today
+        const nextDate = new Date(today);
+        nextDate.setDate(today.getDate() + daysUntilTarget);
+        const dateStr = nextDate.toISOString().split('T')[0];
+
+        return {
+          id: schedule.id,
+          title: schedule.course_name,
+          date: dateStr,
+          time: `${startTime} - ${endTime}`,
+          room: schedule.room,
+          type: type,
+          mode: mode,
+        };
+      });
+      
+      setUpcomingSchedules(transformedSchedules);
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      setScheduleError(error.response?.data?.message || 'Failed to fetch schedules');
+    } finally {
+      setLoadingSchedules(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      setLoadingRooms(true);
+      setRoomError(null);
+      const response = await api.get('/api/rooms');
+      setClassrooms(response.data);
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      setRoomError(error.response?.data?.message || 'Failed to fetch rooms');
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  const fetchFaculties = async () => {
+    try {
+      setLoadingFaculty(true);
+      setFacultyError(null);
+      const response = await api.get('/api/faculties');
+      setFacultyList(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error fetching faculties:', error);
+      setFacultyError(error.response?.data?.message || 'Failed to fetch faculties');
+    } finally {
+      setLoadingFaculty(false);
+    }
+  };
+
+  const handleFacultyProfileSubmit = async (event) => {
+    event.preventDefault();
+    setCreatingFacultyProfile(true);
+    setFacultyProfileError(null);
+    setFacultyProfileSuccess(null);
+
+    try {
+      const payload = {
+        user_id: user?.id ?? null,
+        name: facultyProfileForm.name,
+        email: facultyProfileForm.email,
+        department: facultyProfileForm.department,
+      };
+      await api.post('/api/faculties', payload);
+      setFacultyProfileSuccess('Faculty profile created. You can now schedule.');
+      setRequiresFacultyProfile(false);
+      setFacultyProfileForm({ name: '', email: '', department: '' });
+      fetchFaculties();
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.email?.[0] ||
+        error.response?.data?.errors?.name?.[0] ||
+        error.response?.data?.errors?.department?.[0] ||
+        'Failed to create faculty profile. Please try again.';
+      setFacultyProfileError(message);
+    } finally {
+      setCreatingFacultyProfile(false);
+    }
+  };
+
+  const handleScheduleSubmit = async (e) => {
     e.preventDefault();
-    // Handle schedule creation
-    console.log('Schedule created:', scheduleForm);
-    setShowScheduleModal(false);
-    setScheduleForm({
-      title: '',
-      type: 'class',
-      mode: 'on-site',
-      date: '',
-      time: '',
-      duration: '90',
-      room: '',
-      description: '',
+    setSubmittingSchedule(true);
+    setSubmitError(null);
+    setRequiresFacultyProfile(false);
+
+    try {
+      // Prepare data for API
+      const scheduleData = {
+        title: scheduleForm.title,
+        type: scheduleForm.type,
+        mode: scheduleForm.mode,
+        date: scheduleForm.date,
+        time: scheduleForm.time,
+        duration: parseInt(scheduleForm.duration),
+        room: scheduleForm.room,
+        description: scheduleForm.description,
+      };
+
+      await api.post('/api/schedules', scheduleData);
+      
+      // Reset form and close modal
+      setShowScheduleModal(false);
+      setScheduleForm({
+        title: '',
+        type: 'class',
+        mode: 'on-site',
+        date: '',
+        time: '',
+        duration: '90',
+        room: '',
+        description: '',
+      });
+
+      // Refresh schedules list
+      await fetchSchedules();
+    } catch (error) {
+      console.error('Error creating schedule:', error);
+      const responseMessage = error.response?.data?.message || '';
+      if (error.response?.status === 404 && responseMessage.toLowerCase().includes('faculty')) {
+        setRequiresFacultyProfile(true);
+        setSubmitError('No faculty profile found for this account. Create one before scheduling.');
+      } else {
+        setSubmitError(
+          responseMessage ||
+          error.response?.data?.errors?.schedule_time?.[0] ||
+          'Failed to create schedule. Please try again.'
+        );
+      }
+    } finally {
+      setSubmittingSchedule(false);
+    }
+  };
+
+  const handleRoomSubmit = async (e) => {
+    e.preventDefault();
+    setSubmittingRoom(true);
+    setRoomSubmitError(null);
+
+    try {
+      const roomData = {
+        name: roomForm.name,
+        building: roomForm.building,
+        floor: parseInt(roomForm.floor),
+        capacity: parseInt(roomForm.capacity),
+        status: roomForm.status,
+        equipment: roomForm.equipment,
+      };
+
+      const response = await api.post('/api/rooms', roomData);
+      const newRoom = response.data.room;
+      
+      // If Schedule Modal is open, automatically select the newly created room
+      if (showScheduleModal && scheduleForm.mode === 'on-site') {
+        setScheduleForm({ ...scheduleForm, room: newRoom.name });
+      }
+      
+      // Reset form and close modal
+      setShowRoomModal(false);
+      setRoomForm({
+        name: '',
+        building: '',
+        floor: '',
+        capacity: '',
+        status: 'available',
+        equipment: [],
+      });
+      setEquipmentInput('');
+
+      // Refresh rooms list
+      await fetchRooms();
+    } catch (error) {
+      console.error('Error creating room:', error);
+      setRoomSubmitError(
+        error.response?.data?.message || 
+        'Failed to create room. Please try again.'
+      );
+    } finally {
+      setSubmittingRoom(false);
+    }
+  };
+
+  const handleAddEquipment = () => {
+    if (equipmentInput.trim()) {
+      setRoomForm({
+        ...roomForm,
+        equipment: [...roomForm.equipment, equipmentInput.trim()],
+      });
+      setEquipmentInput('');
+    }
+  };
+
+  const handleRemoveEquipment = (index) => {
+    setRoomForm({
+      ...roomForm,
+      equipment: roomForm.equipment.filter((_, i) => i !== index),
     });
   };
 
   const availableRooms = classrooms.filter(room => room.status === 'available');
+  const facultyDepartments = useMemo(() => {
+    const departmentSet = new Set(
+      facultyList
+        .map((faculty) => faculty.department)
+        .filter((department) => department && department.trim().length > 0),
+    );
+    return ['all', ...departmentSet];
+  }, [facultyList]);
+
+  const filteredFaculty = useMemo(() => {
+    const normalizedSearch = facultySearch.trim().toLowerCase();
+    return facultyList.filter((faculty) => {
+      const name = faculty.name?.toLowerCase() || '';
+      const email = faculty.email?.toLowerCase() || '';
+      const department = faculty.department?.toLowerCase() || '';
+      const matchesSearch =
+        !normalizedSearch ||
+        name.includes(normalizedSearch) ||
+        email.includes(normalizedSearch) ||
+        department.includes(normalizedSearch);
+      const matchesDepartment = facultyDepartment === 'all' || faculty.department === facultyDepartment;
+      return matchesSearch && matchesDepartment;
+    });
+  }, [facultyList, facultySearch, facultyDepartment]);
 
   return (
     <div className="container-fluid py-4">
@@ -94,7 +354,11 @@ const AcademyDashboard = () => {
         </div>
         <button
           className="btn btn-primary"
-          onClick={() => setShowScheduleModal(true)}
+          onClick={() => {
+            setShowScheduleModal(true);
+            setSubmitError(null);
+            setRequiresFacultyProfile(false);
+          }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="me-2">
             <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -215,6 +479,14 @@ const AcademyDashboard = () => {
             onClick={() => setActiveTab('classrooms')}
           >
             Classrooms & Sections
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'faculty' ? 'active' : ''}`}
+            onClick={() => setActiveTab('faculty')}
+          >
+            Faculty
           </button>
         </li>
       </ul>
@@ -465,36 +737,66 @@ const AcademyDashboard = () => {
           <div className="row g-4">
             <div className="col-lg-7">
               <div className="card border-0 shadow-sm">
-                <div className="card-header bg-white border-bottom">
+                <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">Available Classrooms</h5>
+                  {user?.role === 'admin' && (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setShowRoomModal(true)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="me-1">
+                        <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      Add Room
+                    </button>
+                  )}
                 </div>
                 <div className="card-body p-0">
-                  <div className="list-group list-group-flush">
-                    {classrooms.map((room) => (
-                      <div key={room.id} className="list-group-item border-0 border-bottom px-4 py-3">
-                        <div className="d-flex justify-content-between align-items-start">
-                          <div className="flex-grow-1">
-                            <div className="d-flex align-items-center gap-2 mb-2">
-                              <h6 className="mb-0">{room.name}</h6>
-                              <span className={`badge ${
-                                room.status === 'available' ? 'bg-success' : 'bg-danger'
-                              }`}>
-                                {room.status}
-                              </span>
-                            </div>
-                            <p className="text-muted mb-1 small">
-                              📍 {room.building} • Floor {room.floor} • Capacity: {room.capacity} students
-                            </p>
-                            <div className="d-flex flex-wrap gap-2">
-                              {room.equipment.map((eq, idx) => (
-                                <span key={idx} className="badge bg-secondary">{eq}</span>
-                              ))}
+                  {loadingRooms ? (
+                    <div className="text-center py-4">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : roomError ? (
+                    <div className="alert alert-danger m-4" role="alert">
+                      {roomError}
+                    </div>
+                  ) : (
+                    <div className="list-group list-group-flush">
+                      {classrooms.length === 0 ? (
+                        <div className="text-center py-4 text-muted">No rooms available</div>
+                      ) : (
+                        classrooms.map((room) => (
+                          <div key={room.id} className="list-group-item border-0 border-bottom px-4 py-3">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div className="flex-grow-1">
+                                <div className="d-flex align-items-center gap-2 mb-2">
+                                  <h6 className="mb-0">{room.name}</h6>
+                                  <span className={`badge ${
+                                    room.status === 'available' ? 'bg-success' :
+                                    room.status === 'occupied' ? 'bg-warning' : 'bg-danger'
+                                  }`}>
+                                    {room.status}
+                                  </span>
+                                </div>
+                                <p className="text-muted mb-1 small">
+                                  📍 {room.building} • Floor {room.floor} • Capacity: {room.capacity} students
+                                </p>
+                                {room.equipment && room.equipment.length > 0 && (
+                                  <div className="d-flex flex-wrap gap-2">
+                                    {room.equipment.map((eq, idx) => (
+                                      <span key={idx} className="badge bg-secondary">{eq}</span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -519,6 +821,62 @@ const AcademyDashboard = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'faculty' && (
+          <div className="card border-0 shadow-sm">
+            <div className="card-header bg-white border-bottom">
+              <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
+                <div>
+                  <h5 className="mb-1">Faculty Directory</h5>
+                  <p className="text-muted mb-0">Browse faculty profiles and departments</p>
+                </div>
+                <div className="d-flex flex-column flex-md-row gap-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search faculty..."
+                    value={facultySearch}
+                    onChange={(event) => setFacultySearch(event.target.value)}
+                  />
+                  <select
+                    className="form-select"
+                    value={facultyDepartment}
+                    onChange={(event) => setFacultyDepartment(event.target.value)}
+                  >
+                    {facultyDepartments.map((department) => (
+                      <option key={department} value={department}>
+                        {department === 'all' ? 'All Departments' : department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="card-body">
+              {loadingFaculty ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : facultyError ? (
+                <div className="alert alert-danger" role="alert">
+                  {facultyError}
+                </div>
+              ) : filteredFaculty.length === 0 ? (
+                <div className="text-center text-muted py-4">No faculty profiles found.</div>
+              ) : (
+                <div className="row g-4">
+                  {filteredFaculty.map((faculty) => (
+                    <div key={faculty.id} className="col-md-6 col-lg-4 col-xl-3">
+                      <FacultyCard faculty={faculty} onClick={() => navigate('/faculty-portal')} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -610,9 +968,15 @@ const AcademyDashboard = () => {
                     <div className="mb-3">
                       <label className="form-label">Room</label>
                       <select
-                        className="form-select"
+                        className="form-select mb-2"
                         value={scheduleForm.room}
-                        onChange={(e) => setScheduleForm({ ...scheduleForm, room: e.target.value })}
+                        onChange={(e) => {
+                          if (e.target.value === '__add_new__') {
+                            setShowRoomModal(true);
+                          } else {
+                            setScheduleForm({ ...scheduleForm, room: e.target.value });
+                          }
+                        }}
                         required
                       >
                         <option value="">Select a room</option>
@@ -621,7 +985,26 @@ const AcademyDashboard = () => {
                             {room.name} - {room.building} (Capacity: {room.capacity})
                           </option>
                         ))}
+                        {user?.role === 'admin' && (
+                          <option value="__add_new__" style={{ fontWeight: 'bold', color: '#0d6efd' }}>
+                            ➕ Add New Room
+                          </option>
+                        )}
                       </select>
+                      {user?.role === 'admin' && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary w-100"
+                          onClick={() => {
+                            setShowRoomModal(true);
+                          }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="me-1">
+                            <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
+                          Add Room
+                        </button>
+                      )}
                     </div>
                   )}
                   {scheduleForm.mode === 'online' && (
@@ -646,17 +1029,252 @@ const AcademyDashboard = () => {
                       onChange={(e) => setScheduleForm({ ...scheduleForm, description: e.target.value })}
                     ></textarea>
                   </div>
+                  {submitError && (
+                    <div className="alert alert-danger" role="alert">
+                      {submitError}
+                    </div>
+                  )}
+                  <div className="border rounded p-3">
+                    <h6 className="mb-3">Create Faculty Profile</h6>
+                      <form onSubmit={handleFacultyProfileSubmit}>
+                        <div className="row g-3">
+                          <div className="col-md-6">
+                            <label className="form-label">Name</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={facultyProfileForm.name}
+                              onChange={(e) =>
+                                setFacultyProfileForm({ ...facultyProfileForm, name: e.target.value })
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label">Email</label>
+                            <input
+                              type="email"
+                              className="form-control"
+                              value={facultyProfileForm.email}
+                              onChange={(e) =>
+                                setFacultyProfileForm({ ...facultyProfileForm, email: e.target.value })
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-md-12">
+                            <label className="form-label">Department</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={facultyProfileForm.department}
+                              onChange={(e) =>
+                                setFacultyProfileForm({ ...facultyProfileForm, department: e.target.value })
+                              }
+                              required
+                            />
+                          </div>
+                        </div>
+                        {facultyProfileError && (
+                          <div className="alert alert-danger mt-3" role="alert">
+                            {facultyProfileError}
+                          </div>
+                        )}
+                        {facultyProfileSuccess && (
+                          <div className="alert alert-success mt-3" role="alert">
+                            {facultyProfileSuccess}
+                          </div>
+                        )}
+                        <div className="mt-3">
+                          <button type="submit" className="btn btn-primary" disabled={creatingFacultyProfile}>
+                            {creatingFacultyProfile ? 'Creating...' : 'Create Faculty Profile'}
+                          </button>
+                        </div>
+                      </form>
+                  </div>
                 </div>
                 <div className="modal-footer">
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => setShowScheduleModal(false)}
+                    onClick={() => {
+                      setShowScheduleModal(false);
+                      setSubmitError(null);
+                    }}
+                    disabled={submittingSchedule}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
-                    Schedule
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={submittingSchedule}
+                  >
+                    {submittingSchedule ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Creating...
+                      </>
+                    ) : (
+                      'Schedule'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Room Modal */}
+      {showRoomModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Room</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => {
+                    setShowRoomModal(false);
+                    setRoomSubmitError(null);
+                  }}
+                ></button>
+              </div>
+              <form onSubmit={handleRoomSubmit}>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Room Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={roomForm.name}
+                      onChange={(e) => setRoomForm({ ...roomForm, name: e.target.value })}
+                      required
+                      placeholder="e.g., Room 101"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Building</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={roomForm.building}
+                      onChange={(e) => setRoomForm({ ...roomForm, building: e.target.value })}
+                      required
+                      placeholder="e.g., Main Building"
+                    />
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Floor</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={roomForm.floor}
+                        onChange={(e) => setRoomForm({ ...roomForm, floor: e.target.value })}
+                        required
+                        min="0"
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Capacity</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={roomForm.capacity}
+                        onChange={(e) => setRoomForm({ ...roomForm, capacity: e.target.value })}
+                        required
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Status</label>
+                    <select
+                      className="form-select"
+                      value={roomForm.status}
+                      onChange={(e) => setRoomForm({ ...roomForm, status: e.target.value })}
+                      required
+                    >
+                      <option value="available">Available</option>
+                      <option value="occupied">Occupied</option>
+                      <option value="maintenance">Maintenance</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Equipment</label>
+                    <div className="input-group mb-2">
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={equipmentInput}
+                        onChange={(e) => setEquipmentInput(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddEquipment();
+                          }
+                        }}
+                        placeholder="Add equipment (e.g., Projector)"
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={handleAddEquipment}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {roomForm.equipment.length > 0 && (
+                      <div className="d-flex flex-wrap gap-2">
+                        {roomForm.equipment.map((eq, idx) => (
+                          <span key={idx} className="badge bg-secondary d-flex align-items-center gap-1">
+                            {eq}
+                            <button
+                              type="button"
+                              className="btn-close btn-close-white"
+                              style={{ fontSize: '0.7rem' }}
+                              onClick={() => handleRemoveEquipment(idx)}
+                              aria-label="Remove"
+                            ></button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {roomSubmitError && (
+                    <div className="alert alert-danger" role="alert">
+                      {roomSubmitError}
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowRoomModal(false);
+                      setRoomSubmitError(null);
+                    }}
+                    disabled={submittingRoom}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={submittingRoom}
+                  >
+                    {submittingRoom ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Creating...
+                      </>
+                    ) : (
+                      'Add Room'
+                    )}
                   </button>
                 </div>
               </form>
