@@ -37,16 +37,6 @@ class ScheduleController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            // Get authenticated user's faculty record
-            $user = $request->user();
-            $faculty = $user->faculty;
-            
-            if (!$faculty) {
-                return response()->json([
-                    'message' => 'No faculty record found for this user. Please create a faculty profile first.',
-                ], 404);
-            }
-
             // Validate based on which format is provided
             $hasDateFormat = $request->has('date') && $request->has('time') && $request->has('duration');
             $hasDayOfWeekFormat = $request->has('day_of_week') && $request->has('start_time') && $request->has('end_time');
@@ -71,6 +61,7 @@ class ScheduleController extends Controller
                 'end_time' => 'required_without_all:date,time,duration|date_format:H:i|after:start_time',
                 
                 // Common fields
+                'faculty_id' => 'nullable|exists:faculties,id',
                 'title' => 'nullable|string|max:255', // Maps to course_name
                 'course_name' => 'nullable|string|max:255',
                 'course_code' => 'nullable|string|max:50',
@@ -82,9 +73,23 @@ class ScheduleController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
+            $facultyId = $validated['faculty_id'] ?? null;
+            if (!$facultyId) {
+                $user = $request->user();
+                $faculty = $user?->faculty;
+
+                if (!$faculty) {
+                    return response()->json([
+                        'message' => 'No faculty record found for this user. Please create a faculty profile first.',
+                    ], 404);
+                }
+
+                $facultyId = $faculty->id;
+            }
+
             // Prepare schedule data
             $scheduleData = [
-                'faculty_id' => $faculty->id,
+                'faculty_id' => $facultyId,
                 'room' => $validated['room'],
                 'semester' => $validated['semester'] ?? null,
                 'notes' => $validated['description'] ?? $validated['notes'] ?? null,

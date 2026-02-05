@@ -42,18 +42,11 @@ const AcademyDashboard = () => {
     duration: '90',
     room: '',
     description: '',
+    faculty_id: '',
   });
   const [submittingSchedule, setSubmittingSchedule] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [requiresFacultyProfile, setRequiresFacultyProfile] = useState(false);
-  const [facultyProfileForm, setFacultyProfileForm] = useState({
-    name: '',
-    email: '',
-    department: '',
-  });
-  const [creatingFacultyProfile, setCreatingFacultyProfile] = useState(false);
-  const [facultyProfileError, setFacultyProfileError] = useState(null);
-  const [facultyProfileSuccess, setFacultyProfileSuccess] = useState(null);
 
   const [showRoomModal, setShowRoomModal] = useState(false);
   const [roomForm, setRoomForm] = useState({
@@ -169,37 +162,6 @@ const AcademyDashboard = () => {
     }
   };
 
-  const handleFacultyProfileSubmit = async (event) => {
-    event.preventDefault();
-    setCreatingFacultyProfile(true);
-    setFacultyProfileError(null);
-    setFacultyProfileSuccess(null);
-
-    try {
-      const payload = {
-        user_id: user?.id ?? null,
-        name: facultyProfileForm.name,
-        email: facultyProfileForm.email,
-        department: facultyProfileForm.department,
-      };
-      await api.post('/api/faculties', payload);
-      setFacultyProfileSuccess('Faculty profile created. You can now schedule.');
-      setRequiresFacultyProfile(false);
-      setFacultyProfileForm({ name: '', email: '', department: '' });
-      fetchFaculties();
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        error.response?.data?.errors?.email?.[0] ||
-        error.response?.data?.errors?.name?.[0] ||
-        error.response?.data?.errors?.department?.[0] ||
-        'Failed to create faculty profile. Please try again.';
-      setFacultyProfileError(message);
-    } finally {
-      setCreatingFacultyProfile(false);
-    }
-  };
-
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
     setSubmittingSchedule(true);
@@ -217,6 +179,7 @@ const AcademyDashboard = () => {
         duration: parseInt(scheduleForm.duration),
         room: scheduleForm.room,
         description: scheduleForm.description,
+        faculty_id: scheduleForm.faculty_id,
       };
 
       await api.post('/api/schedules', scheduleData);
@@ -232,6 +195,7 @@ const AcademyDashboard = () => {
         duration: '90',
         room: '',
         description: '',
+        faculty_id: '',
       });
 
       // Refresh schedules list
@@ -1034,63 +998,27 @@ const AcademyDashboard = () => {
                       {submitError}
                     </div>
                   )}
-                  <div className="border rounded p-3">
-                    <h6 className="mb-3">Create Faculty Profile</h6>
-                      <form onSubmit={handleFacultyProfileSubmit}>
-                        <div className="row g-3">
-                          <div className="col-md-6">
-                            <label className="form-label">Name</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={facultyProfileForm.name}
-                              onChange={(e) =>
-                                setFacultyProfileForm({ ...facultyProfileForm, name: e.target.value })
-                              }
-                              required
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <label className="form-label">Email</label>
-                            <input
-                              type="email"
-                              className="form-control"
-                              value={facultyProfileForm.email}
-                              onChange={(e) =>
-                                setFacultyProfileForm({ ...facultyProfileForm, email: e.target.value })
-                              }
-                              required
-                            />
-                          </div>
-                          <div className="col-md-12">
-                            <label className="form-label">Department</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={facultyProfileForm.department}
-                              onChange={(e) =>
-                                setFacultyProfileForm({ ...facultyProfileForm, department: e.target.value })
-                              }
-                              required
-                            />
-                          </div>
-                        </div>
-                        {facultyProfileError && (
-                          <div className="alert alert-danger mt-3" role="alert">
-                            {facultyProfileError}
-                          </div>
-                        )}
-                        {facultyProfileSuccess && (
-                          <div className="alert alert-success mt-3" role="alert">
-                            {facultyProfileSuccess}
-                          </div>
-                        )}
-                        <div className="mt-3">
-                          <button type="submit" className="btn btn-primary" disabled={creatingFacultyProfile}>
-                            {creatingFacultyProfile ? 'Creating...' : 'Create Faculty Profile'}
-                          </button>
-                        </div>
-                      </form>
+                  <div className="mb-3">
+                    <label className="form-label">Faculty</label>
+                    <select
+                      className="form-select"
+                      value={scheduleForm.faculty_id}
+                      onChange={(e) => setScheduleForm({ ...scheduleForm, faculty_id: e.target.value })}
+                      required
+                      disabled={loadingFaculty}
+                    >
+                      <option value="">
+                        {loadingFaculty ? 'Loading faculties...' : 'Select faculty'}
+                      </option>
+                      {facultyList.map((faculty) => (
+                        <option key={faculty.id} value={faculty.id}>
+                          {faculty.name}
+                        </option>
+                      ))}
+                    </select>
+                    {facultyError && (
+                      <div className="text-danger small mt-1">{facultyError}</div>
+                    )}
                   </div>
                 </div>
                 <div className="modal-footer">
