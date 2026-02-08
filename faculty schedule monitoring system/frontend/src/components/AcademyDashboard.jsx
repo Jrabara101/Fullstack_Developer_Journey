@@ -61,6 +61,9 @@ const AcademyDashboard = () => {
   const [submittingRoom, setSubmittingRoom] = useState(false);
   const [roomSubmitError, setRoomSubmitError] = useState(null);
 
+  const [viewScheduleModal, setViewScheduleModal] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+
   // Fetch schedules and rooms from API
   useEffect(() => {
     fetchSchedules();
@@ -74,26 +77,26 @@ const AcademyDashboard = () => {
       setScheduleError(null);
       const response = await api.get('/api/schedules');
       const schedules = response.data;
-      
+
       // Transform backend schedule format to frontend format
       const transformedSchedules = schedules.map(schedule => {
         // Convert start_time and end_time to display format
-        const startTime = new Date(`2000-01-01T${schedule.start_time}`).toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
+        const startTime = new Date(`2000-01-01T${schedule.start_time}`).toLocaleTimeString('en-US', {
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: true 
+          hour12: true
         });
-        const endTime = new Date(`2000-01-01T${schedule.end_time}`).toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
+        const endTime = new Date(`2000-01-01T${schedule.end_time}`).toLocaleTimeString('en-US', {
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: true 
+          hour12: true
         });
-        
+
         // Determine mode based on room
-        const mode = schedule.room.toLowerCase().includes('online') || 
-                     schedule.room.toLowerCase().includes('zoom') || 
-                     schedule.room.toLowerCase().includes('teams') 
-                     ? 'online' : 'on-site';
+        const mode = schedule.room.toLowerCase().includes('online') ||
+          schedule.room.toLowerCase().includes('zoom') ||
+          schedule.room.toLowerCase().includes('teams')
+          ? 'online' : 'on-site';
 
         // Determine type from course_name or notes
         let type = 'class';
@@ -122,9 +125,13 @@ const AcademyDashboard = () => {
           room: schedule.room,
           type: type,
           mode: mode,
+          type: type,
+          mode: mode,
+          description: schedule.description || schedule.notes || '',
+          status: schedule.status || 'pending',
         };
       });
-      
+
       setUpcomingSchedules(transformedSchedules);
     } catch (error) {
       console.error('Error fetching schedules:', error);
@@ -183,7 +190,7 @@ const AcademyDashboard = () => {
       };
 
       await api.post('/api/schedules', scheduleData);
-      
+
       // Reset form and close modal
       setShowScheduleModal(false);
       setScheduleForm({
@@ -235,12 +242,12 @@ const AcademyDashboard = () => {
 
       const response = await api.post('/api/rooms', roomData);
       const newRoom = response.data.room;
-      
+
       // If Schedule Modal is open, automatically select the newly created room
       if (showScheduleModal && scheduleForm.mode === 'on-site') {
         setScheduleForm({ ...scheduleForm, room: newRoom.name });
       }
-      
+
       // Reset form and close modal
       setShowRoomModal(false);
       setRoomForm({
@@ -258,7 +265,7 @@ const AcademyDashboard = () => {
     } catch (error) {
       console.error('Error creating room:', error);
       setRoomSubmitError(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Failed to create room. Please try again.'
       );
     } finally {
@@ -281,6 +288,34 @@ const AcademyDashboard = () => {
       ...roomForm,
       equipment: roomForm.equipment.filter((_, i) => i !== index),
     });
+  };
+
+  const handleViewSchedule = (schedule) => {
+    setSelectedSchedule(schedule);
+    setViewScheduleModal(true);
+  };
+
+  const handleCompleteSchedule = async () => {
+    if (!selectedSchedule) return;
+
+    try {
+      // Optimistic update for UI demo purposes
+      // In a real app, you would make an API call here: await api.put(`/api/schedules/${selectedSchedule.id}/complete`);
+
+      const updatedSchedules = upcomingSchedules.map(s =>
+        s.id === selectedSchedule.id ? { ...s, status: 'completed' } : s
+      );
+      setUpcomingSchedules(updatedSchedules);
+
+      const updatedSelected = { ...selectedSchedule, status: 'completed' };
+      setSelectedSchedule(updatedSelected);
+
+      // Close modal after a short delay or keep it open with updated status
+      // setViewScheduleModal(false); 
+    } catch (error) {
+      console.error('Error completing schedule:', error);
+      alert('Failed to mark as complete');
+    }
   };
 
   const availableRooms = classrooms.filter(room => room.status === 'available');
@@ -325,7 +360,7 @@ const AcademyDashboard = () => {
           }}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="me-2">
-            <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
           Schedule Meeting/Class
         </button>
@@ -461,15 +496,19 @@ const AcademyDashboard = () => {
         {activeTab === 'overview' && (
           <div className="row g-4">
             <div className="col-lg-6">
-              <UpcomingNavigation 
-                items={upcomingSchedules.map(s => ({ ...s, location: s.room, link: `/schedule/${s.id}` }))} 
-                type="schedule" 
+              <UpcomingNavigation
+                items={upcomingSchedules.map(s => ({
+                  ...s,
+                  location: s.room,
+                  onClick: () => handleViewSchedule(s)
+                }))}
+                type="schedule"
               />
             </div>
             <div className="col-lg-6">
-              <UpcomingNavigation 
-                items={meetings.map(m => ({ ...m, link: `/meetings/${m.id}` }))} 
-                type="meeting" 
+              <UpcomingNavigation
+                items={meetings.map(m => ({ ...m, link: `/meetings/${m.id}` }))}
+                type="meeting"
               />
             </div>
             <div className="col-lg-6">
@@ -483,10 +522,9 @@ const AcademyDashboard = () => {
                       <div key={project.id} className="list-group-item border-0 border-bottom px-4 py-3">
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <h6 className="mb-0">{project.title}</h6>
-                          <span className={`badge ${
-                            project.status === 'in-progress' ? 'bg-warning' :
+                          <span className={`badge ${project.status === 'in-progress' ? 'bg-warning' :
                             project.status === 'planning' ? 'bg-info' : 'bg-success'
-                          }`}>
+                            }`}>
                             {project.status}
                           </span>
                         </div>
@@ -511,9 +549,9 @@ const AcademyDashboard = () => {
               </div>
             </div>
             <div className="col-lg-6">
-              <UpcomingNavigation 
-                items={[...events.map(e => ({ ...e, link: `/events/${e.id}` })), ...holidays.map(h => ({ ...h, link: `/holidays/${h.id}` }))]} 
-                type="event" 
+              <UpcomingNavigation
+                items={[...events.map(e => ({ ...e, link: `/events/${e.id}` })), ...holidays.map(h => ({ ...h, link: `/holidays/${h.id}` }))]}
+                type="event"
               />
             </div>
           </div>
@@ -607,10 +645,9 @@ const AcademyDashboard = () => {
                       <div className="card-body">
                         <div className="d-flex justify-content-between align-items-start mb-3">
                           <h5 className="mb-0">{project.title}</h5>
-                          <span className={`badge ${
-                            project.status === 'in-progress' ? 'bg-warning' :
+                          <span className={`badge ${project.status === 'in-progress' ? 'bg-warning' :
                             project.status === 'planning' ? 'bg-info' : 'bg-success'
-                          }`}>
+                            }`}>
                             {project.status}
                           </span>
                         </div>
@@ -709,7 +746,7 @@ const AcademyDashboard = () => {
                       onClick={() => setShowRoomModal(true)}
                     >
                       <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="me-1">
-                        <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
                       Add Room
                     </button>
@@ -737,10 +774,9 @@ const AcademyDashboard = () => {
                               <div className="flex-grow-1">
                                 <div className="d-flex align-items-center gap-2 mb-2">
                                   <h6 className="mb-0">{room.name}</h6>
-                                  <span className={`badge ${
-                                    room.status === 'available' ? 'bg-success' :
+                                  <span className={`badge ${room.status === 'available' ? 'bg-success' :
                                     room.status === 'occupied' ? 'bg-warning' : 'bg-danger'
-                                  }`}>
+                                    }`}>
                                     {room.status}
                                   </span>
                                 </div>
@@ -964,7 +1000,7 @@ const AcademyDashboard = () => {
                           }}
                         >
                           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="me-1">
-                            <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <path d="M10 4V10M10 10V16M10 10H16M10 10H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                           </svg>
                           Add Room
                         </button>
@@ -1033,8 +1069,8 @@ const AcademyDashboard = () => {
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn btn-primary"
                     disabled={submittingSchedule}
                   >
@@ -1054,6 +1090,112 @@ const AcademyDashboard = () => {
         </div>
       )}
 
+      {/* View Schedule Modal */}
+      {viewScheduleModal && selectedSchedule && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Schedule Details</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setViewScheduleModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="d-flex align-items-center mb-4">
+                  <div
+                    className={`rounded-circle p-3 me-3 ${selectedSchedule.status === 'completed' ? 'bg-success text-white' :
+                        selectedSchedule.type === 'class' ? 'bg-primary bg-opacity-10 text-primary' :
+                          selectedSchedule.type === 'meeting' ? 'bg-success bg-opacity-10 text-success' :
+                            'bg-info bg-opacity-10 text-info'
+                      }`}
+                  >
+                    <span style={{ fontSize: '1.5rem' }}>
+                      {selectedSchedule.status === 'completed' ? '✓' :
+                        selectedSchedule.type === 'class' ? '📚' :
+                          selectedSchedule.type === 'meeting' ? '👥' : '📅'}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="d-flex align-items-center gap-2">
+                      <h5 className="mb-1 text-break">{selectedSchedule.title}</h5>
+                      {selectedSchedule.status === 'completed' && (
+                        <span className="badge bg-success">Completed</span>
+                      )}
+                    </div>
+                    <span className={`badge ${selectedSchedule.type === 'class' ? 'bg-primary' :
+                        selectedSchedule.type === 'meeting' ? 'bg-success' :
+                          'bg-info'
+                      }`}>
+                      {selectedSchedule.type}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <small className="text-muted d-block uppercase mb-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>KEY INFORMATION</small>
+                  <div className="d-flex flex-column gap-2">
+                    <div className="d-flex align-items-center">
+                      <div className="text-center" style={{ width: '24px' }}>📅</div>
+                      <div className="ms-2">
+                        <strong>Date:</strong> <span className="text-muted">{selectedSchedule.date}</span>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div className="text-center" style={{ width: '24px' }}>🕐</div>
+                      <div className="ms-2">
+                        <strong>Time:</strong> <span className="text-muted">{selectedSchedule.time}</span>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div className="text-center" style={{ width: '24px' }}>📍</div>
+                      <div className="ms-2">
+                        <strong>Location:</strong> <span className="text-muted">{selectedSchedule.room}</span>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div className="text-center" style={{ width: '24px' }}>🌐</div>
+                      <div className="ms-2">
+                        <strong>Mode:</strong> <span className={`badge ${selectedSchedule.mode === 'online' ? 'bg-info' : 'bg-secondary'} ms-1`}>{selectedSchedule.mode}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedSchedule.description && (
+                  <div className="mb-3">
+                    <small className="text-muted d-block uppercase mb-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>DESCRIPTION</small>
+                    <p className="bg-light p-3 rounded" style={{ fontSize: '0.95rem' }}>{selectedSchedule.description}</p>
+                  </div>
+                )}
+
+              </div>
+              <div className="modal-footer justify-content-between">
+                {selectedSchedule.status !== 'completed' ? (
+                  <button
+                    type="button"
+                    className="btn btn-success text-white"
+                    onClick={handleCompleteSchedule}
+                  >
+                    ✓ Mark as Complete
+                  </button>
+                ) : (
+                  <span className="text-muted small fst-italic">This item is completed</span>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setViewScheduleModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Room Modal */}
       {showRoomModal && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -1190,8 +1332,8 @@ const AcademyDashboard = () => {
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn btn-primary"
                     disabled={submittingRoom}
                   >
