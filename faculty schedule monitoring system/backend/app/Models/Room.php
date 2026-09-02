@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
@@ -25,4 +26,12 @@ class Room extends Model
     const STATUS_AVAILABLE = 'available';
     const STATUS_OCCUPIED = 'occupied';
     const STATUS_MAINTENANCE = 'maintenance';
+
+    /**
+     * Get the schedules assigned to this room.
+     */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class, 'room_id');
+    }
 }

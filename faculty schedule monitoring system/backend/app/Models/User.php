@@ -55,4 +55,17 @@ class User extends Authenticatable
     {
         return $this->hasOne(Faculty::class);
     }
+
+    /**
+     * Get the schedule notifications for the user.
+     */
+    public function scheduleNotifications()
+    {
+        return $this->hasMany(ScheduleNotification::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 }

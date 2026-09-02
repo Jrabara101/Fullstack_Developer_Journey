@@ -1,0 +1,5 @@
+{
+  "name": "ACER Strike",
+  "description": "A tactical, round-based third-person shooter MVP prototype featuring authentic CS-style counter-strafing, dynamic recoil spray patterns, parallax correction ballistics, positional 3D audio, bomb defusal mechanics, and bot combat.",
+  "requestFramePermissions": []
+}

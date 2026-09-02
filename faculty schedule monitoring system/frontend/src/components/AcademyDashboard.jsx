@@ -128,7 +128,7 @@ const AcademyDashboard = () => {
           type: type,
           mode: mode,
           description: schedule.description || schedule.notes || '',
-          status: schedule.status || 'pending',
+          status: schedule.complete === 'Yes' ? 'completed' : 'pending',
         };
       });
 
@@ -299,9 +299,7 @@ const AcademyDashboard = () => {
     if (!selectedSchedule) return;
 
     try {
-      // Optimistic update for UI demo purposes
-      // In a real app, you would make an API call here: await api.put(`/api/schedules/${selectedSchedule.id}/complete`);
-
+      // Optimistic update
       const updatedSchedules = upcomingSchedules.map(s =>
         s.id === selectedSchedule.id ? { ...s, status: 'completed' } : s
       );
@@ -310,10 +308,17 @@ const AcademyDashboard = () => {
       const updatedSelected = { ...selectedSchedule, status: 'completed' };
       setSelectedSchedule(updatedSelected);
 
-      // Close modal after a short delay or keep it open with updated status
-      // setViewScheduleModal(false); 
+      // Call API
+      await api.put(`/api/schedules/${selectedSchedule.id}`, {
+        complete: 'Yes'
+      });
+
+      // Close modal after successful update
+      setViewScheduleModal(false);
     } catch (error) {
       console.error('Error completing schedule:', error);
+      // Revert optimistic update on error
+      fetchSchedules();
       alert('Failed to mark as complete');
     }
   };
@@ -1107,9 +1112,9 @@ const AcademyDashboard = () => {
                 <div className="d-flex align-items-center mb-4">
                   <div
                     className={`rounded-circle p-3 me-3 ${selectedSchedule.status === 'completed' ? 'bg-success text-white' :
-                        selectedSchedule.type === 'class' ? 'bg-primary bg-opacity-10 text-primary' :
-                          selectedSchedule.type === 'meeting' ? 'bg-success bg-opacity-10 text-success' :
-                            'bg-info bg-opacity-10 text-info'
+                      selectedSchedule.type === 'class' ? 'bg-primary bg-opacity-10 text-primary' :
+                        selectedSchedule.type === 'meeting' ? 'bg-success bg-opacity-10 text-success' :
+                          'bg-info bg-opacity-10 text-info'
                       }`}
                   >
                     <span style={{ fontSize: '1.5rem' }}>
@@ -1126,8 +1131,8 @@ const AcademyDashboard = () => {
                       )}
                     </div>
                     <span className={`badge ${selectedSchedule.type === 'class' ? 'bg-primary' :
-                        selectedSchedule.type === 'meeting' ? 'bg-success' :
-                          'bg-info'
+                      selectedSchedule.type === 'meeting' ? 'bg-success' :
+                        'bg-info'
                       }`}>
                       {selectedSchedule.type}
                     </span>

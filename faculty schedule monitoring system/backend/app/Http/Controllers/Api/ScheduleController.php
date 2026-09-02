@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Faculty;
+use App\Models\Room;
+use App\Models\ScheduleNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
@@ -17,18 +19,70 @@ class ScheduleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Schedule::with('faculty');
-        
+        $query = Schedule::with(['faculty', 'roomDetails']);
+
         if ($request->has('faculty_id')) {
             $query->where('faculty_id', $request->faculty_id);
         }
-        
+
         if ($request->has('day_of_week')) {
             $query->where('day_of_week', $request->day_of_week);
         }
-        
+
         $schedules = $query->get();
         return response()->json($schedules);
+    }
+
+    /**
+     * Find schedules that overlap the given day/time window for a faculty
+     * and/or room, excluding the schedule with $excludeId (used on update).
+     *
+     * Two time ranges overlap when: existing.start < new.end AND existing.end > new.start
+     */
+    private function findConflicts(string $dayOfWeek, string $startTime, string $endTime, ?int $facultyId, ?int $roomId, ?int $excludeId = null)
+    {
+        $query = Schedule::where('day_of_week', $dayOfWeek)
+            ->where('start_time', '<', $endTime)
+            ->where('end_time', '>', $startTime)
+            ->where(function ($q) use ($facultyId, $roomId) {
+                if ($facultyId) {
+                    $q->orWhere('faculty_id', $facultyId);
+                }
+                if ($roomId) {
+                    $q->orWhere('room_id', $roomId);
+                }
+            });
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->with(['faculty', 'roomDetails'])->get();
+    }
+
+    /**
+     * Build a human-readable conflict error payload from conflicting schedules.
+     */
+    private function conflictResponse($conflicts, ?int $facultyId, ?int $roomId): JsonResponse
+    {
+        $facultyClashes = $conflicts->filter(fn ($s) => $facultyId && $s->faculty_id == $facultyId);
+        $roomClashes = $conflicts->filter(fn ($s) => $roomId && $s->room_id == $roomId);
+
+        $messages = [];
+        if ($facultyClashes->isNotEmpty()) {
+            $messages[] = 'Faculty already has a schedule that overlaps this time slot.';
+        }
+        if ($roomClashes->isNotEmpty()) {
+            $messages[] = 'Room is already booked for an overlapping time slot.';
+        }
+
+        return response()->json([
+            'message' => 'Schedule conflict detected.',
+            'errors' => [
+                'schedule_time' => $messages ?: ['Schedule conflict detected.'],
+            ],
+            'conflicts' => $conflicts->values(),
+        ], 409);
     }
 
     /**
@@ -87,10 +141,25 @@ class ScheduleController extends Controller
                 $facultyId = $faculty->id;
             }
 
+            // A non-admin faculty user may only create schedules for themselves.
+            $requestUser = $request->user();
+            if (!$requestUser->isAdmin()) {
+                $ownFaculty = $requestUser->faculty;
+                if (!$ownFaculty || $ownFaculty->id != $facultyId) {
+                    return response()->json([
+                        'message' => 'Forbidden. You may only create schedules for your own faculty profile.',
+                    ], 403);
+                }
+            }
+
+            // Resolve room_id from the room name, if it matches an existing room.
+            $roomId = Room::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($validated['room']))])->value('id');
+
             // Prepare schedule data
             $scheduleData = [
                 'faculty_id' => $facultyId,
                 'room' => $validated['room'],
+                'room_id' => $roomId,
                 'semester' => $validated['semester'] ?? null,
                 'notes' => $validated['description'] ?? $validated['notes'] ?? null,
             ];
@@ -136,8 +205,23 @@ class ScheduleController extends Controller
                 $scheduleData['end_time'] = $validated['end_time'];
             }
 
+            $conflicts = $this->findConflicts(
+                $scheduleData['day_of_week'],
+                $scheduleData['start_time'],
+                $scheduleData['end_time'],
+                $facultyId,
+                $roomId
+            );
+
+            if ($conflicts->isNotEmpty()) {
+                return $this->conflictResponse($conflicts, $facultyId, $roomId);
+            }
+
             $schedule = Schedule::create($scheduleData);
-            return response()->json($schedule->load('faculty'), 201);
+
+            $this->notifyFacultyOfSchedule($schedule, 'A new schedule was created: ' . $schedule->course_name . ' on ' . $schedule->day_of_week . '.');
+
+            return response()->json($schedule->load(['faculty', 'roomDetails']), 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -152,7 +236,7 @@ class ScheduleController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $schedule = Schedule::with('faculty')->findOrFail($id);
+        $schedule = Schedule::with(['faculty', 'roomDetails'])->findOrFail($id);
         return response()->json($schedule);
     }
 
@@ -163,7 +247,17 @@ class ScheduleController extends Controller
     {
         try {
             $schedule = Schedule::findOrFail($id);
-            
+
+            $requestUser = $request->user();
+            if (!$requestUser->isAdmin()) {
+                $ownFaculty = $requestUser->faculty;
+                if (!$ownFaculty || $ownFaculty->id != $schedule->faculty_id) {
+                    return response()->json([
+                        'message' => 'Forbidden. You may only modify your own schedules.',
+                    ], 403);
+                }
+            }
+
             $validated = $request->validate([
                 'faculty_id' => 'sometimes|required|exists:faculties,id',
                 'course_name' => 'sometimes|required|string|max:255',
@@ -174,10 +268,33 @@ class ScheduleController extends Controller
                 'room' => 'sometimes|required|string|max:100',
                 'semester' => 'nullable|string|max:50',
                 'notes' => 'nullable|string',
+                'complete' => 'sometimes|in:Yes,No',
             ]);
 
+            $facultyId = $validated['faculty_id'] ?? $schedule->faculty_id;
+            $dayOfWeek = $validated['day_of_week'] ?? $schedule->day_of_week;
+            $startTime = isset($validated['start_time']) ? $validated['start_time'] : $schedule->start_time->format('H:i');
+            $endTime = isset($validated['end_time']) ? $validated['end_time'] : $schedule->end_time->format('H:i');
+
+            $roomId = $schedule->room_id;
+            if (isset($validated['room'])) {
+                $roomId = Room::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($validated['room']))])->value('id');
+                $validated['room_id'] = $roomId;
+            }
+
+            if (isset($validated['day_of_week']) || isset($validated['start_time']) || isset($validated['end_time']) || isset($validated['room']) || isset($validated['faculty_id'])) {
+                $conflicts = $this->findConflicts($dayOfWeek, $startTime, $endTime, $facultyId, $roomId, $schedule->id);
+
+                if ($conflicts->isNotEmpty()) {
+                    return $this->conflictResponse($conflicts, $facultyId, $roomId);
+                }
+            }
+
             $schedule->update($validated);
-            return response()->json($schedule->load('faculty'));
+
+            $this->notifyFacultyOfSchedule($schedule, 'Your schedule for ' . $schedule->course_name . ' on ' . $schedule->day_of_week . ' was updated.');
+
+            return response()->json($schedule->load(['faculty', 'roomDetails']));
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         }
@@ -186,10 +303,41 @@ class ScheduleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $schedule = Schedule::findOrFail($id);
+
+        $requestUser = $request->user();
+        if (!$requestUser->isAdmin()) {
+            $ownFaculty = $requestUser->faculty;
+            if (!$ownFaculty || $ownFaculty->id != $schedule->faculty_id) {
+                return response()->json([
+                    'message' => 'Forbidden. You may only delete your own schedules.',
+                ], 403);
+            }
+        }
+
         $schedule->delete();
         return response()->json(['message' => 'Schedule deleted successfully']);
+    }
+
+    /**
+     * Create an in-app notification for the faculty user tied to a schedule.
+     */
+    private function notifyFacultyOfSchedule(Schedule $schedule, string $message, string $type = ScheduleNotification::TYPE_GENERAL): void
+    {
+        $userId = $schedule->faculty?->user_id;
+
+        if (!$userId) {
+            return;
+        }
+
+        ScheduleNotification::create([
+            'user_id' => $userId,
+            'schedule_id' => $schedule->id,
+            'type' => $type,
+            'message' => $message,
+            'status' => ScheduleNotification::STATUS_UNREAD,
+        ]);
     }
 }

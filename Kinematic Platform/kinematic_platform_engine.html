@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kinematic Velocity Inheritance Core Architecture</title>
+    <!-- Tailwind CSS for modern layout scaffolding -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 98.css for premium retro UI simulation -->
+    <link rel="stylesheet" href="https://unpkg.com/98.css"/>
+    <!-- Animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background: #008080; /* Traditional Windows 98 Teal */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+        canvas { 
+            display: block; 
+            image-rendering: pixelated; 
+        }
+        /* Custom scrollbar adjustments for 98.css inside containers */
+        .window-body::-webkit-scrollbar {
+            width: 16px;
+        }
+        .window-body::-webkit-scrollbar-track {
+            background: #dfdfdf;
+            box-shadow: inset 1px 1px 0 #0a0a0a, inset -1px -1px 0 #fff;
+        }
+        .window-body::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #0a0a0a;
+        }
+        /* Draggable visual helper */
+        .title-bar {
+            cursor: move;
+        }
+        /* Highlight state for desktop shortcut icons */
+        .desktop-icon {
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .desktop-icon:active, .desktop-icon.selected {
+            background-color: rgba(0, 0, 128, 0.2);
+            border: 1px dotted #000080;
+        }
+    </style>
+</head>
+<body>
+
+<!-- OS TASKBAR & RUNTIME PORTALS -->
+<div id="desktop-grid" class="absolute inset-0 w-full h-full p-4 pointer-events-none z-20 flex flex-col flex-wrap gap-6 items-start content-start">
+    <!-- Desktop Shortcut Icons (Double-click to open/restore) -->
+    <div class="desktop-icon flex flex-col items-center justify-center w-20 text-center pointer-events-auto" onclick="desktop.selectIcon(this)" ondblclick="desktop.openWindow('win-help')">
+        <svg class="w-10 h-10 mb-1 filter drop-shadow" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="1.5"/>
+            <rect x="6" y="6" width="20" height="2" fill="#000080"/>
+            <text x="16" y="22" font-family="monospace" font-size="14" fill="#000" font-weight="bold" text-anchor="middle">?</text>
+        </svg>
+        <span class="text-white text-[11px] font-mono leading-tight px-1 bg-[#00000066] rounded shadow-sm">Theory.txt</span>
+    </div>
+
+    <div class="desktop-icon flex flex-col items-center justify-center w-20 text-center pointer-events-auto" onclick="desktop.selectIcon(this)" ondblclick="desktop.openWindow('win-registry')">
+        <svg class="w-10 h-10 mb-1 filter drop-shadow" viewBox="0 0 32 32" fill="none">
+            <rect x="6" y="6" width="20" height="20" fill="#fff" stroke="#000" stroke-width="1.5"/>
+            <path d="M10 10H22V12H10V10ZM10 14H18V16H10V14ZM10 18H20V20H10V18Z" fill="#1e293b"/>
+            <circle cx="22" cy="22" r="4" fill="#06b6d4"/>
+        </svg>
+        <span class="text-white text-[11px] font-mono leading-tight px-1 bg-[#00000066] rounded shadow-sm">Registry.exe</span>
+    </div>
+
+    <div class="desktop-icon flex flex-col items-center justify-center w-20 text-center pointer-events-auto" onclick="desktop.selectIcon(this)" ondblclick="desktop.openWindow('win-control')">
+        <svg class="w-10 h-10 mb-1 filter drop-shadow" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="1.5"/>
+            <circle cx="16" cy="16" r="6" fill="#e11d48"/>
+            <line x1="8" y1="16" x2="24" y2="16" stroke="#000" stroke-width="2"/>
+        </svg>
+        <span class="text-white text-[11px] font-mono leading-tight px-1 bg-[#00000066] rounded shadow-sm">Kernel.cfg</span>
+    </div>
+
+    <div class="desktop-icon flex flex-col items-center justify-center w-20 text-center pointer-events-auto" onclick="desktop.selectIcon(this)" ondblclick="desktop.openWindow('win-oscilloscope')">
+        <svg class="w-10 h-10 mb-1 filter drop-shadow" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="4" width="24" height="24" fill="#111" stroke="#c0c0c0" stroke-width="2"/>
+            <path d="M6 16Q11 4 16 16T26 16" stroke="#22c55e" stroke-width="1.5" fill="none"/>
+        </svg>
+        <span class="text-white text-[11px] font-mono leading-tight px-1 bg-[#00000066] rounded shadow-sm">Scope.exe</span>
+    </div>
+</div>
+
+<!-- GAME ENGINE VIEWPORT CONTAINER (Centered workspace like a CRT Retro Monitor) -->
+<div id="canvas-viewport-anchor" class="absolute inset-0 w-full h-full flex items-center justify-center p-4 pb-14 z-10">
+    <div class="relative w-full max-w-[960px] h-[520px] bg-[#111827] border-4 border-double border-slate-700 shadow-2xl rounded-lg overflow-hidden">
+        <!-- Pixel Art Viewport Grid Header -->
+        <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-slate-400 text-[10px] font-mono px-3 py-1 flex justify-between items-center border-b border-gray-700">
+            <span>🔴 ACTIVE SIMULATOR: DETERMINISTIC STEPPING AGENT</span>
+            <span id="txt-latency">FPS: 60 | RENDER: VECTOR_2D</span>
+        </div>
+        <canvas id="gameCanvas" class="w-full h-[calc(100%-24px)]"></canvas>
+    </div>
+</div>
+
+<!-- WINDOWS98 WINDOWS (Draggable, Layered Desktop UI) -->
+
+<!-- Window 1: Theory Help & Kinematics Formula Deck -->
+<div id="win-help" class="window absolute left-10 top-12 w-96 shadow-2xl z-30 pointer-events-auto animate__animated animate__zoomIn">
+    <div class="title-bar" onmousedown="desktop.dragStart(event, 'win-help')">
+        <div class="title-bar-text">THEORY.TXT - Kinematic Mechanics Documentation</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" onclick="desktop.hideWindow('win-help')"></button>
+            <button aria-label="Close" onclick="desktop.closeWindow('win-help')"></button>
+        </div>
+    </div>
+    <div class="window-body max-h-[380px] overflow-y-auto flex flex-col gap-3 font-mono text-[11px] leading-relaxed">
+        <h3 class="text-sm font-bold text-blue-900 border-b pb-1">The Passenger Inheritance Pipeline</h3>
+        <p>A typical platform-riding physics engine bug is <strong>"Passenger Slipping"</strong>. When the player steps before platforms do, displacement calculations mismatch:</p>
+        <div class="bg-white p-2 border border-inset shadow-inner text-[10px] text-red-700">
+            <strong>❌ Naive Update Sequence (Bugged Jitter):</strong><br>
+            1. Player controller adds speed vectors & resolves collisions.<br>
+            2. Platform moves. Player is left behind or slides off abruptly!
+        </div>
+        <div class="bg-white p-2 border border-inset shadow-inner text-[10px] text-green-700">
+            <strong>✅ Two-Phase Determinate Execution (Staff Architecture):</strong><br>
+            <strong>Phase A:</strong> Update platform vectors first:<br>
+            &nbsp;&nbsp; &vec;D<sub>platform</sub> = P<sub>current</sub> - P<sub>prev</sub><br>
+            <strong>Phase B:</strong> Apply coordinates to locked passenger first:<br>
+            &nbsp;&nbsp; P<sub>player</sub> += &vec;D<sub>platform</sub><br>
+            3. Apply standard gravity, horizontal inputs & resolve boundary blocks.
+        </div>
+        <p class="text-[10px] text-slate-500">Perfect pixel snapping enforces integer positions: <code class="bg-slate-200 px-1 font-bold">Math.floor()</code> is evaluated directly on draw cycles to avoid subpixel blur.</p>
+    </div>
+</div>
+
+<!-- Window 2: Diagnostic Platform Registry Explorer -->
+<div id="win-registry" class="window absolute right-12 top-6 w-80 shadow-2xl z-30 pointer-events-auto animate__animated animate__zoomIn">
+    <div class="title-bar" onmousedown="desktop.dragStart(event, 'win-registry')">
+        <div class="title-bar-text">PLATFORM_REGISTRY.EXE</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" onclick="desktop.hideWindow('win-registry')"></button>
+            <button aria-label="Close" onclick="desktop.closeWindow('win-registry')"></button>
+        </div>
+    </div>
+    <div class="window-body flex flex-col gap-3">
+        <header class="border-b border-slate-400 pb-1">
+            <h2 class="text-slate-800 font-bold text-xs font-mono uppercase">Kinematic Registry Linker</h2>
+        </header>
+
+        <fieldset class="p-2 font-mono text-[11px] text-slate-700 bg-white shadow-inner">
+            <legend class="bg-[#f1f1f1] px-1 font-bold">Player Kinematic Core</legend>
+            <div class="flex justify-between"><span>🏃 Vector X (Vx):</span><span id="txt-vx" class="font-bold text-blue-800">0.00</span></div>
+            <div class="flex justify-between mt-1"><span>🪂 Vector Y (Vy):</span><span id="txt-vy" class="font-bold text-indigo-800">0.00</span></div>
+            <div class="flex justify-between mt-1"><span>📍 World X/Y:</span><span id="txt-pos" class="font-bold text-emerald-800">0.00, 0.00</span></div>
+            <div class="flex justify-between mt-1 border-t border-slate-200 pt-1"><span>⚓ Active Rider Lock:</span><span id="txt-link" class="font-bold text-slate-600">NONE</span></div>
+            <div class="flex justify-between mt-1"><span>🛡️ State Model:</span><span id="txt-state" class="font-bold text-purple-700">IDLE</span></div>
+        </fieldset>
+
+        <fieldset class="p-2 font-mono text-[11px] text-slate-700 bg-white shadow-inner">
+            <legend class="bg-[#f1f1f1] px-1 font-bold">Active Platforms Pool</legend>
+            <div class="max-h-24 overflow-y-auto" id="platform-telemetry-list">
+                <!-- Dynamically populated via updates -->
+            </div>
+        </fieldset>
+
+        <div class="flex gap-2">
+            <button onclick="orchestrator.respawnActor()" class="w-full font-bold active:bg-slate-300" style="padding: 4px 10px;">
+                Respawn Marine (R)
+            </button>
+            <button onclick="orchestrator.teleportToPlatform()" class="w-full font-bold active:bg-slate-300" style="padding: 4px 10px;">
+                Land on Platform (T)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Window 3: Physical Core & Kernel Config Deck -->
+<div id="win-control" class="window absolute left-16 bottom-24 w-80 shadow-2xl z-30 pointer-events-auto animate__animated animate__zoomIn">
+    <div class="title-bar" onmousedown="desktop.dragStart(event, 'win-control')">
+        <div class="title-bar-text">KERNEL_SETTINGS.CFG</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" onclick="desktop.hideWindow('win-control')"></button>
+            <button aria-label="Close" onclick="desktop.closeWindow('win-control')"></button>
+        </div>
+    </div>
+    <div class="window-body flex flex-col gap-3 font-mono text-[11px]">
+        <fieldset class="p-2 text-slate-700 bg-white shadow-inner flex flex-col gap-2">
+            <legend class="bg-[#f1f1f1] px-1 font-bold">Execution Engine Mode</legend>
+            
+            <div class="flex gap-4">
+                <label class="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="engineMode" value="deterministic" checked onclick="orchestrator.setExecutionMode('deterministic')">
+                    <span>Deterministic (Staff)</span>
+                </label>
+                <label class="flex items-center gap-1 cursor-pointer text-red-700 font-bold">
+                    <input type="radio" name="engineMode" value="naive" onclick="orchestrator.setExecutionMode('naive')">
+                    <span>Naive (Slippery Bug)</span>
+                </label>
+            </div>
+            <p class="text-[9px] text-slate-500 leading-tight">Switch to Naive to see the player slip off vertical or fast-moving platforms completely during directional inversion cycles.</p>
+        </fieldset>
+
+        <fieldset class="p-2 text-slate-700 bg-white shadow-inner flex flex-col gap-2">
+            <legend class="bg-[#f1f1f1] px-1 font-bold">Simulation Constants</legend>
+            <div class="flex flex-col">
+                <div class="flex justify-between"><span>🌍 Gravity Force:</span><span id="lbl-gravity">0.32</span></div>
+                <input type="range" id="cfg-gravity" min="0.10" max="0.80" step="0.02" value="0.32" class="w-full my-1 cursor-pointer">
+            </div>
+            <div class="flex flex-col mt-1">
+                <div class="flex justify-between"><span>❄️ Horizontal Friction:</span><span id="lbl-friction">0.85</span></div>
+                <input type="range" id="cfg-friction" min="0.50" max="0.98" step="0.01" value="0.85" class="w-full my-1 cursor-pointer">
+            </div>
+            <div class="flex flex-col mt-1">
+                <div class="flex justify-between"><span>⚡ Engine Velocity Factor:</span><span id="lbl-platformSpeed">1.00</span></div>
+                <input type="range" id="cfg-speed" min="0.2" max="2.5" step="0.1" value="1.0" class="w-full my-1 cursor-pointer">
+            </div>
+            <div class="flex flex-col mt-1">
+                <div class="flex justify-between"><span>🦘 Jump Impulse:</span><span id="lbl-jumpForce">-7.50</span></div>
+                <input type="range" id="cfg-jump" min="-12.0" max="-4.0" step="0.5" value="-7.5" class="w-full my-1 cursor-pointer">
+            </div>
+        </fieldset>
+
+        <div class="flex justify-between items-center gap-2">
+            <label class="flex items-center gap-1">
+                <input type="checkbox" id="cfg-sfx" checked>
+                <span>Synthesizer Sound FX</span>
+            </label>
+            <button class="font-bold active:bg-slate-300" onclick="orchestrator.resetConfigDefaults()" style="padding: 2px 6px;">Reset Kernel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Window 4: Real-Time Oscilloscope Graph -->
+<div id="win-oscilloscope" class="window absolute right-16 bottom-20 w-80 shadow-2xl z-30 pointer-events-auto animate__animated animate__zoomIn">
+    <div class="title-bar" onmousedown="desktop.dragStart(event, 'win-oscilloscope')">
+        <div class="title-bar-text">VECTOR_SCOPE.EXE - Real-time Signals</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" onclick="desktop.hideWindow('win-oscilloscope')"></button>
+            <button aria-label="Close" onclick="desktop.closeWindow('win-oscilloscope')"></button>
+        </div>
+    </div>
+    <div class="window-body flex flex-col gap-2">
+        <div class="relative w-full h-32 bg-black border border-inset overflow-hidden rounded">
+            <!-- Draw Oscilloscope Canvas -->
+            <canvas id="scopeCanvas" class="absolute inset-0 w-full h-full"></canvas>
+        </div>
+        <div class="flex justify-between text-[10px] font-mono text-slate-700 bg-slate-200 px-1 border">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 bg-cyan-400 inline-block"></span> Player Vx</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 bg-yellow-400 inline-block"></span> Platform dx * 8</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-500 inline-block"></span> Landing Status</span>
+        </div>
+    </div>
+</div>
+
+<!-- ON-SCREEN MOBILE COMPLIANT INPUT CONTROL DECK -->
+<div id="mobile-control-deck" class="absolute bottom-16 left-1/2 -translate-x-1/2 z-40 bg-[#c0c0c0] p-1 border-2 border-slate-200 shadow-2xl rounded flex gap-2 pointer-events-auto md:hidden animate__animated animate__slideInUp">
+    <button id="btn-touch-left" class="w-12 h-12 flex items-center justify-center font-bold text-lg active:bg-slate-300 shadow">◀</button>
+    <button id="btn-touch-right" class="w-12 h-12 flex items-center justify-center font-bold text-lg active:bg-slate-300 shadow">▶</button>
+    <button id="btn-touch-jump" class="px-6 h-12 flex items-center justify-center font-bold text-sm active:bg-slate-300 shadow uppercase">Jump</button>
+</div>
+
+<!-- WINDOWS 98 RETRO TASKBAR (Visual environment wrapper) -->
+<div id="retro-taskbar" class="absolute bottom-0 left-0 w-full h-11 bg-[#c0c0c0] border-t-2 border-white flex items-center justify-between px-1 z-50 select-none">
+    <div class="flex items-center gap-1 h-full">
+        <button id="start-btn" class="flex items-center gap-1 font-bold h-7 px-2 border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black active:border-inset" onclick="desktop.toggleStartMenu()">
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="1" width="14" height="14" fill="#000080"/>
+                <text x="8" y="11" font-family="sans-serif" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">98</text>
+            </svg>
+            <span>Start</span>
+        </button>
+        <div class="w-[2px] h-6 bg-slate-400 mx-1 border-r border-white"></div>
+        
+        <!-- Taskbar Windows Tray -->
+        <div id="taskbar-tray" class="flex items-center gap-1 h-full font-mono text-[10px]">
+            <button id="tray-win-help" class="h-7 px-2 font-bold flex items-center justify-center bg-slate-200 border border-inset border-slate-700" onclick="desktop.toggleMinimize('win-help')">Theory.txt</button>
+            <button id="tray-win-registry" class="h-7 px-2 font-bold flex items-center justify-center bg-slate-200 border border-inset border-slate-700" onclick="desktop.toggleMinimize('win-registry')">Registry.exe</button>
+            <button id="tray-win-control" class="h-7 px-2 font-bold flex items-center justify-center bg-slate-200 border border-inset border-slate-700" onclick="desktop.toggleMinimize('win-control')">Kernel.cfg</button>
+            <button id="tray-win-oscilloscope" class="h-7 px-2 font-bold flex items-center justify-center bg-slate-200 border border-inset border-slate-700" onclick="desktop.toggleMinimize('win-oscilloscope')">Scope.exe</button>
+        </div>
+    </div>
+
+    <!-- Clock & Systems Tray Area -->
+    <div class="flex items-center gap-2 px-2 bg-[#c0c0c0] border-inset shadow border-2 h-7 font-mono text-xs text-slate-800">
+        <span class="text-[10px]">🔈</span>
+        <span class="text-[10px]">🌐</span>
+        <span id="retro-clock" class="font-bold">12:00 PM</span>
+    </div>
+</div>
+
+<!-- START WINDOWS POPUP MENU -->
+<div id="start-menu" class="hidden absolute bottom-11 left-1 w-52 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black shadow-2xl z-[99] font-mono text-[11px] p-1 animate__animated animate__fadeInUp">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-6 bg-gradient-to-b from-[#000080] to-[#10b981] flex items-end justify-center py-2 text-white font-bold text-center select-none" style="writing-mode: vertical-lr; transform: rotate(180deg);">
+            Windows 98
+        </div>
+        <!-- Links -->
+        <div class="flex-1 flex flex-col gap-1 pl-1">
+            <div class="hover:bg-[#000080] hover:text-white p-2 flex items-center gap-2 cursor-pointer" onclick="desktop.openWindow('win-help'); desktop.toggleStartMenu()">
+                <span>📄</span> Theory Documentation
+            </div>
+            <div class="hover:bg-[#000080] hover:text-white p-2 flex items-center gap-2 cursor-pointer" onclick="desktop.openWindow('win-registry'); desktop.toggleStartMenu()">
+                <span>💻</span> Platform Registry
+            </div>
+            <div class="hover:bg-[#000080] hover:text-white p-2 flex items-center gap-2 cursor-pointer" onclick="desktop.openWindow('win-control'); desktop.toggleStartMenu()">
+                <span>⚙️</span> Kernel Config
+            </div>
+            <div class="hover:bg-[#000080] hover:text-white p-2 flex items-center gap-2 cursor-pointer" onclick="desktop.openWindow('win-oscilloscope'); desktop.toggleStartMenu()">
+                <span>📈</span> Oscilloscope
+            </div>
+            <hr class="border-t border-slate-400 my-1">
+            <div class="hover:bg-[#000080] hover:text-white p-2 flex items-center gap-2 cursor-pointer" onclick="orchestrator.respawnActor(); desktop.toggleStartMenu()">
+                <span>🚪</span> Reset Actor Sandbox
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+class SoundEngine {
+    constructor() {
+        this.ctx = null;
+    }
+    
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    playJump() {
+        if (!document.getElementById('cfg-sfx').checked) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+        
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
+    playLand() {
+        if (!document.getElementById('cfg-sfx').checked) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.setValueAtTime(80, now + 0.05);
+        
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.08);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+    }
+
+    playCollect() {
+        if (!document.getElementById('cfg-sfx').checked) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+        osc.frequency.setValueAtTime(1046.5, now + 0.24); // C6
+        
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.35);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+    }
+
+    playSwitchMode(isDeterministic) {
+        if (!document.getElementById('cfg-sfx').checked) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        if (isDeterministic) {
+            osc.frequency.setValueAtTime(330, now);
+            osc.frequency.setValueAtTime(440, now + 0.1);
+        } else {
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.setValueAtTime(110, now + 0.15);
+        }
+        
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+    }
+}
+const sfx = new SoundEngine();
+
+class HybridMovingPlatformEngine {
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.scopeCanvas = document.getElementById('scopeCanvas');
+        this.scopeCtx = this.scopeCanvas.getContext('2d');
+        this.scopeHistory = [];
+
+        this.executionPipelineMode = 'deterministic'; // Or 'naive'
+        
+        // Setup base settings config boundaries
+        this.config = {
+            gravity: 0.32,
+            friction: 0.85,
+            speedMultiplier: 1.0,
+            jumpForce: -7.5
+        };
+
+        this.resizeViewport();
+        window.addEventListener('resize', () => this.resizeViewport());
+
+        // Dynamic collectables
+        this.collectibles = [
+            { x: 180, y: 310, collected: false, bounce: 0 },
+            { x: 320, y: 220, collected: false, bounce: 1 },
+            { x: 500, y: 150, collected: false, bounce: 2 },
+            { x: 800, y: 190, collected: false, bounce: 3 }
+        ];
+
+        // Particle System
+        this.particles = [];
+
+        // Single Source of Truth Platforms Pool
+        // Dynamic kinematic properties evaluated frame-by-frame
+        this.platformsPool = [
+            { 
+                id: 'PLAT_H_FAST', 
+                type: 'pingpong',
+                x: 120, y: 350, w: 100, h: 14, 
+                startX: 100, endX: 380, 
+                speed: 1.6, dir: 1, dx: 0, dy: 0,
+                color: '#3b82f6', label: 'H-Fast Transporter'
+            },
+            { 
+                id: 'PLAT_V_MID', 
+                type: 'pingpong',
+                x: 480, y: 280, w: 90, h: 14, 
+                startY: 190, endY: 390, 
+                speed: 1.2, dir: 1, dx: 0, dy: 0,
+                color: '#a855f7', label: 'V-Elevator Alpha'
+            },
+            {
+                id: 'PLAT_CIRCULAR',
+                type: 'circular',
+                x: 720, y: 220, w: 90, h: 14,
+                centerX: 720, centerY: 250, radius: 70, angle: 0,
+                speed: 0.02, dx: 0, dy: 0,
+                color: '#10b981', label: 'Circular Kinematic Link'
+            },
+            {
+                id: 'PLAT_FALLING',
+                type: 'decay',
+                x: 320, y: 250, w: 80, h: 14,
+                homeY: 250, targetY: 340, speed: 0.5,
+                dx: 0, dy: 0, status: 'stable', // 'stable', 'falling', 'recovering'
+                color: '#f59e0b', label: 'Decaying Shelf Block'
+            }
+        ];
+
+        // Core Kinematic Player Variables
+        this.player = {
+            x: 150, y: 100,
+            w: 18, h: 26,
+            vx: 0, vy: 0,
+            accel: 0.45,
+            maxVx: 4.2,
+            isGrounded: false,
+            ridingPlatformRef: null,
+            faceDir: 1, // 1 = right, -1 = left
+            runFrame: 0,
+            jumpSqueeze: 1
+        };
+
+        this.inputState = { left: false, right: false, jump: false };
+
+        this.bindEventsAndSliders();
+        this.syncHUDViewDisplay();
+        
+        // Kick off engine loops
+        this.executeEnginePipelineLoop();
+    }
+
+    bindEventsAndSliders() {
+        // Core Inputs
+        window.addEventListener('keydown', (e) => this.toggleInputKey(e, true));
+        window.addEventListener('keyup', (e) => this.toggleInputKey(e, false));
+
+        // Touch Hooks (Mobile Accessibility Overlay)
+        const bindTouch = (id, action, state) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const handler = (e) => {
+                e.preventDefault();
+                this.inputState[action] = state;
+                if (action === 'jump' && state) this.executeJumpActionGate();
+            };
+            el.addEventListener('mousedown', handler);
+            el.addEventListener('mouseup', () => this.inputState[action] = false);
+            el.addEventListener('touchstart', handler, { passive: false });
+            el.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.inputState[action] = false;
+            });
+        };
+        bindTouch('btn-touch-left', 'left', true);
+        bindTouch('btn-touch-right', 'right', true);
+        bindTouch('btn-touch-jump', 'jump', true);
+
+        // Core Control Knobs
+        const registerKnob = (id, configKey, labelId, isNegative = false) => {
+            const range = document.getElementById(id);
+            const label = document.getElementById(labelId);
+            range.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.config[configKey] = val;
+                label.innerText = val.toFixed(2);
+            });
+        };
+        registerKnob('cfg-gravity', 'gravity', 'lbl-gravity');
+        registerKnob('cfg-friction', 'friction', 'lbl-friction');
+        registerKnob('cfg-speed', 'speedMultiplier', 'lbl-platformSpeed');
+        registerKnob('cfg-jump', 'jumpForce', 'lbl-jumpForce');
+    }
+
+    resetConfigDefaults() {
+        this.config.gravity = 0.32;
+        this.config.friction = 0.85;
+        this.config.speedMultiplier = 1.0;
+        this.config.jumpForce = -7.5;
+
+        document.getElementById('cfg-gravity').value = 0.32;
+        document.getElementById('cfg-friction').value = 0.85;
+        document.getElementById('cfg-speed').value = 1.0;
+        document.getElementById('cfg-jump').value = -7.5;
+
+        document.getElementById('lbl-gravity').innerText = "0.32";
+        document.getElementById('lbl-friction').innerText = "0.85";
+        document.getElementById('lbl-platformSpeed').innerText = "1.00";
+        document.getElementById('lbl-jumpForce').innerText = "-7.50";
+    }
+
+    setExecutionMode(mode) {
+        this.executionPipelineMode = mode;
+        sfx.playSwitchMode(mode === 'deterministic');
+    }
+
+    resizeViewport() {
+        this.width = this.canvas.parentElement.clientWidth;
+        this.height = this.canvas.parentElement.clientHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+
+        this.scopeCanvas.width = this.scopeCanvas.parentElement.clientWidth;
+        this.scopeCanvas.height = this.scopeCanvas.parentElement.clientHeight;
+    }
+
+    toggleInputKey(e, isPressed) {
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.inputState.left = isPressed;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') this.inputState.right = isPressed;
+        if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'KeyK') {
+            this.inputState.jump = isPressed;
+            if (isPressed) this.executeJumpActionGate();
+        }
+        if (e.code === 'KeyR' && isPressed) this.respawnActor();
+        if (e.code === 'KeyT' && isPressed) this.teleportToPlatform();
+    }
+
+    respawnActor() {
+        this.player.x = 150; 
+        this.player.y = 80;
+        this.player.vx = 0; 
+        this.player.vy = 0;
+        this.player.isGrounded = false;
+        this.player.ridingPlatformRef = null;
+        this.player.jumpSqueeze = 1;
+        this.spawnImpactParticles(this.player.x + 9, this.player.y + 26, '#38bdf8');
+        sfx.playLand();
+    }
+
+    teleportToPlatform() {
+        // Target H-Fast Platform safely
+        const p = this.platformsPool[0];
+        this.player.x = p.x + (p.w / 2) - 9;
+        this.player.y = p.y - 32;
+        this.player.vx = 0;
+        this.player.vy = 0;
+        this.player.isGrounded = true;
+        this.player.ridingPlatformRef = p;
+        this.spawnImpactParticles(this.player.x + 9, this.player.y + 26, '#38bdf8');
+        sfx.playLand();
+    }
+
+    executeJumpActionGate() {
+        if (this.player.isGrounded) {
+            this.player.vy = this.config.jumpForce;
+            this.player.jumpSqueeze = 1.35; // squash effect
+
+            // Inherit platform displacement speed directly on lift-off impulse to push player outwards
+            if (this.player.ridingPlatformRef) {
+                // Incorporate velocity inheritance
+                this.player.vx += this.player.ridingPlatformRef.dx * 1.0; 
+                this.player.ridingPlatformRef = null;
+            }
+            this.player.isGrounded = false;
+            this.spawnImpactParticles(this.player.x + 9, this.player.y + 26, '#e2e8f0');
+            sfx.playJump();
+        }
+    }
+
+    spawnImpactParticles(x, y, color) {
+        for (let i = 0; i < 8; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 1) * 3,
+                life: 1.0,
+                color: color,
+                size: Math.random() * 3 + 2
+            });
+        }
+    }
+
+    updateEngineKinematics() {
+        // Fetch variables from kernel config sliders
+        const gravity = this.config.gravity;
+        const friction = this.config.friction;
+        const speedMult = this.config.speedMultiplier;
+
+        // --- STEP 1: RESOLVE MOVING PLATFORMS (PHASE A) ---
+        this.platformsPool.forEach(plat => {
+            let prevX = plat.x;
+            let prevY = plat.y;
+
+            if (plat.type === 'pingpong') {
+                if (plat.startX !== undefined) {
+                    plat.x += plat.speed * plat.dir * speedMult;
+                    if (plat.x > plat.endX) { plat.x = plat.endX; plat.dir = -1; }
+                    if (plat.x < plat.startX) { plat.x = plat.startX; plat.dir = 1; }
+                } else if (plat.startY !== undefined) {
+                    plat.y += plat.speed * plat.dir * speedMult;
+                    if (plat.y > plat.endY) { plat.y = plat.endY; plat.dir = -1; }
+                    if (plat.y < plat.startY) { plat.y = plat.startY; plat.dir = 1; }
+                }
+            } else if (plat.type === 'circular') {
+                plat.angle += plat.speed * speedMult;
+                plat.x = plat.centerX + Math.cos(plat.angle) * plat.radius;
+                plat.y = plat.centerY + Math.sin(plat.angle) * plat.radius;
+            } else if (plat.type === 'decay') {
+                const passengerOver = (this.player.ridingPlatformRef === plat);
+                if (passengerOver) {
+                    plat.status = 'falling';
+                    plat.y += (plat.targetY - plat.y) * 0.1 * speedMult;
+                } else {
+                    plat.status = 'recovering';
+                    plat.y += (plat.homeY - plat.y) * 0.05 * speedMult;
+                }
+            }
+
+            // High Precision Delta capture of movement vectors
+            plat.dx = plat.x - prevX;
+            plat.dy = plat.y - prevY;
+        });
+
+        // --- STEP 2: PLAYER PHYSICS PIPELINE (PHASE B) ---
+        
+        // DETECT AND MITIGATE "PASSENGER SLIPPING" VIA PRE-STEP COORDINATE BLITTING
+        if (this.executionPipelineMode === 'deterministic') {
+            if (this.player.ridingPlatformRef) {
+                // Baseline translation adjustment aligning player directly to locked matrix
+                this.player.x += this.player.ridingPlatformRef.dx;
+                this.player.y += this.player.ridingPlatformRef.dy;
+            }
+        } else {
+            // Naive Execution: Player receives NO baseline translation adjustment beforehand.
+            // Platform runs after player coordinates, or adds directly inside physics calculations causing lag.
+            if (this.player.ridingPlatformRef) {
+                // Try to blindly modify vx / vy directly (This produces visual drift and passenger sliding off platforms!)
+                this.player.vx += this.player.ridingPlatformRef.dx * 0.05; 
+            }
+        }
+
+        // Apply controller inputs
+        if (this.inputState.left) {
+            this.player.vx -= this.player.accel;
+            this.player.faceDir = -1;
+            this.player.runFrame += 0.2;
+        }
+        if (this.inputState.right) {
+            this.player.vx += this.player.accel;
+            this.player.faceDir = 1;
+            this.player.runFrame += 0.2;
+        }
+
+        // Apply environment friction
+        this.player.vx *= friction;
+        if (Math.abs(this.player.vx) < 0.02) this.player.vx = 0;
+        this.player.vx = Math.max(-this.player.maxVx, Math.min(this.player.maxVx, this.player.vx));
+
+        // Horizontal displacement collision run
+        this.player.x += this.player.vx;
+        this.resolveIntersections('X');
+
+        // Apply vertical physics
+        this.player.vy += gravity;
+        this.player.y += this.player.vy;
+        this.resolveIntersections('Y');
+
+        // Verify Ground Line of Sight check
+        if (this.player.ridingPlatformRef) {
+            const r = this.player.ridingPlatformRef;
+            const threshold = 1.0;
+            // Verify if player footprint boundary still overlaps horizontal ledge surface
+            const isInsideHorizontalBounds = (this.player.x + this.player.w >= r.x && this.player.x <= r.x + r.w);
+            const isSittingDirectlyOnTop = (Math.abs((this.player.y + this.player.h) - r.y) <= threshold + 2);
+
+            if (!isInsideHorizontalBounds || !isSittingDirectlyOnTop) {
+                this.player.ridingPlatformRef = null;
+                this.player.isGrounded = false;
+            }
+        }
+
+        // Apply recovery animation factors (Squeeze/Stretch)
+        this.player.jumpSqueeze += (1.0 - this.player.jumpSqueeze) * 0.1;
+
+        // Stage hazards boundary check
+        if (this.player.y > this.height) {
+            this.respawnActor();
+        }
+
+        // Animate particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.04;
+            if (p.life <= 0) this.particles.splice(i, 1);
+        }
+
+        // Process collectibles
+        this.collectibles.forEach(c => {
+            if (!c.collected) {
+                // AABB Check
+                if (this.player.x < c.x + 16 && this.player.x + this.player.w > c.x &&
+                    this.player.y < c.y + 16 && this.player.y + this.player.h > c.y) {
+                    c.collected = true;
+                    this.spawnImpactParticles(c.x + 8, c.y + 8, '#fbbf24');
+                    sfx.playCollect();
+                }
+            }
+        });
+    }
+
+    resolveIntersections(axis) {
+        // Resolve sandbox border boundaries first
+        const bottomBorder = 440;
+        const leftBorder = 40;
+        const rightBorder = 920;
+
+        // Bottom solid ground shelf check
+        if (this.player.y + this.player.h > bottomBorder) {
+            this.player.y = bottomBorder - this.player.h;
+            this.player.vy = 0;
+            if (!this.player.isGrounded) {
+                sfx.playLand();
+                this.player.jumpSqueeze = 0.8;
+            }
+            this.player.isGrounded = true;
+            this.player.ridingPlatformRef = null;
+        }
+
+        // Left & Right Sandbox Solid walls check
+        if (this.player.x < leftBorder) {
+            this.player.x = leftBorder;
+            this.player.vx = 0;
+        }
+        if (this.player.x + this.player.w > rightBorder) {
+            this.player.x = rightBorder - this.player.w;
+            this.player.vx = 0;
+        }
+
+        // Resolve against moving platform pool
+        for (let i = 0; i < this.platformsPool.length; i++) {
+            let plat = this.platformsPool[i];
+
+            // Core AABB overlap
+            if (this.player.x < plat.x + plat.w &&
+                this.player.x + this.player.w > plat.x &&
+                this.player.y < plat.y + plat.h &&
+                this.player.y + this.player.h > plat.y) {
+
+                if (axis === 'X') {
+                    // Push out horizontally
+                    if (this.player.vx > 0) {
+                        this.player.x = plat.x - this.player.w;
+                    } else if (this.player.vx < 0) {
+                        this.player.x = plat.x + plat.w;
+                    }
+                    this.player.vx = 0;
+                } else if (axis === 'Y') {
+                    // Push out vertically
+                    if (this.player.vy > 0) {
+                        // Landing down cleanly onto upper platform surface face
+                        this.player.y = plat.y - this.player.h;
+                        this.player.vy = 0;
+                        if (!this.player.isGrounded) {
+                            sfx.playLand();
+                            this.player.jumpSqueeze = 0.8;
+                        }
+                        this.player.isGrounded = true;
+                        this.player.ridingPlatformRef = plat;
+                    } else if (this.player.vy < 0) {
+                        // Colliding ceiling blocks from below
+                        this.player.y = plat.y + plat.h;
+                        this.player.vy = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    executeEnginePipelineLoop() {
+        // Run core physical update cycle
+        this.updateEngineKinematics();
+
+        // Clear dynamic viewport
+        this.ctx.fillStyle = '#0f172a';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // --- DRAW BACKGROUND ENVIRONMENT LAYER ---
+        this.drawComplexRetroBackdrops();
+
+        // --- DRAW GROUND SOLID DECK LAYER ---
+        this.drawEnvironmentBorders();
+
+        // --- DRAW COLLECTIBLE SYSTEM LAYERS ---
+        this.drawCollectibles();
+
+        // --- DRAW PLATFORMS LAYER ---
+        this.platformsPool.forEach(plat => {
+            // High fidelity pixel truncation to eliminate raster edge bleeding
+            const snapX = Math.floor(plat.x);
+            const snapY = Math.floor(plat.y);
+
+            // Draw core platform block
+            this.ctx.fillStyle = plat.color;
+            this.ctx.fillRect(snapX, snapY, plat.w, plat.h);
+
+            // Inner dark panel details
+            this.ctx.fillStyle = '#1e293b';
+            this.ctx.fillRect(snapX + 2, snapY + 2, plat.w - 4, plat.h - 4);
+
+            // Draw high tech linear patterns
+            this.ctx.fillStyle = plat.color;
+            for (let o = 6; o < plat.w - 4; o += 12) {
+                this.ctx.fillRect(snapX + o, snapY + 4, 3, plat.h - 8);
+            }
+
+            // Upper shelf landing highlight plate
+            this.ctx.fillStyle = '#e2e8f0';
+            this.ctx.fillRect(snapX, snapY, plat.w, 2);
+
+            // Platform ID identifier tag overlay
+            this.ctx.fillStyle = '#94a3b8';
+            this.ctx.font = '7px monospace';
+            this.ctx.fillText(plat.id, snapX + 4, snapY - 4);
+        });
+
+        // --- DRAW DUST / RUNTIME PARTICLES ---
+        this.particles.forEach(p => {
+            this.ctx.fillStyle = p.color;
+            this.ctx.globalAlpha = p.life;
+            this.ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+        });
+        this.ctx.globalAlpha = 1.0;
+
+        // --- DRAW PLAYER AVATAR IN CYBERNETIC DECK ---
+        this.drawPlayerAvatar();
+
+        // Execute oscilloscope render updates
+        this.drawOscilloscopeDiagnostics();
+
+        // Sync diagnostic telemetry counters
+        if (Date.now() % 4 === 0) this.syncHUDViewDisplay();
+
+        requestAnimationFrame(() => this.executeEnginePipelineLoop());
+    }
+
+    drawComplexRetroBackdrops() {
+        const t = Date.now() * 0.0005;
+
+        // Draw parallax deep star space
+        this.ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 30; i++) {
+            const starX = (Math.sin(i * 342.1) * 0.5 + 0.5) * this.width;
+            const starY = (Math.cos(i * 721.5) * 0.5 + 0.5) * 350;
+            const twinkle = Math.abs(Math.sin(t + i));
+            this.ctx.globalAlpha = twinkle;
+            this.ctx.fillRect(Math.floor(starX), Math.floor(starY), 2, 2);
+        }
+        this.ctx.globalAlpha = 1.0;
+
+        // Parallax Mountain range
+        this.ctx.fillStyle = '#1e1b4b';
+        const drawMountain = (offsetY, scale, peaks) => {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, offsetY);
+            for (let x = 0; x <= this.width + 50; x += 50) {
+                const y = offsetY - (Math.abs(Math.sin(x * 0.004 + peaks)) * 80 * scale);
+                this.ctx.lineTo(x, y);
+            }
+            this.ctx.lineTo(this.width, offsetY);
+            this.ctx.closePath();
+            this.ctx.fill();
+        };
+        // Far mountains
+        this.ctx.fillStyle = '#111827';
+        drawMountain(400, 1.2, 2.5);
+        // Near mountains
+        this.ctx.fillStyle = '#1f2937';
+        drawMountain(430, 0.7, 5.2);
+    }
+
+    drawEnvironmentBorders() {
+        // Draw primary bottom floor concrete deck with classic checkered grass line
+        const floorY = 440;
+        this.ctx.fillStyle = '#065f46'; // Grass Dark Green
+        this.ctx.fillRect(0, floorY, this.width, 16);
+
+        this.ctx.fillStyle = '#10b981'; // Checker grass pattern
+        for (let i = 0; i < this.width; i += 32) {
+            this.ctx.fillRect(i, floorY, 16, 4);
+        }
+
+        this.ctx.fillStyle = '#451a03'; // Deep underground dirt
+        this.ctx.fillRect(0, floorY + 16, this.width, 80);
+
+        // Draw border side blocks
+        this.ctx.fillStyle = '#374151';
+        this.ctx.fillRect(0, 0, 40, floorY + 80);
+        this.ctx.fillRect(920, 0, 40, floorY + 80);
+
+        // Diagonal striped boundary markings on concrete wall
+        this.ctx.fillStyle = '#eab308';
+        for (let y = 0; y < floorY; y += 40) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(15, y + 20);
+            this.ctx.lineTo(15, y + 30);
+            this.ctx.lineTo(0, y + 10);
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(960, y);
+            this.ctx.lineTo(945, y + 20);
+            this.ctx.lineTo(945, y + 30);
+            this.ctx.lineTo(960, y + 10);
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
+    }
+
+    drawCollectibles() {
+        const bounceOffset = Math.sin(Date.now() * 0.007) * 4;
+        this.collectibles.forEach(c => {
+            if (!c.collected) {
+                // Draw rotating retro yellow diskette/cube
+                this.ctx.fillStyle = '#f59e0b';
+                this.ctx.fillRect(c.x, c.y + bounceOffset, 16, 16);
+                
+                // Draw micro shiny disk label
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.fillRect(c.x + 3, c.y + bounceOffset + 2, 10, 4);
+                this.ctx.fillStyle = '#1d4ed8';
+                this.ctx.fillRect(c.x + 4, c.y + bounceOffset + 8, 8, 6);
+            }
+        });
+    }
+
+    drawPlayerAvatar() {
+        const snapX = Math.floor(this.player.x);
+        const snapY = Math.floor(this.player.y);
+        const w = this.player.w;
+        const h = this.player.h;
+
+        this.ctx.save();
+        // Translate and stretch graphics on jumps/landings for physical crunch feedback
+        this.ctx.translate(snapX + w / 2, snapY + h);
+        this.ctx.scale(2.0 - this.player.jumpSqueeze, this.player.jumpSqueeze);
+        this.ctx.translate(-w / 2, -h);
+
+        // Core Pixel Suit Case
+        this.ctx.fillStyle = '#06b6d4'; // Sharp Cyan Suit
+        this.ctx.fillRect(0, 4, w, h - 4);
+
+        // Helmet Visor Block
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillRect(0, 0, w, 6);
+
+        this.ctx.fillStyle = '#1e1b4b'; // Visor line
+        if (this.player.faceDir === 1) {
+            this.ctx.fillRect(6, 2, w - 6, 3);
+        } else {
+            this.ctx.fillRect(0, 2, w - 6, 3);
+        }
+
+        // Kinetic Belt
+        this.ctx.fillStyle = '#e11d48'; // Active Red Belt
+        this.ctx.fillRect(0, 14, w, 2);
+
+        // Running visual legs offset
+        this.ctx.fillStyle = '#111827';
+        const legOffset = Math.sin(this.player.runFrame) * 3;
+        if (this.player.isGrounded && Math.abs(this.player.vx) > 0.1) {
+            // Draw running steps
+            this.ctx.fillRect(1, h - 1, 4, 2);
+            this.ctx.fillRect(w - 5, h - 1, 4, legOffset + 1);
+        } else {
+            // Standing pose legs
+            this.ctx.fillRect(1, h - 2, 4, 2);
+            this.ctx.fillRect(w - 5, h - 2, 4, 2);
+        }
+
+        this.ctx.restore();
+    }
+
+    drawOscilloscopeDiagnostics() {
+        const ctx = this.scopeCtx;
+        const w = this.scopeCanvas.width;
+        const h = this.scopeCanvas.height;
+
+        // Gather real-time data frame
+        const currentSample = {
+            vx: this.player.vx,
+            pdx: this.player.ridingPlatformRef ? this.player.ridingPlatformRef.dx * 8 : 0,
+            grounded: this.player.isGrounded ? 1.0 : 0.0
+        };
+
+        this.scopeHistory.push(currentSample);
+        if (this.scopeHistory.length > w) {
+            this.scopeHistory.shift();
+        }
+
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw horizontal mid-line zero grid
+        ctx.strokeStyle = '#152c1e';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2);
+        ctx.lineTo(w, h / 2);
+        ctx.stroke();
+
+        // Render Waveform samples
+        ctx.lineWidth = 1.5;
+        
+        // 1. Draw Player Vx (Cyan Line)
+        ctx.strokeStyle = '#06b6d4';
+        ctx.beginPath();
+        for (let i = 0; i < this.scopeHistory.length; i++) {
+            const val = this.scopeHistory[i].vx;
+            const x = i;
+            // Map values nicely inside mid viewport bounds
+            const y = (h / 2) - (val * (h / 6));
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // 2. Draw Platform Dx (Yellow Line)
+        ctx.strokeStyle = '#fbbf24';
+        ctx.beginPath();
+        for (let i = 0; i < this.scopeHistory.length; i++) {
+            const val = this.scopeHistory[i].pdx;
+            const x = i;
+            const y = (h / 2) - (val * (h / 8));
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // 3. Draw Ground Contact status (Rose bottom bar pulse)
+        ctx.strokeStyle = '#e11d48';
+        ctx.beginPath();
+        for (let i = 0; i < this.scopeHistory.length; i++) {
+            const val = this.scopeHistory[i].grounded;
+            const x = i;
+            const y = h - 10 - (val * 15);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    syncHUDViewDisplay() {
+        document.getElementById('txt-vx').innerText = this.player.vx.toFixed(2);
+        document.getElementById('txt-vy').innerText = this.player.vy.toFixed(2);
+        document.getElementById('txt-pos').innerText = `${Math.floor(this.player.x)}, ${Math.floor(this.player.y)}`;
+        
+        // Populate Platform Registry explorer lists dynamically
+        const listContainer = document.getElementById('platform-telemetry-list');
+        listContainer.innerHTML = '';
+        
+        this.platformsPool.forEach(plat => {
+            const el = document.createElement('div');
+            el.className = 'flex justify-between items-center text-[10px] py-0.5 border-b border-slate-100 last:border-0';
+            el.innerHTML = `
+                <span class="font-bold" style="color: ${plat.color}">${plat.id}:</span>
+                <span class="text-slate-500">dx: ${plat.dx.toFixed(2)} | dy: ${plat.dy.toFixed(2)}</span>
+            `;
+            listContainer.appendChild(el);
+        });
+
+        const linkLabel = document.getElementById('txt-link');
+        const stateLabel = document.getElementById('txt-state');
+        
+        if (this.player.ridingPlatformRef) {
+            linkLabel.innerText = this.player.ridingPlatformRef.id;
+            linkLabel.className = "text-blue-800 font-bold animate__animated animate__pulse animate__infinite";
+            stateLabel.innerText = "PASSENGER_RIDING";
+            stateLabel.className = "font-bold text-green-700";
+        } else {
+            linkLabel.innerText = "AIRBORNE_NULL";
+            linkLabel.className = "text-slate-400";
+            stateLabel.innerText = this.player.y >= 414 ? "GROUND_SOLID" : "AIR_PASSIVE";
+            stateLabel.className = "font-bold text-blue-700";
+        }
+    }
+}
+
+class DesktopEnvironment {
+    constructor() {
+        this.activeWindow = null;
+        this.draggedWindow = null;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.startMenuOpen = false;
+
+        this.initClock();
+        this.setupDraggingHandlers();
+    }
+
+    initClock() {
+        const updateClock = () => {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // conversion 0 to 12
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('retro-clock').innerText = `${hours}:${minutes} ${ampm}`;
+        };
+        updateClock();
+        setInterval(updateClock, 60000);
+    }
+
+    selectIcon(el) {
+        document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
+        el.classList.add('selected');
+        event.stopPropagation();
+    }
+
+    openWindow(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('hidden');
+        el.classList.add('animate__zoomIn');
+        this.bringToFront(el);
+        
+        // Sync active taskbar item appearance
+        const trayBtn = document.getElementById(`tray-${id}`);
+        if (trayBtn) {
+            trayBtn.classList.remove('border-inset');
+            trayBtn.classList.add('bg-[#dfdfdf]');
+        }
+    }
+
+    closeWindow(id) {
+        const el = document.getElementById(id);
+        el.classList.add('hidden');
+    }
+
+    hideWindow(id) {
+        // Toggle minimize state representation
+        this.toggleMinimize(id);
+    }
+
+    toggleMinimize(id) {
+        const el = document.getElementById(id);
+        const trayBtn = document.getElementById(`tray-${id}`);
+        if (el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+            this.bringToFront(el);
+            if (trayBtn) trayBtn.classList.remove('bg-slate-300');
+        } else {
+            el.classList.add('hidden');
+            if (trayBtn) trayBtn.classList.add('bg-slate-300');
+        }
+    }
+
+    bringToFront(el) {
+        document.querySelectorAll('.window').forEach(win => {
+            win.style.zIndex = '30';
+        });
+        el.style.zIndex = '45';
+        this.activeWindow = el;
+    }
+
+    dragStart(e, id) {
+        const el = document.getElementById(id);
+        this.bringToFront(el);
+        this.draggedWindow = el;
+        this.offsetX = e.clientX - el.offsetLeft;
+        this.offsetY = e.clientY - el.offsetTop;
+        
+        e.preventDefault();
+    }
+
+    setupDraggingHandlers() {
+        window.addEventListener('mousemove', (e) => {
+            if (this.draggedWindow) {
+                let x = e.clientX - this.offsetX;
+                let y = e.clientY - this.offsetY;
+                
+                // Keep slightly within bounds
+                x = Math.max(-50, Math.min(window.innerWidth - 100, x));
+                y = Math.max(0, Math.min(window.innerHeight - 40, y));
+
+                this.draggedWindow.style.left = `${x}px`;
+                this.draggedWindow.style.top = `${y}px`;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            this.draggedWindow = null;
+        });
+
+        // Clear active shortcuts selections on background clicked
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('selected'));
+            if (this.startMenuOpen) this.toggleStartMenu();
+        });
+    }
+
+    toggleStartMenu() {
+        const menu = document.getElementById('start-menu');
+        this.startMenuOpen = !this.startMenuOpen;
+        if (this.startMenuOpen) {
+            menu.classList.remove('hidden');
+            event.stopPropagation();
+        } else {
+            menu.classList.add('hidden');
+        }
+    }
+}
+
+// Instantiate both ecosystems on screen load
+let orchestrator;
+let desktop;
+window.onload = () => { 
+    desktop = new DesktopEnvironment();
+    orchestrator = new HybridMovingPlatformEngine(); 
+};
+</script>
+</body>
+</html>

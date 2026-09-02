@@ -34,6 +34,17 @@ class FacultyController extends Controller
                 'office_location' => 'nullable|string',
             ]);
 
+            $requestUser = $request->user();
+            $selfProvisioning = isset($validated['user_id']) && $validated['user_id'] == $requestUser->id;
+
+            // Only admins may create faculty profiles for other users. A user may
+            // create their own faculty profile (self-provisioning on first login).
+            if (!$requestUser->isAdmin() && !$selfProvisioning) {
+                return response()->json([
+                    'message' => 'Forbidden. Admin access required to create a faculty profile for another user.',
+                ], 403);
+            }
+
             // If user_id is provided, check if faculty already exists for that user
             if (isset($validated['user_id'])) {
                 $existingFaculty = Faculty::where('user_id', $validated['user_id'])->first();
@@ -68,7 +79,14 @@ class FacultyController extends Controller
     {
         try {
             $faculty = Faculty::findOrFail($id);
-            
+
+            $requestUser = $request->user();
+            if (!$requestUser->isAdmin() && $requestUser->id != $faculty->user_id) {
+                return response()->json([
+                    'message' => 'Forbidden. You may only modify your own faculty profile.',
+                ], 403);
+            }
+
             $validated = $request->validate([
                 'user_id' => 'sometimes|nullable|exists:users,id',
                 'name' => 'sometimes|required|string|max:255',
@@ -77,6 +95,11 @@ class FacultyController extends Controller
                 'phone' => 'nullable|string|max:20',
                 'office_location' => 'nullable|string',
             ]);
+
+            // Non-admins cannot reassign which user a faculty profile belongs to.
+            if (!$requestUser->isAdmin()) {
+                unset($validated['user_id']);
+            }
 
             $faculty->update($validated);
             return response()->json($faculty);
@@ -88,9 +111,16 @@ class FacultyController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $faculty = Faculty::findOrFail($id);
+
+        if (!$request->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Forbidden. Admin access required to delete faculty profiles.',
+            ], 403);
+        }
+
         $faculty->delete();
         return response()->json(['message' => 'Faculty deleted successfully']);
     }
