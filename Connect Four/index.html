@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Four in Line • Woodcraft Edition — Tactile Casual Strategy</title>
+    <meta name="description" content="A tactile, handcrafted Connect Four web experience featuring gravitational physics, revenge match loops, minimax AI, and accessible dual-coding design." />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        linen: "#FAF8F5",
+                        paper: "#F3ECE2",
+                        oat: "#E7DCCE",
+                        oak: "#CDA374",
+                        "oak-dark": "#875727",
+                        clay: "#C85A32",
+                        "clay-light": "#E37B55",
+                        "clay-dark": "#9E3E1C",
+                        forest: "#385E48",
+                        "forest-light": "#4D7E63",
+                        "forest-dark": "#244131",
+                        charcoal: "#2C2621",
+                        bark: "#5E5248",
+                        sandstone: "#D8CABE"
+                    },
+                    fontFamily: {
+                        serif: ['Fraunces', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        @layer base {
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                overscroll-behavior: none;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 3D Physical Board Styling */
+        .wood-board {
+            background: linear-gradient(145deg, #DEBA90 0%, #CDA374 40%, #BF9161 75%, #B38352 100%);
+            box-shadow:
+                0 28px 56px -12px rgba(92, 61, 33, 0.32),
+                0 10px 20px -4px rgba(92, 61, 33, 0.18),
+                inset 0 2px 4px rgba(255, 255, 255, 0.45),
+                inset 0 -4px 8px rgba(78, 48, 20, 0.4);
+        }
+
+        .wood-stand {
+            background: linear-gradient(180deg, #A87645 0%, #875727 100%);
+            box-shadow: 0 10px 22px rgba(66, 40, 15, 0.4);
+        }
+
+        .debossed-slot {
+            background: #472F19;
+            box-shadow:
+                inset 0 7px 14px rgba(0, 0, 0, 0.7),
+                inset 0 -2px 4px rgba(255, 255, 255, 0.15),
+                0 1px 2px rgba(255, 255, 255, 0.25);
+            position: relative;
+        }
+
+        /* Theme-able Token Styles (Woodcraft Default) */
+        :root {
+            --p1-grad: radial-gradient(circle at 35% 30%, #E37B55 0%, #C85A32 55%, #9E3E1C 100%);
+            --p1-shadow: 0 6px 14px rgba(158, 62, 28, 0.5), inset 0 3px 5px rgba(255, 255, 255, 0.4), inset 0 -4px 6px rgba(90, 28, 7, 0.5);
+            --p1-color: #C85A32;
+            --p1-name: "Alex Vance";
+
+            --p2-grad: radial-gradient(circle at 35% 30%, #4D7E63 0%, #385E48 55%, #244131 100%);
+            --p2-shadow: 0 6px 14px rgba(36, 65, 49, 0.5), inset 0 3px 5px rgba(255, 255, 255, 0.35), inset 0 -4px 6px rgba(16, 33, 23, 0.5);
+            --p2-color: #385E48;
+            --p2-name: "Sam Thorne";
+        }
+
+        /* Theme: Classic Arcade (Red vs Yellow) */
+        body[data-theme="classic"] {
+            --p1-grad: radial-gradient(circle at 35% 30%, #FF5A5F 0%, #E02020 55%, #990000 100%);
+            --p1-shadow: 0 6px 14px rgba(224, 32, 32, 0.45), inset 0 3px 5px rgba(255, 255, 255, 0.4), inset 0 -4px 6px rgba(120, 0, 0, 0.5);
+            --p1-color: #E02020;
+
+            --p2-grad: radial-gradient(circle at 35% 30%, #FFDF00 0%, #F5B700 55%, #B8860B 100%);
+            --p2-shadow: 0 6px 14px rgba(218, 165, 32, 0.45), inset 0 3px 5px rgba(255, 255, 255, 0.4), inset 0 -4px 6px rgba(139, 101, 8, 0.5);
+            --p2-color: #D4A017;
+        }
+
+        /* Theme: High-Contrast Accessibility (Cobalt Blue vs Tangerine) */
+        body[data-theme="highcontrast"] {
+            --p1-grad: radial-gradient(circle at 35% 30%, #4D8BFF 0%, #1A56DB 55%, #0B328C 100%);
+            --p1-shadow: 0 6px 14px rgba(26, 86, 219, 0.45), inset 0 3px 5px rgba(255, 255, 255, 0.4), inset 0 -4px 6px rgba(11, 50, 140, 0.5);
+            --p1-color: #1A56DB;
+
+            --p2-grad: radial-gradient(circle at 35% 30%, #FFA23A 0%, #E66A00 55%, #A14200 100%);
+            --p2-shadow: 0 6px 14px rgba(230, 106, 0, 0.45), inset 0 3px 5px rgba(255, 255, 255, 0.4), inset 0 -4px 6px rgba(140, 50, 0, 0.5);
+            --p2-color: #E66A00;
+        }
+
+        /* Theme: Cyber Neon (Cyan vs Magenta) */
+        body[data-theme="cyber"] {
+            --p1-grad: radial-gradient(circle at 35% 30%, #00F0FF 0%, #00B4D8 55%, #0077B6 100%);
+            --p1-shadow: 0 6px 16px rgba(0, 240, 255, 0.5), inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 80, 150, 0.5);
+            --p1-color: #00B4D8;
+
+            --p2-grad: radial-gradient(circle at 35% 30%, #FF2A85 0%, #E60067 55%, #990045 100%);
+            --p2-shadow: 0 6px 16px rgba(255, 42, 133, 0.5), inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(120, 0, 50, 0.5);
+            --p2-color: #E60067;
+        }
+
+        .token-p1 {
+            background: var(--p1-grad);
+            box-shadow: var(--p1-shadow);
+        }
+
+        .token-p2 {
+            background: var(--p2-grad);
+            box-shadow: var(--p2-shadow);
+        }
+
+        .token-inner {
+            box-shadow:
+                inset 0 2px 5px rgba(255, 255, 255, 0.35),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.4),
+                0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Gravitational Drop & Bounce Animation */
+        @keyframes gravityDrop {
+            0% {
+                transform: translateY(calc(-100% * var(--drop-distance, 6)));
+                opacity: 0.95;
+            }
+            75% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            86% {
+                transform: translateY(-14px) scaleY(0.96) scaleX(1.04);
+            }
+            94% {
+                transform: translateY(0) scaleY(1.02) scaleX(0.98);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .token-drop-anim {
+            animation: gravityDrop 420ms cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+            will-change: transform;
+        }
+
+        /* Winning Token Neon Pulse */
+        @keyframes winPulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1) drop-shadow(0 0 10px rgba(255, 220, 100, 0.9));
+            }
+            50% {
+                transform: scale(1.08);
+                filter: brightness(1.25) drop-shadow(0 0 20px rgba(255, 235, 120, 1));
+            }
+        }
+
+        .winning-token {
+            animation: winPulse 1.2s ease-in-out infinite;
+            z-index: 20;
+        }
+
+        /* Winning SVG Neon Sweep */
+        .neon-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: neonSweep 650ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            filter: drop-shadow(0 0 8px #FFF) drop-shadow(0 0 16px #FFD700);
+        }
+
+        @keyframes neonSweep {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Ghost Target Slot Landing Guide */
+        .ghost-landing-slot {
+            box-shadow: inset 0 0 0 3px rgba(200, 90, 50, 0.7), 0 0 14px rgba(200, 90, 50, 0.45);
+            background: rgba(200, 90, 50, 0.12) !important;
+            transition: all 140ms ease-out;
+        }
+
+        /* Floating Preview Token */
+        .preview-token {
+            transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms ease-out;
+        }
+
+        /* Keyboard Focus Ring for Columns */
+        .col-focus {
+            outline: 2px solid #C85A32;
+            outline-offset: 4px;
+            background: rgba(243, 236, 226, 0.8) !important;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-[#FAF8F5] font-sans text-charcoal antialiased min-h-screen flex flex-col selection:bg-clay/20 selection:text-clay-dark relative overflow-x-hidden"
+    data-theme="woodcraft">
+
+    <!-- Polite Live Region for Screen Readers -->
+    <div aria-atomic="true" aria-live="polite" class="sr-only" id="sr-announcer">
+        Four in Line game loaded. Welcome! Player 1's turn.
+    </div>
+
+    <!-- Elegant Scandinavian Minimal Header -->
+    <header
+        class="fixed top-0 left-0 w-full z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E7DCCE]/60 transition-all">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 py-3 flex items-center justify-between">
+            <!-- Brand & Artisan Indicator -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <a class="flex items-center gap-2.5 sm:gap-3 group" href="#" id="brand-home">
+                    <div
+                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F3ECE2] border border-[#D8CABE] flex items-center justify-center shadow-xs group-hover:border-clay/50 transition-colors">
+                        <span class="font-serif font-bold text-base sm:text-lg text-clay">IV</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span
+                            class="font-serif font-bold text-base sm:text-lg text-charcoal tracking-tight leading-none group-hover:text-clay transition-colors">Four
+                            in Line</span>
+                        <span class="text-[10px] font-mono tracking-widest text-bark/70 uppercase mt-0.5">Woodcraft
+                            Tactile Edition</span>
+                    </div>
+                </a>
+                <div
+                    class="hidden md:inline-flex items-center px-3 py-1 rounded-full bg-[#F3ECE2] text-bark font-mono text-[11px] border border-[#E7DCCE] gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-clay animate-pulse"></span>
+                    <span id="series-header-badge">Series Standing • Round 1</span>
+                </div>
+            </div>
+
+            <!-- Mode Switcher Pill (Local 2P vs Solitaire AI) -->
+            <div class="flex items-center gap-1 bg-[#F3ECE2]/80 p-1 rounded-full border border-[#E7DCCE]">
+                <button
+                    class="px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs bg-[#FAF8F5] text-charcoal"
+                    id="mode-ai" title="Play against Computer AI" type="button">
+                    <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[15px]">smart_toy</span>
+                        <span class="hidden xs:inline">Solo vs AI</span>
+                    </span>
+                </button>
+                <button
+                    class="px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium text-bark hover:text-charcoal transition-all"
+                    id="mode-pvp" title="Pass and Play with a friend" type="button">
+                    <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[15px]">group</span>
+                        <span class="hidden xs:inline">Pass & Play</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Header Actions: Audio Toggle, Rulebook, Theme / Settings -->
+            <div class="flex items-center gap-2">
+                <button aria-label="Toggle Sound Effects (M)"
+                    class="w-9 h-9 rounded-full bg-[#F3ECE2] border border-[#E7DCCE] flex items-center justify-center text-bark hover:text-charcoal hover:bg-white transition-all shadow-2xs"
+                    id="btn-sound-toggle" title="Toggle Sound (Press M)" type="button">
+                    <span class="material-symbols-outlined text-[18px]" id="sound-icon">volume_up</span>
+                </button>
+                <button aria-label="Tactile Rulebook & Controls"
+                    class="w-9 h-9 rounded-full bg-[#F3ECE2] border border-[#E7DCCE] flex items-center justify-center text-bark hover:text-charcoal hover:bg-white transition-all shadow-2xs"
+                    id="btn-rulebook" title="Tactile Rulebook & Shortcuts" type="button">
+                    <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                </button>
+                <button aria-label="Color Palette & Aesthetics"
+                    class="w-9 h-9 rounded-full bg-[#F3ECE2] border border-[#E7DCCE] flex items-center justify-center text-bark hover:text-charcoal hover:bg-white transition-all shadow-2xs"
+                    id="btn-palette" title="Switch Aesthetic Theme" type="button">
+                    <span class="material-symbols-outlined text-[18px]">palette</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Tabletop Canvas Space -->
+    <main class="w-full pt-20 sm:pt-24 pb-36 flex-1 flex flex-col items-center justify-start">
+        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center gap-5 sm:gap-6">
+            
+            <!-- Contextual Header & Serie State -->
+            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left pt-2">
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-center sm:justify-start gap-2">
+                        <span class="text-xs font-mono uppercase tracking-wider text-bark/70" id="round-label">Round 1 • Series Standing</span>
+                        <!-- AI Difficulty Pill (when AI mode active) -->
+                        <div class="inline-flex items-center gap-1 bg-[#F3ECE2] px-2 py-0.5 rounded-md border border-[#E7DCCE] text-[10px] font-mono text-bark" id="difficulty-badge-container">
+                            <span class="material-symbols-outlined text-[12px] text-clay">psychology</span>
+                            <span id="diff-label">AI: Hard (Minimax)</span>
+                            <button class="hover:text-charcoal underline text-[9px] ml-1" id="btn-change-diff" type="button">change</button>
+                        </div>
+                    </div>
+                    <h1 class="font-serif text-2xl sm:text-3xl font-normal text-charcoal tracking-tight mt-0.5" id="turn-banner">
+                        Turn 1 — Alex Vance to open round
+                    </h1>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F3ECE2] border border-[#E7DCCE] text-xs font-mono text-bark">
+                        <span class="material-symbols-outlined text-[15px] text-bark">hourglass_top</span>
+                        <span class="font-semibold text-charcoal" id="match-timer">00:00</span>
+                    </div>
+                    <button
+                        class="px-3.5 py-1.5 rounded-full bg-clay/10 hover:bg-clay/20 text-clay border border-clay/30 text-xs font-mono font-semibold transition-all flex items-center gap-1"
+                        id="btn-quick-rematch" title="Instant Board Reset without losing score" type="button">
+                        <span class="material-symbols-outlined text-[14px]">replay</span>
+                        <span>Rematch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tactile Duel Cards (Player 1 vs Player 2 / AI) -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Player 1 Card (Alex Vance / Terracotta) -->
+                <div class="relative bg-white rounded-2xl p-4 sm:p-5 border transition-all overflow-hidden ring-2 ring-clay shadow-md"
+                    id="card-p1">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3 sm:gap-3.5">
+                            <div class="relative">
+                                <div
+                                    class="w-12 h-12 rounded-xl token-p1 flex items-center justify-center text-white shadow-sm"
+                                    id="avatar-p1">
+                                    <!-- Dual Coding Icon 1: 8-Point Star / Sun -->
+                                    <svg class="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                                        <polygon points="12,2 15,8.5 22,9 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9 9,8.5" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-clay border-2 border-white text-[9px] text-white font-bold flex items-center justify-center">1</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-serif font-bold text-lg text-charcoal" id="p1-display-name">Alex Vance</h2>
+                                    <span
+                                        class="px-2 py-0.5 rounded-md bg-clay/10 text-clay text-[10px] font-mono font-semibold"
+                                        id="p1-turn-badge">Active Turn</span>
+                                </div>
+                                <p class="text-xs font-mono text-bark/80 flex items-center gap-1.5 mt-0.5">
+                                    <span class="w-2 h-2 rounded-full bg-clay" id="p1-color-dot"></span>
+                                    <span id="p1-token-desc">Terracotta Star • 0 Wins</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Score & Round Pebbles -->
+                        <div class="flex flex-col items-end">
+                            <div class="flex items-baseline gap-1">
+                                <span class="font-serif text-3xl font-bold text-clay leading-none"
+                                    id="p1-score">0</span>
+                                <span class="text-xs font-mono text-bark">wins</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-2" id="p1-pebbles">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="mt-3 sm:mt-4 pt-3 border-t border-[#F3ECE2] flex items-center justify-between text-[11px] font-mono text-bark">
+                        <span>Role: <strong class="text-charcoal font-semibold">Human Tactician</strong></span>
+                        <span>Moves Made: <strong class="text-charcoal" id="p1-moves-count">0</strong></span>
+                        <span>Series Share: <strong class="text-charcoal font-semibold" id="p1-winrate">0%</strong></span>
+                    </div>
+                </div>
+
+                <!-- Player 2 / AI Card (Sam Thorne / Deep Forest) -->
+                <div class="relative bg-white/75 rounded-2xl p-4 sm:p-5 border border-[#E7DCCE]/80 transition-all overflow-hidden opacity-85"
+                    id="card-p2">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3 sm:gap-3.5">
+                            <div class="relative">
+                                <div
+                                    class="w-12 h-12 rounded-xl token-p2 flex items-center justify-center text-white shadow-sm"
+                                    id="avatar-p2">
+                                    <!-- Dual Coding Icon 2: Rhombus / Cross Diamond -->
+                                    <svg class="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2L2 12l10 10 10-10L12 2zm0 4.5l6.5 5.5-6.5 5.5-6.5-5.5L12 6.5z"/>
+                                    </svg>
+                                </div>
+                                <span
+                                    class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-forest border-2 border-white text-[9px] text-white font-bold flex items-center justify-center" id="p2-badge-num">2</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-serif font-bold text-lg text-charcoal" id="p2-display-name">Sam Thorne</h2>
+                                    <span
+                                        class="px-2 py-0.5 rounded-md bg-[#F3ECE2] text-bark text-[10px] font-mono font-medium"
+                                        id="p2-turn-badge">Awaiting</span>
+                                </div>
+                                <p class="text-xs font-mono text-bark/80 flex items-center gap-1.5 mt-0.5">
+                                    <span class="w-2 h-2 rounded-full bg-forest" id="p2-color-dot"></span>
+                                    <span id="p2-token-desc">Forest Diamond • 0 Wins</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Score & Round Pebbles -->
+                        <div class="flex flex-col items-end">
+                            <div class="flex items-baseline gap-1">
+                                <span class="font-serif text-3xl font-bold text-forest leading-none"
+                                    id="p2-score">0</span>
+                                <span class="text-xs font-mono text-bark">wins</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-2" id="p2-pebbles">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#E7DCCE]"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="mt-3 sm:mt-4 pt-3 border-t border-[#F3ECE2] flex items-center justify-between text-[11px] font-mono text-bark">
+                        <span>Status: <strong class="text-charcoal font-semibold" id="p2-status-text">Standing by</strong></span>
+                        <span>Moves Made: <strong class="text-charcoal" id="p2-moves-count">0</strong></span>
+                        <span>Series Share: <strong class="text-charcoal font-semibold" id="p2-winrate">0%</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Preview Token Indicator Row (Interactive Column Dropper) -->
+            <div class="w-full max-w-[760px] mx-auto px-2">
+                <div class="grid grid-cols-7 gap-2 sm:gap-3.5 px-2 sm:px-3.5" id="dropper-track">
+                    <!-- 7 interactive column selector buttons with floating previews -->
+                </div>
+            </div>
+
+            <!-- WARM OAK PHYSICAL WOODEN BOARD (7 Columns × 6 Rows) -->
+            <div class="relative w-full max-w-[760px] mx-auto select-none" id="board-container">
+                <!-- Physical Wooden Legs / Stand Base -->
+                <div class="wood-stand absolute -bottom-5 left-10 w-12 h-10 rounded-b-xl -z-10"></div>
+                <div class="wood-stand absolute -bottom-5 right-10 w-12 h-10 rounded-b-xl -z-10"></div>
+
+                <!-- Wooden Chassis Structure -->
+                <div class="wood-board relative rounded-[28px] p-3 sm:p-5 md:p-6 border border-[#C29462]">
+                    <!-- Brass Joinery Screws / Corner Pins -->
+                    <div
+                        class="absolute top-3.5 left-3.5 w-3 h-3 rounded-full bg-[#EAD4AA] shadow-inner border border-[#966E3C]/60 flex items-center justify-center">
+                        <div class="w-1.5 h-0.5 bg-[#8C5E28]"></div>
+                    </div>
+                    <div
+                        class="absolute top-3.5 right-3.5 w-3 h-3 rounded-full bg-[#EAD4AA] shadow-inner border border-[#966E3C]/60 flex items-center justify-center">
+                        <div class="w-1.5 h-0.5 bg-[#8C5E28]"></div>
+                    </div>
+                    <div
+                        class="absolute bottom-3.5 left-3.5 w-3 h-3 rounded-full bg-[#EAD4AA] shadow-inner border border-[#966E3C]/60 flex items-center justify-center">
+                        <div class="w-1.5 h-0.5 bg-[#8C5E28]"></div>
+                    </div>
+                    <div
+                        class="absolute bottom-3.5 right-3.5 w-3 h-3 rounded-full bg-[#EAD4AA] shadow-inner border border-[#966E3C]/60 flex items-center justify-center">
+                        <div class="w-1.5 h-0.5 bg-[#8C5E28]"></div>
+                    </div>
+
+                    <!-- 7x6 Matrix Slots Grid (42 debossed cells) -->
+                    <div class="grid grid-cols-7 gap-2 sm:gap-3 md:gap-3.5 p-1 sm:p-2 relative z-10" id="c4-board"
+                        role="grid" aria-label="Connect Four 7 columns by 6 rows board">
+                        <!-- Dynamic cells injected by JS -->
+                    </div>
+
+                    <!-- SVG Winning Neon Sweep Line Overlay -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible hidden"
+                        id="win-line-svg">
+                        <line id="win-line" x1="0" y1="0" x2="0" y2="0" stroke="#FFD700" stroke-width="8"
+                            stroke-linecap="round" class="neon-line" />
+                    </svg>
+
+                    <!-- Particle Confetti Canvas for Victory Climax -->
+                    <canvas class="absolute inset-0 w-full h-full pointer-events-none z-30 hidden"
+                        id="particle-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Tactile Match Insights Bar -->
+            <div class="w-full max-w-[760px] mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+                <div class="bg-[#F3ECE2]/80 border border-[#E7DCCE] rounded-xl p-3 flex flex-col">
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-bark/70">Series Momentum</span>
+                    <span class="font-serif font-bold text-base text-charcoal mt-0.5" id="insight-momentum">Evenly Poised</span>
+                    <div class="w-full bg-[#D8CABE]/50 h-1 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-clay h-full transition-all duration-300" id="momentum-bar" style="width: 50%;"></div>
+                    </div>
+                </div>
+                <div class="bg-[#F3ECE2]/80 border border-[#E7DCCE] rounded-xl p-3 flex flex-col">
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-bark/70">Contemplation Pace</span>
+                    <span class="font-serif font-bold text-base text-charcoal mt-0.5" id="insight-pace">3.0s / Move</span>
+                    <span class="text-[10px] font-mono text-bark/70 mt-1">Thoughtful speed</span>
+                </div>
+                <div class="bg-[#F3ECE2]/80 border border-[#E7DCCE] rounded-xl p-3 flex flex-col">
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-bark/70">Occupied Slots</span>
+                    <span class="font-serif font-bold text-base text-clay mt-0.5" id="insight-slots">0 / 42</span>
+                    <span class="text-[10px] font-mono text-bark/70 mt-1" id="insight-slots-sub">Board fresh &amp; open</span>
+                </div>
+                <div class="bg-[#F3ECE2]/80 border border-[#E7DCCE] rounded-xl p-3 flex flex-col">
+                    <span class="font-mono text-[10px] uppercase tracking-wider text-bark/70">Table Tension</span>
+                    <span class="font-serif font-bold text-base text-forest mt-0.5" id="insight-tension">Opening Moves</span>
+                    <span class="text-[10px] font-mono text-bark/70 mt-1" id="insight-tension-sub">Seeking center ground</span>
+                </div>
+            </div>
+
+            <!-- Keyboard & Accessible Controls Banner -->
+            <div class="w-full max-w-[760px] mx-auto text-center">
+                <p class="text-xs font-mono text-bark/70 flex items-center justify-center flex-wrap gap-x-4 gap-y-1">
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">←</kbd> <kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">→</kbd> Select Column</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">Enter</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">Space</kbd> Drop</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">1</kbd>–<kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">7</kbd> Direct Drop</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">Z</kbd> Undo</span>
+                    <span><kbd class="px-1.5 py-0.5 rounded bg-[#F3ECE2] border border-[#E7DCCE] text-charcoal font-bold">R</kbd> Rematch</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- FLOATING BOTTOM PILL CONTROL DOCK -->
+    <aside class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-auto max-w-[95vw]">
+        <div
+            class="bg-white/95 backdrop-blur-xl border border-[#E7DCCE] px-3.5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(92,61,33,0.16)] flex items-center gap-1.5 sm:gap-2">
+            <!-- Undo Action -->
+            <button
+                class="px-3 py-1.5 rounded-full hover:bg-[#F3ECE2] text-charcoal text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                id="btn-undo" title="Retract last move (Press Z)" type="button">
+                <span class="material-symbols-outlined text-[17px] text-bark">undo</span>
+                <span class="hidden xs:inline">Retract Move</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-[#E7DCCE] text-bark text-[10px] font-mono" id="undo-count-badge">3 left</span>
+            </button>
+
+            <div class="w-px h-5 bg-[#E7DCCE]"></div>
+
+            <!-- Restart Round / Reset Board -->
+            <button
+                class="px-3 py-1.5 rounded-full hover:bg-[#F3ECE2] text-charcoal text-xs font-semibold flex items-center gap-1.5 transition-all"
+                id="btn-restart" title="Reset Current Board (Press R)" type="button">
+                <span class="material-symbols-outlined text-[17px] text-bark">restart_alt</span>
+                <span class="hidden sm:inline">Reset Round</span>
+            </button>
+
+            <!-- Concede / Yield -->
+            <button
+                class="px-3 py-1.5 rounded-full hover:bg-[#FDF2F0] text-[#9E3E1C] text-xs font-semibold flex items-center gap-1 transition-all"
+                id="btn-forfeit" title="Concede round to opponent" type="button">
+                <span class="material-symbols-outlined text-[17px]">flag</span>
+                <span>Yield</span>
+            </button>
+
+            <div class="w-px h-5 bg-[#E7DCCE]"></div>
+
+            <!-- Rematch / Play Again Action -->
+            <button
+                class="px-4 py-2 rounded-full bg-clay hover:bg-clay-dark text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                id="btn-new-round" title="Start next round in match series" type="button">
+                <span class="material-symbols-outlined text-[16px]">replay</span>
+                <span>Rematch</span>
+                <span class="font-mono text-[10px] bg-black/20 px-1.5 py-0.5 rounded-full hidden sm:inline">R</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- WARM TACTILE VICTORY & REVENGE MODAL OVERLAY -->
+    <div class="fixed inset-0 z-50 bg-[#2C2621]/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300"
+        id="victory-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div
+            class="relative w-full max-w-md bg-[#FAF8F5] border border-[#E7DCCE] rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center text-center overflow-hidden transform scale-95 transition-transform duration-300"
+            id="modal-card">
+            
+            <!-- Close icon button -->
+            <button class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#F3ECE2] text-bark hover:text-charcoal flex items-center justify-center transition-colors" id="btn-close-modal-x" aria-label="Close dialog">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+
+            <!-- Tactile Medal Icon -->
+            <div class="w-16 h-16 rounded-2xl token-p1 flex items-center justify-center shadow-md mb-4" id="modal-token-icon">
+                <span class="material-symbols-outlined text-[32px] text-white"
+                    style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+            </div>
+
+            <span class="font-mono text-[11px] uppercase tracking-widest text-clay font-bold mb-1" id="modal-round-status">
+                Round 1 Completed
+            </span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-charcoal tracking-tight" id="modal-title">
+                Alex Vance Victorious!
+            </h3>
+            <p class="font-sans text-xs text-bark/90 mt-1.5 max-w-xs" id="modal-description">
+                Crafted an unyielding alignment across the oak frame on move 14.
+            </p>
+
+            <!-- Revenge Match Ledger Summary -->
+            <div
+                class="w-full bg-[#F3ECE2] rounded-2xl p-4 my-5 flex flex-col gap-2.5 border border-[#E7DCCE]/80 text-left">
+                <div class="flex items-center justify-between text-xs font-mono">
+                    <span class="text-bark">Total Placements</span>
+                    <span class="text-charcoal font-bold" id="modal-moves-count">14 Moves</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-mono">
+                    <span class="text-bark">Round Duration</span>
+                    <span class="text-charcoal font-bold" id="modal-time-count">01:18</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-mono">
+                    <span class="text-bark">Winning Vector</span>
+                    <span class="text-forest font-bold" id="modal-vector-desc">Horizontal Row 4</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-mono pt-2 border-t border-[#E7DCCE]">
+                    <span class="text-bark">Series Standing</span>
+                    <span class="text-clay font-bold" id="modal-series-score">Alex 1 — 0 Sam</span>
+                </div>
+            </div>
+
+            <!-- Instant Revenge Action Buttons -->
+            <div class="w-full flex flex-col gap-2.5">
+                <button
+                    class="w-full py-3 rounded-full bg-clay hover:bg-clay-dark text-white font-semibold text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
+                    id="btn-modal-rematch" type="button">
+                    <span class="material-symbols-outlined text-[18px]">replay</span>
+                    <span id="btn-modal-rematch-text">Instant Rematch (Round 2)</span>
+                </button>
+                <div class="flex items-center gap-2 w-full">
+                    <button
+                        class="flex-1 py-2 rounded-full bg-[#F3ECE2] hover:bg-[#E7DCCE] text-charcoal text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                        id="btn-share-result" type="button">
+                        <span class="material-symbols-outlined text-[16px]">share</span>
+                        <span id="btn-share-text">Copy Match Inscription</span>
+                    </button>
+                    <button
+                        class="py-2 px-4 rounded-full bg-[#F3ECE2] hover:bg-[#E7DCCE] text-bark text-xs font-semibold transition-all"
+                        id="btn-close-modal" type="button">
+                        Examine Board
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RULEBOOK & CONTROLS MODAL -->
+    <div class="fixed inset-0 z-50 bg-[#2C2621]/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300"
+        id="rulebook-modal" role="dialog" aria-modal="true" aria-labelledby="rulebook-title">
+        <div class="relative w-full max-w-lg bg-[#FAF8F5] border border-[#E7DCCE] rounded-3xl p-6 sm:p-7 shadow-2xl flex flex-col text-left overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-[#E7DCCE] pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-[#F3ECE2] flex items-center justify-center text-clay">
+                        <span class="material-symbols-outlined text-[20px]">menu_book</span>
+                    </div>
+                    <h3 class="font-serif text-xl font-bold text-charcoal" id="rulebook-title">The Tactician's Rulebook</h3>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#F3ECE2] text-bark hover:text-charcoal flex items-center justify-center" id="btn-close-rulebook" aria-label="Close rulebook">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs font-sans text-bark/90 leading-relaxed">
+                <div>
+                    <h4 class="font-serif font-bold text-sm text-charcoal mb-1">Objective</h4>
+                    <p>Be the first tactician to align <strong class="text-charcoal">four consecutive tokens</strong> of your color in any orientation: horizontally across a tier, vertically inside a column, or along either diagonal incline.</p>
+                </div>
+
+                <div class="bg-[#F3ECE2] rounded-2xl p-4 border border-[#E7DCCE]">
+                    <h4 class="font-serif font-bold text-sm text-charcoal mb-2">Tactile Micro-Interactions</h4>
+                    <ul class="space-y-1.5 list-disc list-inside">
+                        <li><strong class="text-charcoal">Column Previews:</strong> Hovering over or focusing on a column displays a suspended preview token above the row, plus a ghost landing guide in the lowest open slot.</li>
+                        <li><strong class="text-charcoal">Gravitational Physics:</strong> Pieces fall with accelerated downward velocity and settle with a gentle elastic bounce.</li>
+                        <li><strong class="text-charcoal">Winning Line Sweep:</strong> The moment four tokens connect, an incandescent golden beam traces the victory vector.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-serif font-bold text-sm text-charcoal mb-2">Accessible Keyboard Controls</h4>
+                    <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">← / → or A / D</span>: Shift Column
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">Enter / Space</span>: Drop Token
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">1 through 7</span>: Instant Column
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">Z</span>: Retract (Undo)
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">R</span>: Instant Rematch
+                        </div>
+                        <div class="bg-white p-2.5 rounded-xl border border-[#E7DCCE]">
+                            <span class="text-clay font-bold">M</span>: Toggle Sound
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-serif font-bold text-sm text-charcoal mb-1">Dual-Coding &amp; Inclusivity</h4>
+                    <p>To eliminate colorblind barriers, tokens are differentiated by both chromatic hue and tactile embossed symbols: <strong class="text-clay">Player 1 (Star / Sun)</strong> vs <strong class="text-forest">Player 2 (Diamond / Rhombus)</strong>.</p>
+                </div>
+            </div>
+
+            <button class="mt-6 w-full py-2.5 rounded-full bg-[#F3ECE2] hover:bg-[#E7DCCE] text-charcoal font-semibold text-xs transition-all" id="btn-close-rulebook-bottom">
+                Return to Table
+            </button>
+        </div>
+    </div>
+
+    <!-- THEME & ACCESSIBILITY SETTINGS MODAL -->
+    <div class="fixed inset-0 z-50 bg-[#2C2621]/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300"
+        id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="relative w-full max-w-md bg-[#FAF8F5] border border-[#E7DCCE] rounded-3xl p-6 sm:p-7 shadow-2xl flex flex-col text-left overflow-hidden">
+            <div class="flex items-center justify-between border-b border-[#E7DCCE] pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-[#F3ECE2] flex items-center justify-center text-clay">
+                        <span class="material-symbols-outlined text-[20px]">palette</span>
+                    </div>
+                    <h3 class="font-serif text-xl font-bold text-charcoal" id="settings-title">Aesthetics &amp; AI Setup</h3>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-[#F3ECE2] text-bark hover:text-charcoal flex items-center justify-center" id="btn-close-settings" aria-label="Close settings">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <!-- Color Palette / Colorblind Options -->
+            <div class="space-y-4 text-xs font-sans">
+                <div>
+                    <label class="block font-serif font-bold text-sm text-charcoal mb-2">Aesthetic Palette (Inclusive Dual-Coding)</label>
+                    <div class="grid grid-cols-2 gap-2.5" id="theme-options">
+                        <button class="p-3 rounded-2xl border-2 border-clay bg-white flex flex-col gap-1.5 transition-all text-left" data-set-theme="woodcraft" type="button">
+                            <span class="font-bold text-charcoal">Artisan Woodcraft</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-4 h-4 rounded-full bg-[#C85A32]"></span>
+                                <span class="w-4 h-4 rounded-full bg-[#385E48]"></span>
+                                <span class="text-[10px] font-mono text-bark/70 ml-1">Terracotta &amp; Forest</span>
+                            </div>
+                        </button>
+                        <button class="p-3 rounded-2xl border border-[#E7DCCE] bg-white hover:border-clay/50 flex flex-col gap-1.5 transition-all text-left" data-set-theme="classic" type="button">
+                            <span class="font-bold text-charcoal">Classic Arcade</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-4 h-4 rounded-full bg-[#E02020]"></span>
+                                <span class="w-4 h-4 rounded-full bg-[#F5B700]"></span>
+                                <span class="text-[10px] font-mono text-bark/70 ml-1">Red &amp; Amber</span>
+                            </div>
+                        </button>
+                        <button class="p-3 rounded-2xl border border-[#E7DCCE] bg-white hover:border-clay/50 flex flex-col gap-1.5 transition-all text-left" data-set-theme="highcontrast" type="button">
+                            <span class="font-bold text-charcoal">High-Contrast Blue</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-4 h-4 rounded-full bg-[#1A56DB]"></span>
+                                <span class="w-4 h-4 rounded-full bg-[#E66A00]"></span>
+                                <span class="text-[10px] font-mono text-bark/70 ml-1">Cobalt &amp; Tangerine</span>
+                            </div>
+                        </button>
+                        <button class="p-3 rounded-2xl border border-[#E7DCCE] bg-white hover:border-clay/50 flex flex-col gap-1.5 transition-all text-left" data-set-theme="cyber" type="button">
+                            <span class="font-bold text-charcoal">Cyber Neon</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-4 h-4 rounded-full bg-[#00B4D8]"></span>
+                                <span class="w-4 h-4 rounded-full bg-[#E60067]"></span>
+                                <span class="text-[10px] font-mono text-bark/70 ml-1">Cyan &amp; Magenta</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Difficulty Selector -->
+                <div class="pt-2 border-t border-[#E7DCCE]">
+                    <label class="block font-serif font-bold text-sm text-charcoal mb-2">Solitaire AI Opponent Depth</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="py-2.5 px-3 rounded-xl border border-[#E7DCCE] bg-white hover:border-clay/50 text-center transition-all font-mono text-xs font-semibold" data-set-diff="easy" type="button">
+                            <span>Easy</span>
+                            <span class="block text-[10px] text-bark/60 font-normal">Casual</span>
+                        </button>
+                        <button class="py-2.5 px-3 rounded-xl border border-[#E7DCCE] bg-white hover:border-clay/50 text-center transition-all font-mono text-xs font-semibold" data-set-diff="medium" type="button">
+                            <span>Medium</span>
+                            <span class="block text-[10px] text-bark/60 font-normal">Tactical 3-Ply</span>
+                        </button>
+                        <button class="py-2.5 px-3 rounded-xl border-2 border-clay bg-white text-center transition-all font-mono text-xs font-bold text-clay" data-set-diff="hard" type="button">
+                            <span>Hard</span>
+                            <span class="block text-[10px] text-clay/80 font-normal">Minimax 5-Ply</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reset Match Series History -->
+                <div class="pt-2 border-t border-[#E7DCCE] flex items-center justify-between">
+                    <span class="text-bark">Clear match history series</span>
+                    <button class="px-3 py-1 rounded-full bg-[#FDF2F0] hover:bg-red-100 text-[#9E3E1C] font-mono text-xs font-semibold transition-colors" id="btn-reset-series-score" type="button">
+                        Reset All Scores
+                    </button>
+                </div>
+            </div>
+
+            <button class="mt-6 w-full py-2.5 rounded-full bg-clay text-white font-semibold text-xs transition-all shadow-xs" id="btn-save-settings">
+                Apply &amp; Resume Play
+            </button>
+        </div>
+    </div>
+
+    <!-- Minimal Scandinavian Tabletop Footer -->
+    <footer class="w-full bg-[#FAF8F5] border-t border-[#E7DCCE]/80 mt-auto py-5">
+        <div
+            class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-bark/70 text-xs font-mono">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-clay"></span>
+                <span>Woodcraft Tabletop Engine • Handcrafted Physics &amp; Web Audio</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="hover:text-charcoal transition-colors underline" id="footer-rulebook-btn" type="button">Handcrafted Rulebook</button>
+                <button class="hover:text-charcoal transition-colors underline" id="footer-theme-btn" type="button">Colorblind Themes</button>
+                <span>© 2025 Four in Line Woodcraft</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================================================================= -->
+    <!-- COMPLETE TACTILE CONNECT FOUR GAME ENGINE (JavaScript)           -->
+    <!-- ================================================================= -->
+    <script>
+        (function () {
+            'use strict';
+
+            // -------------------------------------------------------------
+            // CONSTANTS & GAME STATE
+            // -------------------------------------------------------------
+            const ROWS = 6;
+            const COLS = 7;
+            const WIN_LENGTH = 4;
+
+            const state = {
+                board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
+                currentPlayer: 1, // 1 = P1, 2 = P2 (or AI)
+                isGameOver: false,
+                winningCells: [], // Array of [row, col]
+                gameMode: 'ai', // 'ai' | 'pvp'
+                aiDifficulty: 'hard', // 'easy' | 'medium' | 'hard'
+                isAiThinking: false,
+                series: {
+                    p1Wins: 0,
+                    p2Wins: 0,
+                    draws: 0,
+                    round: 1
+                },
+                moveHistory: [], // Array of { player, row, col }
+                focusedCol: 3, // Column focused for keyboard navigation
+                hoveredCol: null,
+                undoRemaining: 3,
+                soundEnabled: true,
+                theme: 'woodcraft',
+                roundStartTime: Date.now(),
+                elapsedSeconds: 0,
+                timerInterval: null
+            };
+
+            // -------------------------------------------------------------
+            // WEB AUDIO API SYNTHESIZER (Zero external audio files required)
+            // -------------------------------------------------------------
+            let audioCtx = null;
+            function getAudioContext() {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        audioCtx = new AudioContext();
+                    }
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return audioCtx;
+            }
+
+            // Tactile wooden drop clack sound with pitch varied by row height
+            function playDropSound(row) {
+                if (!state.soundEnabled) return;
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+
+                    const now = ctx.currentTime;
+                    // Lower row (closer to base) = deeper frequency
+                    const baseFreq = 140 + (5 - row) * 26;
+
+                    // Primary impact oscillator
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(baseFreq * 1.5, now);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, now + 0.08);
+
+                    gain.gain.setValueAtTime(0.35, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+
+                    // Secondary soft bounce clack after 110ms
+                    const bounceOsc = ctx.createOscillator();
+                    const bounceGain = ctx.createGain();
+                    bounceOsc.type = 'sine';
+                    bounceOsc.frequency.setValueAtTime(baseFreq * 1.2, now + 0.11);
+                    bounceOsc.frequency.exponentialRampToValueAtTime(baseFreq * 0.9, now + 0.18);
+
+                    bounceGain.gain.setValueAtTime(0.18, now + 0.11);
+                    bounceGain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+
+                    bounceOsc.connect(bounceGain);
+                    bounceGain.connect(ctx.destination);
+                    bounceOsc.start(now + 0.11);
+                    bounceOsc.stop(now + 0.19);
+                } catch (e) {
+                    // Audio context errors handled safely
+                }
+            }
+
+            // Column hover tick
+            function playHoverTick() {
+                if (!state.soundEnabled) return;
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(750, now);
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.02);
+                } catch (e) {}
+            }
+
+            // Victory harmonic fanfare
+            function playWinFanfare() {
+                if (!state.soundEnabled) return;
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+                    const now = ctx.currentTime;
+                    // Arpeggio chords: C4, E4, G4, C5
+                    const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+                    notes.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.45);
+
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.5);
+                    });
+                } catch (e) {}
+            }
+
+            // Error sound when column is full
+            function playErrorSound() {
+                if (!state.soundEnabled) return;
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(110, now);
+                    osc.frequency.setValueAtTime(90, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } catch (e) {}
+            }
+
+            // -------------------------------------------------------------
+            // DOM REFERENCES
+            // -------------------------------------------------------------
+            const boardGridElem = document.getElementById('c4-board');
+            const dropperTrackElem = document.getElementById('dropper-track');
+            const turnBannerElem = document.getElementById('turn-banner');
+            const roundLabelElem = document.getElementById('round-label');
+            const seriesHeaderBadge = document.getElementById('series-header-badge');
+            const matchTimerElem = document.getElementById('match-timer');
+            const srAnnouncerElem = document.getElementById('sr-announcer');
+
+            const cardP1 = document.getElementById('card-p1');
+            const cardP2 = document.getElementById('card-p2');
+            const p1ScoreElem = document.getElementById('p1-score');
+            const p2ScoreElem = document.getElementById('p2-score');
+            const p1MovesCountElem = document.getElementById('p1-moves-count');
+            const p2MovesCountElem = document.getElementById('p2-moves-count');
+            const p1WinrateElem = document.getElementById('p1-winrate');
+            const p2WinrateElem = document.getElementById('p2-winrate');
+            const p2DisplayName = document.getElementById('p2-display-name');
+            const p2StatusText = document.getElementById('p2-status-text');
+            const p1TurnBadge = document.getElementById('p1-turn-badge');
+            const p2TurnBadge = document.getElementById('p2-turn-badge');
+            const p1Pebbles = document.getElementById('p1-pebbles');
+            const p2Pebbles = document.getElementById('p2-pebbles');
+
+            const modeAiBtn = document.getElementById('mode-ai');
+            const modePvpBtn = document.getElementById('mode-pvp');
+            const diffBadgeContainer = document.getElementById('difficulty-badge-container');
+            const diffLabel = document.getElementById('diff-label');
+            const btnChangeDiff = document.getElementById('btn-change-diff');
+
+            const btnSoundToggle = document.getElementById('btn-sound-toggle');
+            const soundIcon = document.getElementById('sound-icon');
+            const btnRulebook = document.getElementById('btn-rulebook');
+            const btnPalette = document.getElementById('btn-palette');
+
+            const btnUndo = document.getElementById('btn-undo');
+            const undoCountBadge = document.getElementById('undo-count-badge');
+            const btnRestart = document.getElementById('btn-restart');
+            const btnForfeit = document.getElementById('btn-forfeit');
+            const btnNewRound = document.getElementById('btn-new-round');
+            const btnQuickRematch = document.getElementById('btn-quick-rematch');
+
+            const winLineSvg = document.getElementById('win-line-svg');
+            const winLine = document.getElementById('win-line');
+            const particleCanvas = document.getElementById('particle-canvas');
+
+            // Modals
+            const victoryModal = document.getElementById('victory-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalMovesCount = document.getElementById('modal-moves-count');
+            const modalTimeCount = document.getElementById('modal-time-count');
+            const modalVectorDesc = document.getElementById('modal-vector-desc');
+            const modalSeriesScore = document.getElementById('modal-series-score');
+            const modalRoundStatus = document.getElementById('modal-round-status');
+            const btnModalRematch = document.getElementById('btn-modal-rematch');
+            const btnModalRematchText = document.getElementById('btn-modal-rematch-text');
+            const btnCloseModal = document.getElementById('btn-close-modal');
+            const btnCloseModalX = document.getElementById('btn-close-modal-x');
+            const btnShareResult = document.getElementById('btn-share-result');
+            const btnShareText = document.getElementById('btn-share-text');
+
+            const rulebookModal = document.getElementById('rulebook-modal');
+            const btnCloseRulebook = document.getElementById('btn-close-rulebook');
+            const btnCloseRulebookBottom = document.getElementById('btn-close-rulebook-bottom');
+            const footerRulebookBtn = document.getElementById('footer-rulebook-btn');
+
+            const settingsModal = document.getElementById('settings-modal');
+            const btnCloseSettings = document.getElementById('btn-close-settings');
+            const btnSaveSettings = document.getElementById('btn-save-settings');
+            const footerThemeBtn = document.getElementById('footer-theme-btn');
+            const btnResetSeriesScore = document.getElementById('btn-reset-series-score');
+
+            // Insights
+            const insightMomentum = document.getElementById('insight-momentum');
+            const momentumBar = document.getElementById('momentum-bar');
+            const insightPace = document.getElementById('insight-pace');
+            const insightSlots = document.getElementById('insight-slots');
+            const insightSlotsSub = document.getElementById('insight-slots-sub');
+            const insightTension = document.getElementById('insight-tension');
+            const insightTensionSub = document.getElementById('insight-tension-sub');
+
+            // -------------------------------------------------------------
+            // LOCAL STORAGE PERSISTENCE
+            // -------------------------------------------------------------
+            function loadSavedState() {
+                try {
+                    const saved = localStorage.getItem('c4_woodcraft_state');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.series) state.series = parsed.series;
+                        if (parsed.theme) state.theme = parsed.theme;
+                        if (parsed.gameMode) state.gameMode = parsed.gameMode;
+                        if (parsed.aiDifficulty) state.aiDifficulty = parsed.aiDifficulty;
+                        if (typeof parsed.soundEnabled === 'boolean') state.soundEnabled = parsed.soundEnabled;
+                    }
+                } catch (e) {}
+            }
+
+            function saveState() {
+                try {
+                    localStorage.setItem('c4_woodcraft_state', JSON.stringify({
+                        series: state.series,
+                        theme: state.theme,
+                        gameMode: state.gameMode,
+                        aiDifficulty: state.aiDifficulty,
+                        soundEnabled: state.soundEnabled
+                    }));
+                } catch (e) {}
+            }
+
+            // -------------------------------------------------------------
+            // SCREEN READER ANNOUNCEMENTS (Accessibility)
+            // -------------------------------------------------------------
+            function announce(message) {
+                if (srAnnouncerElem) {
+                    srAnnouncerElem.textContent = message;
+                }
+            }
+
+            // -------------------------------------------------------------
+            // TIMER MANAGEMENT
+            // -------------------------------------------------------------
+            function startTimer() {
+                clearInterval(state.timerInterval);
+                state.roundStartTime = Date.now();
+                state.elapsedSeconds = 0;
+                updateTimerDisplay();
+
+                state.timerInterval = setInterval(() => {
+                    state.elapsedSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+
+            function stopTimer() {
+                clearInterval(state.timerInterval);
+            }
+
+            function formatTime(seconds) {
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            }
+
+            function updateTimerDisplay() {
+                if (matchTimerElem) {
+                    matchTimerElem.textContent = formatTime(state.elapsedSeconds);
+                }
+            }
+
+            // -------------------------------------------------------------
+            // BOARD & COLUMN RENDERING
+            // -------------------------------------------------------------
+            function initDropperTrack() {
+                dropperTrackElem.innerHTML = '';
+                for (let c = 0; c < COLS; c++) {
+                    const colBtn = document.createElement('button');
+                    colBtn.type = 'button';
+                    colBtn.className = `col-drop-btn group flex flex-col items-center justify-end h-11 sm:h-12 rounded-xl transition-all cursor-pointer`;
+                    colBtn.dataset.col = c;
+                    colBtn.setAttribute('aria-label', `Drop token into column ${c + 1}`);
+
+                    // Suspended preview token
+                    colBtn.innerHTML = `
+                        <div class="preview-token w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-90 transform group-hover:-translate-y-1 transition-all" data-preview-col="${c}">
+                            <span class="material-symbols-outlined text-[15px] sm:text-[16px]">arrow_downward</span>
+                        </div>
+                        <span class="font-mono text-[10px] text-bark/60 group-hover:text-charcoal font-semibold mt-0.5">${c + 1}</span>
+                    `;
+
+                    colBtn.addEventListener('mouseenter', () => handleColumnHover(c));
+                    colBtn.addEventListener('mouseleave', () => handleColumnLeave());
+                    colBtn.addEventListener('click', () => handleColumnClick(c));
+
+                    dropperTrackElem.appendChild(colBtn);
+                }
+            }
+
+            function renderBoard() {
+                boardGridElem.innerHTML = '';
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'aspect-square rounded-full debossed-slot flex items-center justify-center p-0.5 sm:p-1 cursor-pointer transition-colors';
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        cell.setAttribute('role', 'gridcell');
+                        cell.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}: ${getSlotLabel(state.board[r][c])}`);
+
+                        // Click cell to drop into its column
+                        cell.addEventListener('click', () => handleColumnClick(c));
+                        cell.addEventListener('mouseenter', () => handleColumnHover(c));
+                        cell.addEventListener('mouseleave', () => handleColumnLeave());
+
+                        const pieceVal = state.board[r][c];
+                        if (pieceVal !== 0) {
+                            cell.appendChild(createTokenElement(pieceVal, false));
+                        }
+
+                        boardGridElem.appendChild(cell);
+                    }
+                }
+                updateGhostGuide();
+            }
+
+            function getSlotLabel(val) {
+                if (val === 1) return 'Player 1 Token';
+                if (val === 2) return state.gameMode === 'ai' ? 'AI Token' : 'Player 2 Token';
+                return 'Empty';
+            }
+
+            // Create tactile token element with dual-coding SVG icon inside
+            function createTokenElement(player, isNewDrop = false, dropDistance = 0) {
+                const token = document.createElement('div');
+                token.className = `w-full h-full rounded-full flex items-center justify-center ${player === 1 ? 'token-p1' : 'token-p2'}`;
+
+                if (isNewDrop) {
+                    token.classList.add('token-drop-anim');
+                    token.style.setProperty('--drop-distance', dropDistance);
+                }
+
+                const inner = document.createElement('div');
+                inner.className = 'w-3/5 h-3/5 rounded-full token-inner border border-white/25 flex items-center justify-center';
+
+                // Dual-coding distinct geometric icons
+                if (player === 1) {
+                    // Star / Sun icon for Player 1
+                    inner.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                            <polygon points="12,2 15,8.5 22,9 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9 9,8.5" />
+                        </svg>
+                    `;
+                } else {
+                    // Diamond / Rhombus icon for Player 2 / AI
+                    inner.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 12l10 10 10-10L12 2zm0 4.5l6.5 5.5-6.5 5.5-6.5-5.5L12 6.5z"/>
+                        </svg>
+                    `;
+                }
+
+                token.appendChild(inner);
+                return token;
+            }
+
+            // -------------------------------------------------------------
+            // TACTICAL HOVER PREVIEWS & GHOST TARGET LANDING
+            // -------------------------------------------------------------
+            function handleColumnHover(col) {
+                if (state.isGameOver || (state.gameMode === 'ai' && state.isAiThinking)) return;
+                state.hoveredCol = col;
+                state.focusedCol = col;
+                playHoverTick();
+                updateHoverPreviews();
+                updateGhostGuide();
+            }
+
+            function handleColumnLeave() {
+                state.hoveredCol = null;
+                updateHoverPreviews();
+                updateGhostGuide();
+            }
+
+            function updateHoverPreviews() {
+                const previews = document.querySelectorAll('.preview-token');
+                previews.forEach((p, c) => {
+                    const colBtn = p.closest('.col-drop-btn');
+                    if (c === state.hoveredCol || c === state.focusedCol) {
+                        p.classList.remove('opacity-0');
+                        p.classList.add('opacity-100');
+                        p.className = `preview-token w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-white shadow-sm opacity-100 ${state.currentPlayer === 1 ? 'token-p1' : 'token-p2'}`;
+                        if (colBtn) colBtn.classList.add('col-focus');
+                    } else {
+                        p.classList.add('opacity-0');
+                        p.classList.remove('opacity-100');
+                        if (colBtn) colBtn.classList.remove('col-focus');
+                    }
+                });
+            }
+
+            function updateGhostGuide() {
+                // Clear any prior ghost markings
+                document.querySelectorAll('.ghost-landing-slot').forEach(el => el.classList.remove('ghost-landing-slot'));
+
+                const activeCol = state.hoveredCol !== null ? state.hoveredCol : state.focusedCol;
+                if (activeCol === null || state.isGameOver || (state.gameMode === 'ai' && state.isAiThinking)) return;
+
+                const targetRow = getLowestEmptyRow(activeCol);
+                if (targetRow !== -1) {
+                    const targetCell = document.querySelector(`.debossed-slot[data-row="${targetRow}"][data-col="${activeCol}"]`);
+                    if (targetCell) {
+                        targetCell.classList.add('ghost-landing-slot');
+                    }
+                }
+            }
+
+            function getLowestEmptyRow(col) {
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (state.board[r][col] === 0) {
+                        return r;
+                    }
+                }
+                return -1; // Column full
+            }
+
+            // -------------------------------------------------------------
+            // TURN LOGIC & MOVE EXECUTION
+            // -------------------------------------------------------------
+            function handleColumnClick(col) {
+                if (state.isGameOver) return;
+                if (state.gameMode === 'ai' && state.currentPlayer === 2 && state.isAiThinking) return;
+
+                executeMove(col);
+            }
+
+            function executeMove(col) {
+                const row = getLowestEmptyRow(col);
+                if (row === -1) {
+                    playErrorSound();
+                    announce(`Column ${col + 1} is fully occupied. Choose another column.`);
+                    return false;
+                }
+
+                const player = state.currentPlayer;
+                state.board[row][col] = player;
+                state.moveHistory.push({ player, row, col });
+
+                // Render token with drop animation
+                const cell = document.querySelector(`.debossed-slot[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.innerHTML = '';
+                    // Distance is (row + 1) slots from top
+                    const dropDistance = row + 1.2;
+                    cell.appendChild(createTokenElement(player, true, dropDistance));
+                }
+
+                playDropSound(row);
+
+                // Check for win or draw
+                const winResult = checkWin(state.board);
+                if (winResult) {
+                    handleWin(winResult);
+                    return true;
+                }
+
+                if (isBoardFull(state.board)) {
+                    handleDraw();
+                    return true;
+                }
+
+                // Switch player turn
+                state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+                updateTurnDisplay();
+                updateHoverPreviews();
+                updateGhostGuide();
+                updateMatchInsights();
+
+                const playerName = state.currentPlayer === 1 ? 'Alex Vance' : (state.gameMode === 'ai' ? 'Solitaire AI' : 'Sam Thorne');
+                announce(`Piece dropped in column ${col + 1}, row ${row + 1}. ${playerName}'s turn.`);
+
+                // Trigger AI response if in AI mode
+                if (state.gameMode === 'ai' && state.currentPlayer === 2 && !state.isGameOver) {
+                    triggerAiMove();
+                }
+
+                return true;
+            }
+
+            // -------------------------------------------------------------
+            // AI OPPONENT ENGINE (Minimax with Alpha-Beta Pruning)
+            // -------------------------------------------------------------
+            function triggerAiMove() {
+                state.isAiThinking = true;
+                updateTurnDisplay();
+
+                // Realistic tactile thinking pause (380ms - 650ms)
+                const thinkingDelay = state.aiDifficulty === 'easy' ? 400 : (state.aiDifficulty === 'medium' ? 520 : 680);
+
+                setTimeout(() => {
+                    if (state.isGameOver) {
+                        state.isAiThinking = false;
+                        return;
+                    }
+
+                    const bestCol = computeAiMove(state.board, state.aiDifficulty);
+                    state.isAiThinking = false;
+                    executeMove(bestCol);
+                }, thinkingDelay);
+            }
+
+            function computeAiMove(board, difficulty) {
+                const validCols = getValidColumns(board);
+                if (validCols.length === 0) return 3;
+
+                // Easy mode: random with 50% blunder rate, but takes instant win
+                if (difficulty === 'easy') {
+                    // Check for 1-ply winning move
+                    for (const col of validCols) {
+                        const row = getLowestEmptyRowInSim(board, col);
+                        board[row][col] = 2;
+                        if (checkWin(board)) {
+                            board[row][col] = 0;
+                            return col;
+                        }
+                        board[row][col] = 0;
+                    }
+                    return validCols[Math.floor(Math.random() * validCols.length)];
+                }
+
+                // Medium mode: 2-ply search with center column bias
+                if (difficulty === 'medium') {
+                    return minimaxRoot(board, 3, 2);
+                }
+
+                // Hard mode: 5-ply Minimax with Alpha-Beta Pruning & Positional Heuristics
+                return minimaxRoot(board, 5, 2);
+            }
+
+            function getValidColumns(board) {
+                const valid = [];
+                // Center-out column ordering for more efficient alpha-beta pruning: 3, 2, 4, 1, 5, 0, 6
+                const order = [3, 2, 4, 1, 5, 0, 6];
+                for (const col of order) {
+                    if (board[0][col] === 0) {
+                        valid.push(col);
+                    }
+                }
+                return valid;
+            }
+
+            function getLowestEmptyRowInSim(board, col) {
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (board[r][col] === 0) return r;
+                }
+                return -1;
+            }
+
+            function minimaxRoot(board, depth, aiPlayer) {
+                const validCols = getValidColumns(board);
+                let bestScore = -Infinity;
+                let bestCol = validCols[0];
+
+                for (const col of validCols) {
+                    const r = getLowestEmptyRowInSim(board, col);
+                    board[r][col] = aiPlayer;
+
+                    // Direct win found
+                    if (checkWin(board)) {
+                        board[r][col] = 0;
+                        return col;
+                    }
+
+                    const score = minimax(board, depth - 1, -Infinity, Infinity, false, aiPlayer);
+                    board[r][col] = 0;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestCol = col;
+                    }
+                }
+
+                return bestCol;
+            }
+
+            function minimax(board, depth, alpha, beta, isMaximizing, aiPlayer) {
+                const humanPlayer = aiPlayer === 2 ? 1 : 2;
+                const win = checkWin(board);
+
+                if (win) {
+                    if (win.player === aiPlayer) return 100000 + depth;
+                    if (win.player === humanPlayer) return -100000 - depth;
+                }
+
+                if (isBoardFull(board) || depth === 0) {
+                    return evaluateBoard(board, aiPlayer);
+                }
+
+                const validCols = getValidColumns(board);
+
+                if (isMaximizing) {
+                    let maxEval = -Infinity;
+                    for (const col of validCols) {
+                        const r = getLowestEmptyRowInSim(board, col);
+                        board[r][col] = aiPlayer;
+                        const score = minimax(board, depth - 1, alpha, beta, false, aiPlayer);
+                        board[r][col] = 0;
+                        maxEval = Math.max(maxEval, score);
+                        alpha = Math.max(alpha, score);
+                        if (beta <= alpha) break;
+                    }
+                    return maxEval;
+                } else {
+                    let minEval = Infinity;
+                    for (const col of validCols) {
+                        const r = getLowestEmptyRowInSim(board, col);
+                        board[r][col] = humanPlayer;
+                        const score = minimax(board, depth - 1, alpha, beta, true, aiPlayer);
+                        board[r][col] = 0;
+                        minEval = Math.min(minEval, score);
+                        beta = Math.min(beta, score);
+                        if (beta <= alpha) break;
+                    }
+                    return minEval;
+                }
+            }
+
+            // Heuristic evaluation matrix
+            const POSITIONAL_WEIGHTS = [
+                [3, 4, 5, 7, 5, 4, 3],
+                [4, 6, 8, 10, 8, 6, 4],
+                [5, 8, 11, 13, 11, 8, 5],
+                [5, 8, 11, 13, 11, 8, 5],
+                [4, 6, 8, 10, 8, 6, 4],
+                [3, 4, 5, 7, 5, 4, 3]
+            ];
+
+            function evaluateBoard(board, aiPlayer) {
+                const humanPlayer = aiPlayer === 2 ? 1 : 2;
+                let score = 0;
+
+                // Center & positional bonuses
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (board[r][c] === aiPlayer) {
+                            score += POSITIONAL_WEIGHTS[r][c];
+                        } else if (board[r][c] === humanPlayer) {
+                            score -= POSITIONAL_WEIGHTS[r][c];
+                        }
+                    }
+                }
+
+                // Window evaluations (horizontal, vertical, diagonal)
+                score += evaluateLines(board, aiPlayer, humanPlayer);
+
+                return score;
+            }
+
+            function evaluateLines(board, ai, human) {
+                let score = 0;
+
+                function evaluateWindow(window) {
+                    let aiCount = 0;
+                    let humanCount = 0;
+                    let emptyCount = 0;
+
+                    for (const val of window) {
+                        if (val === ai) aiCount++;
+                        else if (val === human) humanCount++;
+                        else emptyCount++;
+                    }
+
+                    if (aiCount === 4) return 10000;
+                    if (aiCount === 3 && emptyCount === 1) return 120;
+                    if (aiCount === 2 && emptyCount === 2) return 18;
+
+                    if (humanCount === 3 && emptyCount === 1) return -150; // Heavily block human traps
+                    if (humanCount === 2 && emptyCount === 2) return -20;
+                    return 0;
+                }
+
+                // Horizontals
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        score += evaluateWindow([board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]]);
+                    }
+                }
+
+                // Verticals
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r <= ROWS - 4; r++) {
+                        score += evaluateWindow([board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]]);
+                    }
+                }
+
+                // Diagonals Positive
+                for (let r = 3; r < ROWS; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        score += evaluateWindow([board[r][c], board[r-1][c+1], board[r-2][c+2], board[r-3][c+3]]);
+                    }
+                }
+
+                // Diagonals Negative
+                for (let r = 0; r <= ROWS - 4; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        score += evaluateWindow([board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]]);
+                    }
+                }
+
+                return score;
+            }
+
+            // -------------------------------------------------------------
+            // WIN DETECTION & VICTORY CLIMAX
+            // -------------------------------------------------------------
+            function checkWin(board) {
+                // Horizontal
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        const p = board[r][c];
+                        if (p !== 0 && p === board[r][c+1] && p === board[r][c+2] && p === board[r][c+3]) {
+                            return {
+                                player: p,
+                                cells: [[r, c], [r, c+1], [r, c+2], [r, c+3]],
+                                vector: 'Horizontal Row ' + (r + 1)
+                            };
+                        }
+                    }
+                }
+
+                // Vertical
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r <= ROWS - 4; r++) {
+                        const p = board[r][c];
+                        if (p !== 0 && p === board[r+1][c] && p === board[r+2][c] && p === board[r+3][c]) {
+                            return {
+                                player: p,
+                                cells: [[r, c], [r+1, c], [r+2, c], [r+3, c]],
+                                vector: 'Vertical Column ' + (c + 1)
+                            };
+                        }
+                    }
+                }
+
+                // Diagonal Ascending (/)
+                for (let r = 3; r < ROWS; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        const p = board[r][c];
+                        if (p !== 0 && p === board[r-1][c+1] && p === board[r-2][c+2] && p === board[r-3][c+3]) {
+                            return {
+                                player: p,
+                                cells: [[r, c], [r-1, c+1], [r-2, c+2], [r-3, c+3]],
+                                vector: 'Ascending Diagonal Ray'
+                            };
+                        }
+                    }
+                }
+
+                // Diagonal Descending (\)
+                for (let r = 0; r <= ROWS - 4; r++) {
+                    for (let c = 0; c <= COLS - 4; c++) {
+                        const p = board[r][c];
+                        if (p !== 0 && p === board[r+1][c+1] && p === board[r+2][c+2] && p === board[r+3][c+3]) {
+                            return {
+                                player: p,
+                                cells: [[r, c], [r+1, c+1], [r+2, c+2], [r+3, c+3]],
+                                vector: 'Descending Diagonal Ray'
+                            };
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            function isBoardFull(board) {
+                return board[0].every(val => val !== 0);
+            }
+
+            function handleWin(winResult) {
+                state.isGameOver = true;
+                state.winningCells = winResult.cells;
+                stopTimer();
+
+                const winner = winResult.player;
+                if (winner === 1) {
+                    state.series.p1Wins++;
+                } else {
+                    state.series.p2Wins++;
+                }
+                saveState();
+
+                // Highlight the 4 winning pieces
+                highlightWinningTokens(winResult.cells);
+
+                // Trace SVG neon line sweep
+                drawWinningLine(winResult.cells);
+
+                // Trigger celebratory particle burst
+                launchParticleBurst();
+
+                playWinFanfare();
+
+                const winnerName = winner === 1 ? 'Alex Vance' : (state.gameMode === 'ai' ? 'Solitaire AI' : 'Sam Thorne');
+                announce(`Victory! ${winnerName} connects four along ${winResult.vector}!`);
+
+                turnBannerElem.innerHTML = `<span class="text-clay font-bold">${winnerName} Victorious!</span> Connected four along ${winResult.vector}`;
+
+                // Open victory revenge modal after 850ms so user enjoys the line sweep
+                setTimeout(() => {
+                    openVictoryModal(winnerName, winResult);
+                }, 850);
+            }
+
+            function handleDraw() {
+                state.isGameOver = true;
+                stopTimer();
+                state.series.draws++;
+                saveState();
+
+                turnBannerElem.textContent = "Round Concluded — An Honourable Stalemate!";
+                announce("The board is full! The round concludes in a stalemate.");
+
+                setTimeout(() => {
+                    openVictoryModal("Stalemate", { vector: "Full Table Stalemate", player: 0 });
+                }, 600);
+            }
+
+            function highlightWinningTokens(cells) {
+                cells.forEach(([r, c]) => {
+                    const cell = document.querySelector(`.debossed-slot[data-row="${r}"][data-col="${c}"]`);
+                    if (cell && cell.firstElementChild) {
+                        cell.firstElementChild.classList.add('winning-token');
+                    }
+                });
+            }
+
+            function drawWinningLine(cells) {
+                const firstCell = document.querySelector(`.debossed-slot[data-row="${cells[0][0]}"][data-col="${cells[0][1]}"]`);
+                const lastCell = document.querySelector(`.debossed-slot[data-row="${cells[3][0]}"][data-col="${cells[3][1]}"]`);
+                const boardContainer = document.getElementById('board-container');
+
+                if (!firstCell || !lastCell || !boardContainer) return;
+
+                const boardRect = boardContainer.getBoundingClientRect();
+                const firstRect = firstCell.getBoundingClientRect();
+                const lastRect = lastCell.getBoundingClientRect();
+
+                const x1 = firstRect.left + firstRect.width / 2 - boardRect.left;
+                const y1 = firstRect.top + firstRect.height / 2 - boardRect.top;
+                const x2 = lastRect.left + lastRect.width / 2 - boardRect.left;
+                const y2 = lastRect.top + lastRect.height / 2 - boardRect.top;
+
+                winLine.setAttribute('x1', x1);
+                winLine.setAttribute('y1', y1);
+                winLine.setAttribute('x2', x2);
+                winLine.setAttribute('y2', y2);
+
+                winLineSvg.classList.remove('hidden');
+                // Re-trigger animation
+                winLine.classList.remove('neon-line');
+                void winLine.offsetWidth;
+                winLine.classList.add('neon-line');
+            }
+
+            function clearWinningEffects() {
+                winLineSvg.classList.add('hidden');
+                particleCanvas.classList.add('hidden');
+                document.querySelectorAll('.winning-token').forEach(el => el.classList.remove('winning-token'));
+            }
+
+            // -------------------------------------------------------------
+            // PARTICLE CANVAS BURST
+            // -------------------------------------------------------------
+            let particles = [];
+            let particleAnimFrame = null;
+
+            function launchParticleBurst() {
+                particleCanvas.classList.remove('hidden');
+                const rect = particleCanvas.parentElement.getBoundingClientRect();
+                particleCanvas.width = rect.width;
+                particleCanvas.height = rect.height;
+                const ctx = particleCanvas.getContext('2d');
+
+                const colors = ['#E37B55', '#C85A32', '#CDA374', '#FFD700', '#FAF8F5', '#4D7E63'];
+                particles = [];
+
+                for (let i = 0; i < 70; i++) {
+                    particles.push({
+                        x: rect.width / 2,
+                        y: rect.height / 2,
+                        vx: (Math.random() - 0.5) * 12,
+                        vy: (Math.random() - 0.7) * 14,
+                        size: Math.random() * 5 + 3,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        alpha: 1,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.2
+                    });
+                }
+
+                function renderParticles() {
+                    ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                    let alive = false;
+
+                    for (const p of particles) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.35; // gravity
+                        p.alpha -= 0.015;
+                        p.rotation += p.rotationSpeed;
+
+                        if (p.alpha > 0) {
+                            alive = true;
+                            ctx.save();
+                            ctx.globalAlpha = p.alpha;
+                            ctx.translate(p.x, p.y);
+                            ctx.rotate(p.rotation);
+                            ctx.fillStyle = p.color;
+                            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                            ctx.restore();
+                        }
+                    }
+
+                    if (alive) {
+                        particleAnimFrame = requestAnimationFrame(renderParticles);
+                    } else {
+                        particleCanvas.classList.add('hidden');
+                    }
+                }
+
+                cancelAnimationFrame(particleAnimFrame);
+                renderParticles();
+            }
+
+            // -------------------------------------------------------------
+            // REVENGE MATCH & ZERO-STATE RESET LOOP
+            // -------------------------------------------------------------
+            function startNewRound(isRematch = true) {
+                closeModal(victoryModal);
+                clearWinningEffects();
+
+                // Zero-state reset: clean board state without page refresh
+                state.board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+                state.isGameOver = false;
+                state.winningCells = [];
+                state.moveHistory = [];
+                state.undoRemaining = 3;
+                state.isAiThinking = false;
+
+                if (isRematch) {
+                    state.series.round++;
+                }
+
+                saveState();
+
+                // Alternating starting tactician across rounds
+                state.currentPlayer = state.series.round % 2 === 1 ? 1 : 2;
+
+                renderBoard();
+                startTimer();
+                updateTurnDisplay();
+                updateScoreDisplays();
+                updateMatchInsights();
+
+                const starterName = state.currentPlayer === 1 ? 'Alex Vance' : (state.gameMode === 'ai' ? 'Solitaire AI' : 'Sam Thorne');
+                announce(`Round ${state.series.round} commenced. ${starterName} holds the opening drop.`);
+
+                if (state.gameMode === 'ai' && state.currentPlayer === 2) {
+                    triggerAiMove();
+                }
+            }
+
+            // -------------------------------------------------------------
+            // UNDO ACTION (Retract Move)
+            // -------------------------------------------------------------
+            function handleUndo() {
+                if (state.isGameOver || state.undoRemaining <= 0 || state.moveHistory.length === 0) return;
+                if (state.gameMode === 'ai' && state.isAiThinking) return;
+
+                // In PvP: revert 1 move. In Solo AI: revert 2 moves (AI move + player move) so it's human's turn again!
+                const movesToRevert = (state.gameMode === 'ai' && state.moveHistory.length >= 2) ? 2 : 1;
+
+                for (let i = 0; i < movesToRevert; i++) {
+                    const lastMove = state.moveHistory.pop();
+                    if (!lastMove) break;
+                    state.board[lastMove.row][lastMove.col] = 0;
+                    const cell = document.querySelector(`.debossed-slot[data-row="${lastMove.row}"][data-col="${lastMove.col}"]`);
+                    if (cell) cell.innerHTML = '';
+                    state.currentPlayer = lastMove.player;
+                }
+
+                state.undoRemaining--;
+                undoCountBadge.textContent = `${state.undoRemaining} left`;
+                if (state.undoRemaining === 0) {
+                    btnUndo.disabled = true;
+                }
+
+                updateTurnDisplay();
+                updateHoverPreviews();
+                updateGhostGuide();
+                updateMatchInsights();
+                announce(`Move retracted. ${state.currentPlayer === 1 ? 'Alex' : 'Opponent'}'s turn.`);
+            }
+
+            // -------------------------------------------------------------
+            // FORFEIT ACTION
+            // -------------------------------------------------------------
+            function handleForfeit() {
+                if (state.isGameOver) return;
+                const oppName = state.currentPlayer === 1 ? (state.gameMode === 'ai' ? 'Solitaire AI' : 'Sam Thorne') : 'Alex Vance';
+                if (confirm(`Yield round ${state.series.round} to ${oppName}?`)) {
+                    const winner = state.currentPlayer === 1 ? 2 : 1;
+                    handleWin({
+                        player: winner,
+                        cells: [],
+                        vector: 'Concession / Surrender'
+                    });
+                }
+            }
+
+            // -------------------------------------------------------------
+            // UI & SCOREBOARD SYNCHRONIZATION
+            // -------------------------------------------------------------
+            function updateTurnDisplay() {
+                const isP1 = state.currentPlayer === 1;
+
+                // Active Card Highlights
+                if (isP1) {
+                    cardP1.classList.add('ring-2', 'ring-clay', 'shadow-md');
+                    cardP1.classList.remove('opacity-75');
+                    cardP2.classList.remove('ring-2', 'ring-forest', 'shadow-md');
+                    cardP2.classList.add('opacity-75');
+
+                    p1TurnBadge.textContent = "Active Turn";
+                    p1TurnBadge.className = "px-2 py-0.5 rounded-md bg-clay/10 text-clay text-[10px] font-mono font-semibold";
+                    p2TurnBadge.textContent = "Awaiting";
+                    p2TurnBadge.className = "px-2 py-0.5 rounded-md bg-[#F3ECE2] text-bark text-[10px] font-mono font-medium";
+
+                    p2StatusText.textContent = "Standing by";
+                    turnBannerElem.textContent = `Turn ${state.moveHistory.length + 1} — Alex Vance is Pondering Move`;
+                } else {
+                    cardP2.classList.add('ring-2', 'ring-forest', 'shadow-md');
+                    cardP2.classList.remove('opacity-75');
+                    cardP1.classList.remove('ring-2', 'ring-clay', 'shadow-md');
+                    cardP1.classList.add('opacity-75');
+
+                    p2TurnBadge.textContent = state.isAiThinking ? "Calculating..." : "Active Turn";
+                    p2TurnBadge.className = "px-2 py-0.5 rounded-md bg-forest/10 text-forest text-[10px] font-mono font-semibold";
+                    p1TurnBadge.textContent = "Awaiting";
+                    p1TurnBadge.className = "px-2 py-0.5 rounded-md bg-[#F3ECE2] text-bark text-[10px] font-mono font-medium";
+
+                    if (state.gameMode === 'ai') {
+                        p2StatusText.textContent = state.isAiThinking ? "Pondering best branch..." : "Ready";
+                        turnBannerElem.textContent = state.isAiThinking ? `Turn ${state.moveHistory.length + 1} — AI is Exploring 5-Ply Tree...` : `Turn ${state.moveHistory.length + 1} — Solitaire AI's Turn`;
+                    } else {
+                        p2StatusText.textContent = "Pondering Move";
+                        turnBannerElem.textContent = `Turn ${state.moveHistory.length + 1} — Sam Thorne is Pondering Move`;
+                    }
+                }
+            }
+
+            function updateScoreDisplays() {
+                p1ScoreElem.textContent = state.series.p1Wins;
+                p2ScoreElem.textContent = state.series.p2Wins;
+
+                // Move counts
+                const p1Moves = state.moveHistory.filter(m => m.player === 1).length;
+                const p2Moves = state.moveHistory.filter(m => m.player === 2).length;
+                p1MovesCountElem.textContent = p1Moves;
+                p2MovesCountElem.textContent = p2Moves;
+
+                const totalWins = state.series.p1Wins + state.series.p2Wins;
+                const p1Rate = totalWins > 0 ? Math.round((state.series.p1Wins / totalWins) * 100) : 50;
+                const p2Rate = totalWins > 0 ? Math.round((state.series.p2Wins / totalWins) * 100) : 50;
+                p1WinrateElem.textContent = `${p1Rate}%`;
+                p2WinrateElem.textContent = `${p2Rate}%`;
+
+                roundLabelElem.textContent = `Round ${state.series.round} • Series Standing`;
+                seriesHeaderBadge.textContent = `Series Standing • Alex ${state.series.p1Wins} — ${state.series.p2Wins} ${state.gameMode === 'ai' ? 'AI' : 'Sam'}`;
+
+                // Render match pebbles (up to 3 markers)
+                renderPebbles(p1Pebbles, state.series.p1Wins, 'bg-clay');
+                renderPebbles(p2Pebbles, state.series.p2Wins, 'bg-forest');
+            }
+
+            function renderPebbles(container, wins, activeColor) {
+                container.innerHTML = '';
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = `w-2.5 h-2.5 rounded-full ${i < wins ? activeColor : 'bg-[#E7DCCE]'}`;
+                    container.appendChild(dot);
+                }
+            }
+
+            function updateMatchInsights() {
+                const totalTokens = state.moveHistory.length;
+                insightSlots.textContent = `${totalTokens} / 42`;
+                insightSlotsSub.textContent = totalTokens > 25 ? 'High density endgame' : (totalTokens > 10 ? 'Midgame clash' : 'Opening balance');
+
+                // Momentum
+                const diff = state.series.p1Wins - state.series.p2Wins;
+                if (diff > 0) {
+                    insightMomentum.textContent = `Alex +${diff * 75} ELO`;
+                    momentumBar.style.width = Math.min(85, 50 + diff * 12) + '%';
+                } else if (diff < 0) {
+                    insightMomentum.textContent = `Opponent +${Math.abs(diff) * 75} ELO`;
+                    momentumBar.style.width = Math.max(15, 50 + diff * 12) + '%';
+                } else {
+                    insightMomentum.textContent = 'Evenly Poised';
+                    momentumBar.style.width = '50%';
+                }
+
+                // Tension
+                if (totalTokens > 20) {
+                    insightTension.textContent = 'High Tension';
+                    insightTensionSub.textContent = 'Traps & double alignments';
+                } else if (totalTokens > 8) {
+                    insightTension.textContent = 'Tactical Poise';
+                    insightTensionSub.textContent = 'Contesting key diagonals';
+                } else {
+                    insightTension.textContent = 'Opening Moves';
+                    insightTensionSub.textContent = 'Seeking center ground';
+                }
+
+                // Pace
+                if (totalTokens > 0) {
+                    const avgSeconds = (state.elapsedSeconds / totalTokens).toFixed(1);
+                    insightPace.textContent = `${avgSeconds}s / Move`;
+                } else {
+                    insightPace.textContent = '3.0s / Move';
+                }
+
+                updateScoreDisplays();
+            }
+
+            // -------------------------------------------------------------
+            // MODAL CONTROLS
+            // -------------------------------------------------------------
+            function openModal(modal) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('opacity-100', 'pointer-events-auto');
+                const card = modal.querySelector('div');
+                if (card) {
+                    card.classList.remove('scale-95');
+                    card.classList.add('scale-100');
+                }
+            }
+
+            function closeModal(modal) {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.classList.remove('opacity-100', 'pointer-events-auto');
+                const card = modal.querySelector('div');
+                if (card) {
+                    card.classList.add('scale-95');
+                    card.classList.remove('scale-100');
+                }
+            }
+
+            function openVictoryModal(winnerName, winResult) {
+                modalTitle.textContent = winnerName === "Stalemate" ? "An Honourable Stalemate" : `${winnerName} Victorious!`;
+                modalDescription.textContent = winnerName === "Stalemate"
+                    ? "Every slot in the oak chassis has been claimed with equal precision."
+                    : `Crafted a decisive alignment on move ${state.moveHistory.length} through ${winResult.vector}.`;
+
+                modalRoundStatus.textContent = `Round ${state.series.round} Completed`;
+                modalMovesCount.textContent = `${state.moveHistory.length} Moves`;
+                modalTimeCount.textContent = formatTime(state.elapsedSeconds);
+                modalVectorDesc.textContent = winResult.vector || "Alignments";
+                modalSeriesScore.textContent = `Alex ${state.series.p1Wins} — ${state.series.p2Wins} ${state.gameMode === 'ai' ? 'AI' : 'Sam'}`;
+                btnModalRematchText.textContent = `Instant Rematch (Round ${state.series.round + 1})`;
+
+                openModal(victoryModal);
+            }
+
+            // -------------------------------------------------------------
+            // SETTINGS, THEMES & DIFFICULTY
+            // -------------------------------------------------------------
+            function applyTheme(themeName) {
+                state.theme = themeName;
+                document.body.setAttribute('data-theme', themeName);
+
+                // Update settings active button
+                document.querySelectorAll('#theme-options button').forEach(btn => {
+                    if (btn.dataset.setTheme === themeName) {
+                        btn.className = "p-3 rounded-2xl border-2 border-clay bg-white flex flex-col gap-1.5 transition-all text-left";
+                    } else {
+                        btn.className = "p-3 rounded-2xl border border-[#E7DCCE] bg-white hover:border-clay/50 flex flex-col gap-1.5 transition-all text-left";
+                    }
+                });
+
+                saveState();
+                renderBoard();
+                updateHoverPreviews();
+            }
+
+            function applyDifficulty(diff) {
+                state.aiDifficulty = diff;
+                diffLabel.textContent = `AI: ${diff.charAt(0).toUpperCase() + diff.slice(1)} (${diff === 'hard' ? 'Minimax' : (diff === 'medium' ? 'Tactical' : 'Casual')})`;
+
+                document.querySelectorAll('[data-set-diff]').forEach(btn => {
+                    if (btn.dataset.setDiff === diff) {
+                        btn.className = "py-2.5 px-3 rounded-xl border-2 border-clay bg-white text-center transition-all font-mono text-xs font-bold text-clay";
+                    } else {
+                        btn.className = "py-2.5 px-3 rounded-xl border border-[#E7DCCE] bg-white hover:border-clay/50 text-center transition-all font-mono text-xs font-semibold text-bark";
+                    }
+                });
+
+                saveState();
+            }
+
+            function setGameMode(mode) {
+                state.gameMode = mode;
+                if (mode === 'ai') {
+                    modeAiBtn.className = "px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs bg-[#FAF8F5] text-charcoal";
+                    modePvpBtn.className = "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium text-bark hover:text-charcoal transition-all";
+                    p2DisplayName.textContent = "Solitaire AI";
+                    diffBadgeContainer.classList.remove('hidden');
+                } else {
+                    modePvpBtn.className = "px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs bg-[#FAF8F5] text-charcoal";
+                    modeAiBtn.className = "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium text-bark hover:text-charcoal transition-all";
+                    p2DisplayName.textContent = "Sam Thorne";
+                    diffBadgeContainer.classList.add('hidden');
+                }
+
+                saveState();
+                startNewRound(false);
+            }
+
+            // -------------------------------------------------------------
+            // EVENT LISTENERS & KEYBOARD ACCESSIBILITY
+            // -------------------------------------------------------------
+            function setupEventListeners() {
+                // Game Mode toggles
+                modeAiBtn.addEventListener('click', () => setGameMode('ai'));
+                modePvpBtn.addEventListener('click', () => setGameMode('pvp'));
+
+                // Header buttons
+                btnSoundToggle.addEventListener('click', () => {
+                    state.soundEnabled = !state.soundEnabled;
+                    soundIcon.textContent = state.soundEnabled ? 'volume_up' : 'volume_off';
+                    saveState();
+                    announce(`Sound ${state.soundEnabled ? 'enabled' : 'muted'}`);
+                });
+
+                btnRulebook.addEventListener('click', () => openModal(rulebookModal));
+                footerRulebookBtn.addEventListener('click', () => openModal(rulebookModal));
+                btnCloseRulebook.addEventListener('click', () => closeModal(rulebookModal));
+                btnCloseRulebookBottom.addEventListener('click', () => closeModal(rulebookModal));
+
+                btnPalette.addEventListener('click', () => openModal(settingsModal));
+                footerThemeBtn.addEventListener('click', () => openModal(settingsModal));
+                btnChangeDiff.addEventListener('click', () => openModal(settingsModal));
+                btnCloseSettings.addEventListener('click', () => closeModal(settingsModal));
+                btnSaveSettings.addEventListener('click', () => closeModal(settingsModal));
+
+                // Bottom actions
+                btnUndo.addEventListener('click', handleUndo);
+                btnRestart.addEventListener('click', () => {
+                    if (confirm("Reset current board?")) {
+                        startNewRound(false);
+                    }
+                });
+                btnForfeit.addEventListener('click', handleForfeit);
+                btnNewRound.addEventListener('click', () => startNewRound(true));
+                btnQuickRematch.addEventListener('click', () => startNewRound(true));
+
+                // Victory modal actions
+                btnModalRematch.addEventListener('click', () => startNewRound(true));
+                btnCloseModal.addEventListener('click', () => closeModal(victoryModal));
+                btnCloseModalX.addEventListener('click', () => closeModal(victoryModal));
+
+                btnShareResult.addEventListener('click', () => {
+                    const text = `Connect Four (Woodcraft Edition) • Round ${state.series.round}: Alex ${state.series.p1Wins} — ${state.series.p2Wins} ${state.gameMode === 'ai' ? 'AI' : 'Sam'} in ${state.moveHistory.length} moves!`;
+                    navigator.clipboard.writeText(text).then(() => {
+                        btnShareText.textContent = "Inscription Copied!";
+                        setTimeout(() => { btnShareText.textContent = "Copy Match Inscription"; }, 2000);
+                    }).catch(() => {
+                        btnShareText.textContent = "Match Inscribed";
+                    });
+                });
+
+                // Theme selector buttons
+                document.querySelectorAll('[data-set-theme]').forEach(btn => {
+                    btn.addEventListener('click', () => applyTheme(btn.dataset.setTheme));
+                });
+
+                // Difficulty selector buttons
+                document.querySelectorAll('[data-set-diff]').forEach(btn => {
+                    btn.addEventListener('click', () => applyDifficulty(btn.dataset.setDiff));
+                });
+
+                // Clear Series Score
+                btnResetSeriesScore.addEventListener('click', () => {
+                    if (confirm("Reset series score standing back to 0-0?")) {
+                        state.series = { p1Wins: 0, p2Wins: 0, draws: 0, round: 1 };
+                        saveState();
+                        startNewRound(false);
+                        closeModal(settingsModal);
+                    }
+                });
+
+                // Keyboard Navigation
+                document.addEventListener('keydown', (e) => {
+                    // Ignore if in input
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                    // Close open modals on Escape
+                    if (e.key === 'Escape') {
+                        closeModal(victoryModal);
+                        closeModal(rulebookModal);
+                        closeModal(settingsModal);
+                        return;
+                    }
+
+                    // Direct numbers 1-7
+                    if (e.key >= '1' && e.key <= '7') {
+                        const col = parseInt(e.key) - 1;
+                        state.focusedCol = col;
+                        state.hoveredCol = col;
+                        updateHoverPreviews();
+                        updateGhostGuide();
+                        handleColumnClick(col);
+                        return;
+                    }
+
+                    // Arrow navigation
+                    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+                        e.preventDefault();
+                        state.focusedCol = (state.focusedCol - 1 + COLS) % COLS;
+                        state.hoveredCol = state.focusedCol;
+                        playHoverTick();
+                        updateHoverPreviews();
+                        updateGhostGuide();
+                        return;
+                    }
+
+                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+                        e.preventDefault();
+                        state.focusedCol = (state.focusedCol + 1) % COLS;
+                        state.hoveredCol = state.focusedCol;
+                        playHoverTick();
+                        updateHoverPreviews();
+                        updateGhostGuide();
+                        return;
+                    }
+
+                    // Drop token with Enter or Space or ArrowDown
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+                        e.preventDefault();
+                        handleColumnClick(state.focusedCol);
+                        return;
+                    }
+
+                    // Undo with Z or U
+                    if (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'u') {
+                        handleUndo();
+                        return;
+                    }
+
+                    // Rematch with R
+                    if (e.key.toLowerCase() === 'r') {
+                        startNewRound(true);
+                        return;
+                    }
+
+                    // Sound with M
+                    if (e.key.toLowerCase() === 'm') {
+                        btnSoundToggle.click();
+                        return;
+                    }
+                });
+            }
+
+            // -------------------------------------------------------------
+            // INITIALIZATION
+            // -------------------------------------------------------------
+            function init() {
+                loadSavedState();
+                applyTheme(state.theme);
+                applyDifficulty(state.aiDifficulty);
+                setGameMode(state.gameMode);
+                initDropperTrack();
+                renderBoard();
+                setupEventListeners();
+                startNewRound(false);
+            }
+
+            // Launch on DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+</body>
+
+</html>
