@@ -1,0 +1,11 @@
+{
+  "name": "aetheria-cards-fullstack",
+  "version": "1.0.0",
+  "description": "Aetheria Cards - Digital Collectible Card System Full Stack (React + Vite + Express)",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build"
+  }
+}

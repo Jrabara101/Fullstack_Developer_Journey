@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #131315;
+    color: #e5e1e4;
+    overflow-x: hidden;
+  }
+}
+
+/* 3D Transform and Card Tilt utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #131315;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2c;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #353437;
+}
+
+/* Holographic Prismatic Rainbow Glare */
+.holo-glare {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 185, 95, 0.25) 25%,
+    rgba(76, 215, 246, 0.35) 45%,
+    rgba(208, 188, 255, 0.35) 65%,
+    rgba(255, 114, 182, 0.25) 85%,
+    transparent 100%
+  );
+  background-size: 250% 250%;
+  mix-blend-mode: color-dodge;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Prismatic foil rainbow border effect */
+.prismatic-border {
+  background: linear-gradient(
+    45deg,
+    #ff007a,
+    #7928ca,
+    #4cd7f6,
+    #00dfd8,
+    #ffb95f,
+    #ff007a
+  );
+  background-size: 400% 400%;
+  animation: shimmer 6s ease infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Foil Tear Strip Pattern */
+.foil-tear-strip {
+  background: repeating-linear-gradient(
+    -45deg,
+    #e79400,
+    #e79400 8px,
+    #201f22 8px,
+    #201f22 16px
+  );
+}
+
+/* Locked Card Silhouette Pattern */
+.locked-slot-pattern {
+  background-color: #161518;
+  background-image: radial-gradient(#2a2a2c 1px, transparent 1px);
+  background-size: 16px 16px;
+}
