@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ApexBank — Trust-Engine Retail Banking Portal</title>
+  
+  <!-- Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,400,0..1,0" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              900: '#0f172a',
+            },
+            slate: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+            },
+            emerald: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            amber: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+            },
+            rose: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* CSS Tabular Figures Rule: Zero Ambiguity in Typography */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+    
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Slider track styling for positive friction speed bump */
+    .slider-thumb-grab {
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .slider-thumb-grab:active {
+      cursor: grabbing;
+    }
+
+    /* Pulse wave for pending transactions */
+    @keyframes pendingBorderGlow {
+      0%, 100% { border-color: rgba(245, 158, 11, 0.4); }
+      50% { border-color: rgba(245, 158, 11, 0.9); }
+    }
+    .pending-row-pulse {
+      animation: pendingBorderGlow 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 font-sans text-slate-800 antialiased selection:bg-slate-900 selection:text-white flex flex-col min-h-screen">
+
+  <!-- ==================== EXECUTIVE TRUST & KPI BANNER (COLLAPSIBLE) ==================== -->
+  <aside id="kpi-banner" class="bg-slate-900 text-slate-200 border-b border-slate-800 text-xs py-2 px-4 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+        <span class="font-semibold tracking-wide text-white uppercase text-[10px] bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Trust Engine Metrics</span>
+        <span class="hidden sm:inline text-slate-400">Real-time UX telemetry & self-sufficiency benchmarks</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 sm:gap-6 tabular-nums">
+        <div class="flex items-center gap-1.5" title="Users completing tasks without calling customer support">
+          <span class="text-slate-400">Self-Service Resolution:</span>
+          <span class="font-semibold text-emerald-400">94.2%</span>
+          <span class="text-[10px] text-emerald-500 bg-emerald-950/60 px-1 rounded">▲ +2.4%</span>
+        </div>
+        <div class="flex items-center gap-1.5" title="Daily Active Users checking balances with low anxiety">
+          <span class="text-slate-400">Daily Active Habit (DAU):</span>
+          <span class="font-semibold text-sky-400">88.4%</span>
+        </div>
+        <div class="flex items-center gap-1.5" title="Drop-off during transfers with strategic friction">
+          <span class="text-slate-400">Transfer Abandonment:</span>
+          <span class="font-semibold text-emerald-400">1.1%</span>
+          <span class="text-[10px] text-slate-400">(Low Friction)</span>
+        </div>
+        <button onclick="toggleKpiBanner()" class="text-slate-400 hover:text-white ml-2" aria-label="Close telemetry bar">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== PRIMARY NAVIGATION HEADER ==================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Section Tabs -->
+      <div class="flex items-center gap-8">
+        <a href="#" class="flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-slate-900 rounded-lg p-1">
+          <!-- Institutional Logo SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none" class="h-8 w-auto">
+            <rect width="36" height="36" y="2" rx="8" fill="#0f172a"/>
+            <path d="M18 10L27 15.5V26.5L18 32L9 26.5V15.5L18 10Z" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="18" cy="21" r="3" fill="#ffffff"/>
+            <text x="46" y="26" font-family="Inter, -apple-system, sans-serif" font-weight="700" font-size="20" fill="#0f172a" letter-spacing="-0.03em">Apex<tspan fill="#0284c7">Bank</tspan></text>
+          </svg>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1" aria-label="Primary Navigation">
+          <a href="#" class="px-3 py-2 text-sm font-semibold rounded-lg bg-slate-100 text-slate-900 transition-colors">
+            Dashboard
+          </a>
+          <a href="#transfers-section" onclick="openTransferModal()" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            Transfers & Pay
+          </a>
+          <a href="#forward-cashflow" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            14-Day Trajectory
+          </a>
+          <a href="#cards-section" onclick="scrollToCards()" class="px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+            Security & Cards
+          </a>
+        </nav>
+      </div>
+
+      <!-- Header Utilities & User Profile -->
+      <div class="flex items-center gap-3">
+        <!-- Legacy vs Clean Merchant View Toggle Switch -->
+        <div class="hidden lg:flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200" title="Toggle between raw payment gateway strings and human-friendly merchant names">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase px-1.5">View:</span>
+          <button id="btn-view-clean" onclick="setMerchantViewMode('clean')" class="px-2.5 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-xs transition-all">
+            Clean Merchant
+          </button>
+          <button id="btn-view-raw" onclick="setMerchantViewMode('raw')" class="px-2.5 py-1 text-xs font-medium rounded text-slate-500 hover:text-slate-900 transition-all">
+            Raw Gateway String
+          </button>
+        </div>
+
+        <!-- Quick Transfer Speed Bump Trigger -->
+        <button onclick="openTransferModal()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-all focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
+          <span class="material-symbols-outlined text-[18px]">send_money</span>
+          <span>Send Money</span>
+        </button>
+
+        <!-- Notification Bell with Pending Hold Badge -->
+        <div class="relative">
+          <button onclick="toggleNotifications()" class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors relative" aria-label="Notifications">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white" title="1 Pending merchant hold"></span>
+          </button>
+          
+          <!-- Dropdown Notifications Menu -->
+          <div id="notifications-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+            <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Security & Account Alerts</span>
+              <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">1 Hold Active</span>
+            </div>
+            <div class="p-3 hover:bg-slate-50 transition-colors border-b border-slate-50 cursor-pointer" onclick="highlightPendingTransaction()">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-amber-500 text-[20px] shrink-0 mt-0.5">info</span>
+                <div>
+                  <p class="text-xs font-semibold text-slate-900">Pre-Authorization Hold</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Whole Foods placed a temporary hold of $142.80. Deducted from Safe-to-Spend.</p>
+                  <span class="text-[10px] text-slate-400 mt-1 block tabular-nums">Today, 1:15 PM</span>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 hover:bg-slate-50 transition-colors cursor-pointer" onclick="showSafeSpendPopover()">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-emerald-600 text-[20px] shrink-0 mt-0.5">verified_user</span>
+                <div>
+                  <p class="text-xs font-semibold text-slate-900">Safe-to-Spend Buffer Healthy</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">All scheduled bills for the next 14 days ($2,440.42) are fully reserved.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Pill -->
+        <div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+          <div class="relative">
+            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs ring-2 ring-slate-100">
+              SM
+            </div>
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Identity Verified (MFA Active)"></span>
+          </div>
+          <div class="hidden xl:flex flex-col text-left">
+            <span class="text-xs font-semibold text-slate-900 leading-tight">Sarah Mitchell</span>
+            <span class="text-[11px] text-emerald-600 font-medium leading-none">MFA Shield Active</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Greeting & Temporal Anchor Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+      <div>
+        <div class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
+          <span class="material-symbols-outlined text-[15px] text-slate-400">calendar_today</span>
+          <span id="live-date">Thursday, May 23, 2024</span>
+          <span class="text-slate-300">•</span>
+          <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Direct Deposit Active
+          </span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          Financial Peace of Mind, Sarah
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+          Zero ambiguity across cash flows. All upcoming 14-day obligations accounted for.
+        </p>
+      </div>
+
+      <!-- Quick Self-Service & Protection Action Shortcuts -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button onclick="toggleCardFreeze()" id="btn-freeze-shortcut" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs transition-all">
+          <span class="material-symbols-outlined text-[17px] text-slate-600" id="shortcut-lock-icon">lock_open</span>
+          <span id="shortcut-lock-text">Freeze Debit Card</span>
+        </button>
+
+        <button onclick="openDisputeModal(null)" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs transition-all">
+          <span class="material-symbols-outlined text-[17px] text-slate-600">shield_with_heart</span>
+          <span>Dispute Resolution</span>
+        </button>
+
+        <button onclick="openTransferModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-all">
+          <span class="material-symbols-outlined text-[17px]">sync_alt</span>
+          <span>Transfer Funds</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== PILLAR 1: THE PSYCHOLOGY OF TRUST & SAFE TO SPEND ==================== -->
+    <section aria-labelledby="accounts-summary-title">
+      <h2 id="accounts-summary-title" class="sr-only">Account Balances and Safe to Spend Summary</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <!-- CARD 1: MAIN CHECKING WITH SAFE TO SPEND HEURISTIC -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all hover:border-slate-300 group">
+          <!-- Top subtle indicator band -->
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-indigo-600"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-100">
+                  <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-bold text-slate-900">Main Checking</span>
+                    <button onclick="copyToClipboard('4821', 'Account number')" class="text-slate-400 hover:text-slate-600 transition-colors" title="Copy account number">
+                      <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                    </button>
+                  </div>
+                  <span class="text-xs text-slate-400 tabular-nums">•••• 4821</span>
+                </div>
+              </div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                Active
+              </span>
+            </div>
+
+            <!-- Raw Available Balance -->
+            <div class="mt-4">
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+                Available Ledger Balance
+              </span>
+              <div class="text-3xl font-bold text-slate-900 tracking-tight tabular-nums flex items-baseline gap-1">
+                <span>$14,850.42</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- The "Safe to Spend" Heuristic Drawer Card -->
+          <div class="mt-5 p-3.5 bg-slate-50/90 rounded-xl border border-slate-200/80">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-semibold text-slate-700">Safe to Spend Heuristic</span>
+                  <button onclick="showSafeSpendPopover()" class="text-slate-400 hover:text-slate-700 focus:outline-none" title="Click to view Safe-to-Spend mathematical breakdown">
+                    <span class="material-symbols-outlined text-[16px]">help</span>
+                  </button>
+                </div>
+                <div class="text-xl font-extrabold text-slate-900 tabular-nums tracking-tight mt-0.5">
+                  $12,410.00
+                </div>
+              </div>
+              <button onclick="showSafeSpendPopover()" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shadow-2xs transition-all flex items-center gap-1">
+                <span>Breakdown</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-2 border-t border-slate-200/60 pt-2 flex items-center gap-1">
+              <span class="material-symbols-outlined text-emerald-600 text-[14px]">shield</span>
+              <span>$2,440.42 deducted for scheduled 14-day bills & holds</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- CARD 2: HIGH-YIELD SAVINGS -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all hover:border-slate-300 group">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+                  <span class="material-symbols-outlined text-[18px]">savings</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-bold text-slate-900">High-Yield Savings</span>
+                    <button onclick="copyToClipboard('9104', 'Savings account number')" class="text-slate-400 hover:text-slate-600 transition-colors" title="Copy account number">
+                      <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                    </button>
+                  </div>
+                  <span class="text-xs text-slate-400 tabular-nums">•••• 9104</span>
+                </div>
+              </div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                4.65% APY
+              </span>
+            </div>
+
+            <!-- Balance -->
+            <div class="mt-4">
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+                Total Accrued Savings
+              </span>
+              <div class="text-3xl font-bold text-slate-900 tracking-tight tabular-nums">
+                $48,290.15
+              </div>
+            </div>
+          </div>
+
+          <!-- Interest Earned Inflow (Emerald Discipline) -->
+          <div class="mt-5 p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-emerald-900 block">Yield Earned (May)</span>
+              <!-- Emerald exclusively for positive cash flow -->
+              <span class="text-base font-bold text-emerald-700 tabular-nums">+$187.32</span>
+            </div>
+            <button onclick="openTransferModal('savings')" class="px-2.5 py-1 text-xs font-semibold bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg shadow-2xs transition-all flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add_circle</span>
+              <span>Deposit</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CARD 3: PREMIER CREDIT CARD WITH REAL-TIME FREEZE TOGGLE -->
+        <div id="cards-section" class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all hover:border-slate-300 group">
+          <div id="card-indicator-band" class="absolute top-0 left-0 right-0 h-1 bg-slate-900 transition-all"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div id="card-icon-container" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200">
+                  <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-bold text-slate-900">Apex Premier Card</span>
+                    <button onclick="copyToClipboard('3319', 'Card number')" class="text-slate-400 hover:text-slate-600 transition-colors" title="Copy card number">
+                      <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                    </button>
+                  </div>
+                  <span class="text-xs text-slate-400 tabular-nums">•••• 3319</span>
+                </div>
+              </div>
+              
+              <!-- Card State Badge (Changes on Freeze) -->
+              <span id="card-state-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </span>
+            </div>
+
+            <!-- Current Balance (Neutral Color: NOT Red!) -->
+            <div class="mt-4">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Current Utilized Balance
+                </span>
+                <span class="text-[11px] font-medium text-slate-500 tabular-nums">Due in 12 days</span>
+              </div>
+              <div class="text-3xl font-bold text-slate-900 tracking-tight tabular-nums mt-1">
+                $1,420.80
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Utilization & Self-Service Freeze Switch -->
+          <div class="mt-5 p-3.5 bg-slate-50/90 rounded-xl border border-slate-200/80 space-y-2.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-500">Available Limit: <strong class="text-slate-900 tabular-nums font-semibold">$18,579.20</strong></span>
+              <span class="text-slate-400 tabular-nums font-medium">7.1% ratio</span>
+            </div>
+            
+            <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full bg-slate-800 rounded-full" style="width: 7.1%;"></div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
+              <span class="text-[11px] font-medium text-slate-600">Card Protection:</span>
+              <button onclick="toggleCardFreeze()" id="btn-card-freeze" class="text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 hover:border-slate-300 transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">lock</span>
+                <span id="btn-card-freeze-label">Freeze Card</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== PILLAR 3: ACTIONABLE PFM INSIGHTS (NOT BASIC PIE CHARTS) ==================== -->
+    <section aria-label="Financial Peace of Mind Insights" class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl p-5 shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+            <span class="material-symbols-outlined text-[24px]">psychology</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Synthesized Financial Insight</span>
+              <span class="text-[10px] bg-sky-950/80 text-sky-300 border border-sky-800 px-2 py-0.5 rounded-full font-medium">Forward PFM</span>
+            </div>
+            <p class="text-sm font-medium text-slate-100 mt-1 leading-relaxed">
+              "Your dining expenses are <strong class="text-amber-300">15% higher</strong> than your monthly baseline ($345 spent vs $300 avg). You have <strong class="text-emerald-400 tabular-nums">$200 left</strong> in your discretionary dining budget for the next 8 days."
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick contextual metric pill -->
+        <div class="flex items-center gap-3 shrink-0 self-end lg:self-center border-t lg:border-t-0 lg:border-l border-slate-700 pt-3 lg:pt-0 lg:pl-5">
+          <div class="text-right">
+            <span class="text-[11px] text-slate-400 block">Yield Offset Ratio</span>
+            <span class="text-sm font-bold text-emerald-400 tabular-nums">+100% of Subscriptions</span>
+          </div>
+          <button onclick="openPfmDrawer()" class="px-3 py-1.5 text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-white rounded-lg border border-slate-600 transition-colors">
+            Budget Details
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== MAIN 2-COLUMN GRID (8 COLS LEDGER / 4 COLS FORWARD CASH FLOW) ==================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- ==================== PILLAR 2: TRANSACTION LEDGER ERGONOMICS (8 COLS) ==================== -->
+      <section class="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden" aria-labelledby="transaction-ledger-title">
+        
+        <!-- Table Control & Filter Bar -->
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div class="flex items-center gap-2.5">
+            <h2 id="transaction-ledger-title" class="text-lg font-bold text-slate-900">
+              Transaction Ledger
+            </h2>
+            <span id="tx-count-badge" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 tabular-nums">
+              7 records
+            </span>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Real-time live merchant search -->
+            <div class="relative min-w-[160px] sm:w-48">
+              <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] pointer-events-none">search</span>
+              <input 
+                id="search-input" 
+                type="text" 
+                placeholder="Search merchant..." 
+                oninput="filterTransactions()" 
+                class="w-full h-8 pl-8 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all"
+              />
+            </div>
+
+            <!-- Inflow/Outflow Filter Tabs -->
+            <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200/80" role="tablist">
+              <button onclick="setFilter('all')" id="filter-tab-all" class="px-2.5 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-2xs transition-all">
+                All
+              </button>
+              <button onclick="setFilter('inflow')" id="filter-tab-inflow" class="px-2.5 py-1 text-xs font-medium rounded text-slate-600 hover:text-slate-900 transition-all">
+                Inflows (+)
+              </button>
+              <button onclick="setFilter('outflow')" id="filter-tab-outflow" class="px-2.5 py-1 text-xs font-medium rounded text-slate-600 hover:text-slate-900 transition-all">
+                Outflows (-)
+              </button>
+              <button onclick="setFilter('pending')" id="filter-tab-pending" class="px-2.5 py-1 text-xs font-medium rounded text-slate-600 hover:text-slate-900 transition-all">
+                Pending
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- High-Density Transaction Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" id="tx-table">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                <th scope="col" class="py-2.5 px-4 font-semibold">Date & Time</th>
+                <th scope="col" class="py-2.5 px-4 font-semibold">Merchant / Description</th>
+                <th scope="col" class="py-2.5 px-4 font-semibold">Category</th>
+                <th scope="col" class="py-2.5 px-4 font-semibold text-center">Status</th>
+                <th scope="col" class="py-2.5 px-4 font-semibold text-right">Amount</th>
+                <th scope="col" class="py-2.5 px-3 font-semibold text-center w-10"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-xs" id="tx-table-body">
+              
+              <!-- ROW 1: INFLOW (Payroll Direct Deposit) -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="inflow" data-status="completed" data-merchant="Acme Corp Payroll" onclick="openDisputeModal(1)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  Today, 9:00 AM
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-200">
+                      AC
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        Acme Corp — Bi-Weekly Payroll
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        Direct Deposit • Ref #928410 • Checking •••• 4821
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Income
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Cleared
+                  </span>
+                </td>
+                <!-- Positive Inflow in Emerald -->
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-emerald-600 text-sm">
+                  +$4,250.00
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(1)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 2: PENDING OUTFLOW (Whole Foods Market) WITH DASHED BORDER & TOOLTIP -->
+              <tr id="row-pending-tx" class="bg-amber-50/40 border-y-2 border-dashed border-amber-300 hover:bg-amber-50/70 transition-all group cursor-pointer tx-row" data-type="outflow" data-status="pending" data-merchant="Whole Foods Market" onclick="openDisputeModal(2)">
+                <td class="py-3 px-4 text-amber-900 font-medium italic whitespace-nowrap tabular-nums">
+                  Today, 1:15 PM
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs shrink-0 border border-amber-300">
+                      WF
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="block font-semibold text-slate-900 truncate merchant-display">
+                          Whole Foods Market
+                        </span>
+                        <!-- Pending Explanation Micro-Interaction Tooltip Button -->
+                        <button onclick="event.stopPropagation(); showPendingHoldExplanation()" class="text-amber-600 hover:text-amber-800 p-0.5" title="Why is this pending? Click to learn more.">
+                          <span class="material-symbols-outlined text-[15px]">help</span>
+                        </button>
+                      </div>
+                      <span class="block text-[11px] text-amber-800/80 truncate detail-display tabular-nums">
+                        POS Pre-Authorization Hold • Card •••• 4821
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-900 border border-amber-200">
+                    Groceries
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <!-- Distinct Pending Tag -->
+                  <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+                    Pending (Clears Tomorrow)
+                  </span>
+                </td>
+                <!-- Standard Outflow: Slate/Black, NOT red! -->
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-slate-900 text-sm">
+                  -$142.80
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(2)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 3: CLEAN MERCHANT "Square Coffee" vs LEGACY "ACH TRNSFR 09192 SQ* COFFEE" -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="outflow" data-status="completed" data-merchant="Square Coffee" onclick="openDisputeModal(3)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  Yesterday, 8:12 AM
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-200">
+                      SQ
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        Square Coffee
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        Point of Sale • Card •••• 3319
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Dining & Coffee
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="text-[11px] text-slate-500 font-medium">Cleared</span>
+                </td>
+                <!-- Slate for everyday spend -->
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-slate-900 text-sm">
+                  -$4.75
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(3)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 4: APPLE SERVICES -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="outflow" data-status="completed" data-merchant="Apple Services" onclick="openDisputeModal(4)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  May 21, 2024
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-200">
+                      AP
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        Apple Services
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        iCloud+ Recurring • Card •••• 3319
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Subscription
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="text-[11px] text-slate-500 font-medium">Cleared</span>
+                </td>
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-slate-900 text-sm">
+                  -$14.99
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(4)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 5: EQUINOX FITNESS -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="outflow" data-status="completed" data-merchant="Equinox Fitness" onclick="openDisputeModal(5)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  May 20, 2024
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-200">
+                      EQ
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        Equinox Fitness Club
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        Monthly Membership • Checking •••• 4821
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Health & Fitness
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="text-[11px] text-slate-500 font-medium">Cleared</span>
+                </td>
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-slate-900 text-sm">
+                  -$280.00
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(5)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 6: VANGUARD DIVIDENDS INFLOW -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="inflow" data-status="completed" data-merchant="Vanguard Dividends" onclick="openDisputeModal(6)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  May 19, 2024
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-200">
+                      VG
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        Vanguard Total Market Dividends
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        Brokerage Distribution • VTSAX Yield
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Investment
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Cleared
+                  </span>
+                </td>
+                <!-- Emerald Inflow -->
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-emerald-600 text-sm">
+                  +$342.18
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(6)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- ROW 7: CONEDISON ELECTRIC -->
+              <tr class="hover:bg-slate-50/80 transition-colors group cursor-pointer tx-row" data-type="outflow" data-status="completed" data-merchant="ConEdison Electric" onclick="openDisputeModal(7)">
+                <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap tabular-nums">
+                  May 18, 2024
+                </td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-200">
+                      CE
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block font-semibold text-slate-900 truncate merchant-display">
+                        ConEdison Electric
+                      </span>
+                      <span class="block text-[11px] text-slate-400 truncate detail-display tabular-nums">
+                        Automated Bill Pay • Checking •••• 4821
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                    Utilities
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <span class="text-[11px] text-slate-500 font-medium">Cleared</span>
+                </td>
+                <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap font-bold text-slate-900 text-sm">
+                  -$128.40
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button class="text-slate-400 hover:text-slate-700 p-1 rounded" title="View details" onclick="event.stopPropagation(); openDisputeModal(7)">
+                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer / Ledger Self-Service Help -->
+        <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+            <span>All entries synchronized with Federal Reserve ACH & Visa Core</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="downloadStatements()" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded font-medium transition-colors">
+              Export CSV
+            </button>
+            <button onclick="openDisputeModal(null)" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded font-medium transition-colors">
+              Report Unauthorized Activity
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== PILLAR 3 CONT.: FORWARD-LOOKING CASH FLOW (4 COLS) ==================== -->
+      <div class="lg:col-span-4 space-y-6" id="forward-cashflow">
+        
+        <!-- WIDGET: NEXT 14 DAYS FORWARD-LOOKING TRAJECTORY -->
+        <section class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs" aria-labelledby="forward-title">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 id="forward-title" class="text-sm font-bold text-slate-900">Next 14 Days Cash Flow</h3>
+                <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-sky-100 text-sky-800 uppercase">Forward</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Algorithmically projected commitments</p>
+            </div>
+            
+            <button onclick="toggleForecastChart()" id="btn-chart-toggle" class="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 px-2 py-1 rounded border border-slate-200 transition-colors">
+              Toggle Chart
+            </button>
+          </div>
+
+          <!-- Forward Trajectory Interactive SVG Graph -->
+          <div id="forward-chart-container" class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+            <div class="flex justify-between items-center text-[11px] mb-2">
+              <span class="font-semibold text-slate-700">Projected Balance Curve</span>
+              <span class="text-emerald-700 font-bold tabular-nums">Min: $12,410.00</span>
+            </div>
+            
+            <!-- SVG Curve showing projected trajectory -->
+            <svg viewBox="0 0 280 80" class="w-full h-20 overflow-visible">
+              <defs>
+                <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0284c7" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#0284c7" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <!-- Baseline gridline -->
+              <line x1="0" y1="70" x2="280" y2="70" stroke="#e2e8f0" stroke-dasharray="2 2"/>
+              <!-- Shaded trajectory area -->
+              <polygon points="0,30 50,33 90,38 140,42 190,15 240,40 280,38 280,70 0,70" fill="url(#curveGradient)"/>
+              <!-- Trajectory curve line -->
+              <polyline points="0,30 50,33 90,38 140,42 190,15 240,40 280,38" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Key milestone points -->
+              <circle cx="50" cy="33" r="3" fill="#f59e0b" title="Amazon Prime -$14.99"/>
+              <circle cx="90" cy="38" r="3" fill="#f59e0b" title="MetLife -$185.00"/>
+              <circle cx="140" cy="42" r="3" fill="#f59e0b" title="Verizon -$125.00"/>
+              <circle cx="190" cy="15" r="4" fill="#10b981" title="Payroll Deposit +$4,250.00"/>
+              <circle cx="240" cy="40" r="3.5" fill="#0f172a" title="Rent -$2,100.00"/>
+            </svg>
+            
+            <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-medium tabular-nums">
+              <span>May 23 (Today)</span>
+              <span class="text-emerald-600 font-semibold">May 31 (Payday)</span>
+              <span>Jun 06</span>
+            </div>
+          </div>
+
+          <!-- Chronological List of Next 14-Day Commitments -->
+          <div class="space-y-2.5">
+            <!-- Commitment 1 -->
+            <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/60">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">subscriptions</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-xs font-semibold text-slate-900 truncate">Amazon Prime</span>
+                  <span class="block text-[11px] text-slate-400 tabular-nums">Due in 2 days (May 25)</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-bold text-slate-900 tabular-nums">$14.99</span>
+                <button onclick="payBillEarly('Amazon Prime', 14.99)" class="text-[10px] font-semibold bg-white hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-200">
+                  Pay Early
+                </button>
+              </div>
+            </div>
+
+            <!-- Commitment 2 -->
+            <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/60">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">directions_car</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-xs font-semibold text-slate-900 truncate">MetLife Auto Ins.</span>
+                  <span class="block text-[11px] text-slate-400 tabular-nums">Due in 4 days (May 27)</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-bold text-slate-900 tabular-nums">$185.00</span>
+                <button onclick="payBillEarly('MetLife Auto', 185.00)" class="text-[10px] font-semibold bg-white hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-200">
+                  Pay Early
+                </button>
+              </div>
+            </div>
+
+            <!-- Commitment 3 -->
+            <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/60">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">cell_tower</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-xs font-semibold text-slate-900 truncate">Verizon Wireless</span>
+                  <span class="block text-[11px] text-slate-400 tabular-nums">Due in 6 days (May 29)</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-bold text-slate-900 tabular-nums">$125.00</span>
+                <button onclick="payBillEarly('Verizon Wireless', 125.00)" class="text-[10px] font-semibold bg-white hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-200">
+                  Pay Early
+                </button>
+              </div>
+            </div>
+
+            <!-- Inflow Anchor: Payday -->
+            <div class="flex items-center justify-between p-2.5 bg-emerald-50/70 rounded-lg border border-emerald-200/60">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-md bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">payments</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-xs font-bold text-emerald-900 truncate">Payroll Direct Deposit</span>
+                  <span class="block text-[11px] text-emerald-700 tabular-nums">In 8 days (May 31)</span>
+                </div>
+              </div>
+              <span class="text-xs font-extrabold text-emerald-700 tabular-nums">+$4,250.00</span>
+            </div>
+
+            <!-- Major Outflow: Rent -->
+            <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/60">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">apartment</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="block text-xs font-semibold text-slate-900 truncate">Residential Rent</span>
+                  <span class="block text-[11px] text-slate-400 tabular-nums">Due in 9 days (Jun 01)</span>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-slate-900 tabular-nums">$2,100.00</span>
+            </div>
+          </div>
+
+          <!-- Total Committed Summary -->
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Total 14-Day Committed:</span>
+            <span class="font-bold text-slate-900 tabular-nums">$2,424.99</span>
+          </div>
+        </section>
+
+        <!-- PFM MONTHLY CASH FLOW SUMMARY WIDGET -->
+        <section class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-900">Cash Flow Balance</h3>
+            <span class="text-xs font-semibold text-slate-500">May 2024</span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-sm bg-slate-900"></span>
+                <span class="text-slate-600">Total Inflows:</span>
+              </div>
+              <span class="font-bold text-emerald-600 tabular-nums">+$8,500.00</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-sm bg-slate-300"></span>
+                <span class="text-slate-600">Total Outflows:</span>
+              </div>
+              <span class="font-bold text-slate-900 tabular-nums">$4,120.50</span>
+            </div>
+            <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+              <span class="font-semibold text-slate-800">Net Retained Cash:</span>
+              <span class="font-extrabold text-emerald-600 tabular-nums">+$4,379.50</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="mt-auto bg-white border-t border-slate-200 text-slate-500 text-xs py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-slate-900">ApexBank Institutional</span>
+        <span>•</span>
+        <span>Member FDIC</span>
+        <span>•</span>
+        <span>Equal Housing Lender</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="#" onclick="showSecurityPolicy()" class="hover:text-slate-900 transition-colors">Security Policy & Positive Friction</a>
+        <a href="#" onclick="showSafeSpendPopover()" class="hover:text-slate-900 transition-colors">Safe-to-Spend Doctrine</a>
+        <a href="#" class="hover:text-slate-900 transition-colors">Dispute Charter</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- ==================== MODALS & POSITIVE FRICTION OVERLAYS ================ -->
+  <!-- ========================================================================= -->
+
+  <!-- 1. "SAFE TO SPEND" BREAKDOWN POPOVER / MODAL -->
+  <div id="safe-spend-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">The "Safe to Spend" Heuristic</h3>
+            <span class="text-[11px] text-slate-400">Psychological Protection Model</span>
+          </div>
+        </div>
+        <button onclick="closeSafeSpendModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3.5 text-xs text-slate-600">
+        <p class="leading-relaxed">
+          Standard banks induce anxiety by showing an inflated <em>"Available Balance"</em> that does not reflect upcoming bills. ApexBank automatically deducts scheduled payments to give you your true purchasing power:
+        </p>
+
+        <!-- Calculation Breakdown Stack -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 tabular-nums">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500">Available Ledger Balance:</span>
+            <span class="font-bold text-slate-900">$14,850.42</span>
+          </div>
+          <div class="flex justify-between items-center text-amber-800">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">timer</span>
+              <span>Less Pending Pre-Authorizations (Whole Foods):</span>
+            </span>
+            <span class="font-semibold">-$142.80</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-700">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">event_repeat</span>
+              <span>Less 14-Day Scheduled Obligations (Rent & Bills):</span>
+            </span>
+            <span class="font-semibold">-$2,297.62</span>
+          </div>
+          <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-sm">
+            <span class="font-extrabold text-slate-900">Immediate Safe to Spend:</span>
+            <span class="font-extrabold text-emerald-600 text-base">$12,410.00</span>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-400">
+          This algorithmic buffer ensures you never incur an overdraft or miss scheduled automated payments.
+        </p>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button onclick="closeSafeSpendModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors">
+          Understood
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PENDING PRE-AUTHORIZATION EXPLANATION TOOLTIP / MODAL -->
+  <div id="pending-hold-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-amber-300 shadow-2xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-amber-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">lock_clock</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Temporary Merchant Hold</h3>
+            <span class="text-[11px] text-amber-700 font-medium">Whole Foods Market • $142.80</span>
+          </div>
+        </div>
+        <button onclick="closePendingHoldModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3 text-xs text-slate-600">
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 leading-relaxed">
+          <strong>Why is this styled with a dashed border?</strong>
+          <p class="mt-1">
+            "This merchant has placed a temporary pre-authorization hold. The final amount may change slightly when the transaction clears (e.g. tips or weights), expected tomorrow at 6:00 AM."
+          </p>
+        </div>
+        <p class="text-slate-500 leading-relaxed">
+          ApexBank isolates pending charges from settled charges to reduce false fraud reports and give you accurate temporal clarity.
+        </p>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+        <button onclick="openDisputeModal(2); closePendingHoldModal();" class="text-xs text-rose-600 hover:text-rose-800 font-medium">
+          Don't recognize this hold?
+        </button>
+        <button onclick="closePendingHoldModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PILLAR 4: SEND MONEY WITH "SLIDE TO TRANSFER" SPEED BUMP -->
+  <div id="transfer-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">send_money</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Secure Money Movement</h3>
+            <span class="text-[11px] text-slate-400">Positive Friction Protection Layer</span>
+          </div>
+        </div>
+        <button onclick="closeTransferModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Transfer Form -->
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">From Account</label>
+          <select id="transfer-source" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-slate-900 focus:outline-none">
+            <option value="checking">Main Checking (•••• 4821) — Safe to Spend: $12,410.00</option>
+            <option value="savings">High-Yield Savings (•••• 9104) — $48,290.15</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Recipient / Payee</label>
+          <input id="transfer-recipient" type="text" value="Marcus Vance (External Chase •••• 9921)" class="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-slate-900 focus:outline-none"/>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-semibold text-slate-700">Amount ($ USD)</label>
+            <span class="text-[11px] text-slate-400">Transfers ≥ $500 trigger Positive Friction speed bumps</span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-base">$</span>
+            <input id="transfer-amount" type="number" step="10" value="1250.00" oninput="updateSpeedBumpThreshold()" class="w-full h-11 pl-8 pr-3 text-base font-bold tabular-nums bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:ring-2 focus:ring-slate-900 focus:outline-none"/>
+          </div>
+        </div>
+
+        <!-- POSITIVE FRICTION SPEED BUMP: SLIDE TO TRANSFER -->
+        <div id="speed-bump-box" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <div class="flex items-center gap-2 text-slate-800">
+            <span class="material-symbols-outlined text-sky-600 text-[18px]">verified_user</span>
+            <span class="font-bold text-xs">Speed Bump Protection Active</span>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            High-value transfer ($1,250.00). To eliminate accidental wire clicks, slide the track below to execute.
+          </p>
+
+          <!-- Interactive Draggable Slider Track -->
+          <div class="relative w-full h-12 bg-slate-200 rounded-full flex items-center p-1 select-none overflow-hidden" id="slider-track">
+            <div id="slider-progress" class="absolute left-0 top-0 bottom-0 bg-slate-900 rounded-full transition-none" style="width: 44px;"></div>
+            
+            <div id="slider-thumb" class="relative z-10 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-slate-900 slider-thumb-grab transition-none">
+              <span class="material-symbols-outlined text-[20px]" id="slider-thumb-icon">arrow_forward</span>
+            </div>
+
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none text-xs font-bold text-slate-600 tracking-wide uppercase" id="slider-label">
+              Slide to Confirm Transfer ➔
+            </div>
+          </div>
+        </div>
+
+        <!-- Low value button (only visible if < $500) -->
+        <button id="btn-instant-transfer" onclick="executeTransfer(false)" class="hidden w-full h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs transition-colors">
+          Confirm Standard Transfer
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SELF-SERVICE DISPUTE & TRANSACTION DETAIL MODAL -->
+  <div id="dispute-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900" id="dispute-modal-title">Transaction Receipt & Resolution</h3>
+            <span class="text-[11px] text-slate-400">Self-Service Customer Support Hub</span>
+          </div>
+        </div>
+        <button onclick="closeDisputeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs" id="dispute-modal-body">
+        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 tabular-nums">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Merchant:</span>
+            <span class="font-bold text-slate-900" id="dispute-merchant-name">Whole Foods Market</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Billed Amount:</span>
+            <span class="font-bold text-slate-900" id="dispute-amount">$142.80</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Payment Gateway Terminal:</span>
+            <span class="font-mono text-slate-600" id="dispute-terminal">POS-WFM-NYC-4029</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Card Used:</span>
+            <span class="font-medium text-slate-800">Visa Debit •••• 4821</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-sky-50 rounded-xl border border-sky-200 text-sky-900 text-xs">
+          <strong>Need self-service assistance?</strong>
+          <p class="mt-0.5 text-sky-800">
+            You can lock your card instantly or submit a zero-liability dispute without waiting in phone queues.
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+        <button onclick="submitDisputeTicket()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">report</span>
+          <span>Dispute This Charge</span>
+        </button>
+        <button onclick="closeDisputeModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ==================== AUDIT TOAST NOTIFICATIONS (AUDITABILITY) =========== -->
+  <!-- ========================================================================= -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+    <!-- Dynamic high-trust toasts injected here -->
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ==================== JAVASCRIPT STATE ENGINE ============================ -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- STATE REPOSITORY ---
+    const state = {
+      cardFrozen: false,
+      merchantViewMode: 'clean', // 'clean' | 'raw'
+      currentFilter: 'all',
+      kpiBannerVisible: true,
+      rawMerchantStrings: {
+        1: { raw: "ACH TRNSFR 09192 SQ* ACME CORP", clean: "Acme Corp — Bi-Weekly Payroll" },
+        2: { raw: "POS DEBIT 4821 0523 WFM* STORE #104", clean: "Whole Foods Market" },
+        3: { raw: "ACH TRNSFR 09192 SQ* COFFEE", clean: "Square Coffee" },
+        4: { raw: "RECURRING APL* ITUNES BILL 800-275-2273", clean: "Apple Services" },
+        5: { raw: "ACH DEBIT EQX* FITNESS CLUBS NYC", clean: "Equinox Fitness Club" },
+        6: { raw: "DIV DEP VANGUARD FNDS VTSAX 90218", clean: "Vanguard Total Market Dividends" },
+        7: { raw: "AUTOPAY 9182 CONEDISON NY POWER", clean: "ConEdison Electric" }
+      }
+    };
+
+    // --- INITIALIZATION ---
+    document.addEventListener("DOMContentLoaded", () => {
+      initDraggableSlider();
+      updateDateAnchor();
+    });
+
+    function updateDateAnchor() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const el = document.getElementById("live-date");
+      if (el) el.textContent = now.toLocaleDateString('en-US', options);
+    }
+
+    // --- KPI BANNER TOGGLE ---
+    function toggleKpiBanner() {
+      const banner = document.getElementById("kpi-banner");
+      if (banner) {
+        banner.classList.add("hidden");
+        showToast("Telemetry bar minimized. All trust metrics remain active.", "info");
+      }
+    }
+
+    // --- TOGGLE CLEAN VS RAW GATEWAY STRING (ERGONOMICS PILLAR) ---
+    function setMerchantViewMode(mode) {
+      state.merchantViewMode = mode;
+      
+      const btnClean = document.getElementById("btn-view-clean");
+      const btnRaw = document.getElementById("btn-view-raw");
+
+      if (mode === 'clean') {
+        btnClean.className = "px-2.5 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-2xs transition-all";
+        btnRaw.className = "px-2.5 py-1 text-xs font-medium rounded text-slate-500 hover:text-slate-900 transition-all";
+        showToast("Switched to Clean Merchant UI (Reduces cognitive load & false fraud reports)", "success");
+      } else {
+        btnRaw.className = "px-2.5 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-2xs transition-all";
+        btnClean.className = "px-2.5 py-1 text-xs font-medium rounded text-slate-500 hover:text-slate-900 transition-all";
+        showToast("Switched to Legacy Raw Gateway Strings (Demonstrates high-friction UX)", "info");
+      }
+
+      // Update merchant labels in table
+      const rows = document.querySelectorAll(".tx-row");
+      rows.forEach((row, index) => {
+        const id = index + 1;
+        const merchantSpan = row.querySelector(".merchant-display");
+        if (merchantSpan && state.rawMerchantStrings[id]) {
+          merchantSpan.textContent = mode === 'clean' 
+            ? state.rawMerchantStrings[id].clean 
+            : state.rawMerchantStrings[id].raw;
+        }
+      });
+    }
+
+    // --- FILTER TRANSACTIONS (SEARCH & TABS) ---
+    function setFilter(type) {
+      state.currentFilter = type;
+      const tabs = ['all', 'inflow', 'outflow', 'pending'];
+      
+      tabs.forEach(t => {
+        const tabEl = document.getElementById(`filter-tab-${t}`);
+        if (tabEl) {
+          if (t === type) {
+            tabEl.className = "px-2.5 py-1 text-xs font-semibold rounded bg-white text-slate-900 shadow-2xs transition-all";
+          } else {
+            tabEl.className = "px-2.5 py-1 text-xs font-medium rounded text-slate-600 hover:text-slate-900 transition-all";
+          }
+        }
+      });
+
+      filterTransactions();
+    }
+
+    function filterTransactions() {
+      const searchVal = (document.getElementById("search-input")?.value || "").toLowerCase();
+      const rows = document.querySelectorAll(".tx-row");
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const merchant = (row.getAttribute("data-merchant") || "").toLowerCase();
+        const type = row.getAttribute("data-type");
+        const status = row.getAttribute("data-status");
+
+        const matchesSearch = merchant.includes(searchVal);
+        let matchesTab = true;
+
+        if (state.currentFilter === 'inflow') matchesTab = (type === 'inflow');
+        else if (state.currentFilter === 'outflow') matchesTab = (type === 'outflow');
+        else if (state.currentFilter === 'pending') matchesTab = (status === 'pending');
+
+        if (matchesSearch && matchesTab) {
+          row.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          row.classList.add("hidden");
+        }
+      });
+
+      const badge = document.getElementById("tx-count-badge");
+      if (badge) badge.textContent = `${visibleCount} records`;
+    }
+
+    // --- 1-CLICK DEBIT CARD FREEZE (SELF-SERVICE PILLAR) ---
+    function toggleCardFreeze() {
+      state.cardFrozen = !state.cardFrozen;
+      
+      const badge = document.getElementById("card-state-badge");
+      const band = document.getElementById("card-indicator-band");
+      const btn = document.getElementById("btn-card-freeze");
+      const btnLabel = document.getElementById("btn-card-freeze-label");
+      const shortcutText = document.getElementById("shortcut-lock-text");
+      const shortcutIcon = document.getElementById("shortcut-lock-icon");
+
+      if (state.cardFrozen) {
+        // Locked state styling
+        if (badge) {
+          badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-300";
+          badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Frozen / Locked`;
+        }
+        if (band) band.className = "absolute top-0 left-0 right-0 h-1 bg-rose-600 transition-all";
+        if (btnLabel) btnLabel.textContent = "Unfreeze Card";
+        if (btn) btn.className = "text-[11px] font-bold text-rose-700 hover:text-rose-900 bg-rose-50 px-2 py-0.5 rounded border border-rose-300 transition-colors flex items-center gap-1";
+        if (shortcutText) shortcutText.textContent = "Unfreeze Debit Card";
+        if (shortcutIcon) shortcutIcon.textContent = "lock";
+
+        showToast("Debit Card (•••• 3319) Frozen instantly. Digital wallet & POS swipes disabled. Ref #SEC-81920", "warning");
+      } else {
+        // Active state
+        if (badge) {
+          badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200";
+          badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active`;
+        }
+        if (band) band.className = "absolute top-0 left-0 right-0 h-1 bg-slate-900 transition-all";
+        if (btnLabel) btnLabel.textContent = "Freeze Card";
+        if (btn) btn.className = "text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 hover:border-slate-300 transition-colors flex items-center gap-1";
+        if (shortcutText) shortcutText.textContent = "Freeze Debit Card";
+        if (shortcutIcon) shortcutIcon.textContent = "lock_open";
+
+        showToast("Debit Card (•••• 3319) Re-activated. Full contactless & online authorization restored.", "success");
+      }
+    }
+
+    // --- SAFE TO SPEND MODAL ---
+    function showSafeSpendPopover() {
+      const modal = document.getElementById("safe-spend-modal");
+      if (modal) modal.classList.remove("hidden");
+    }
+    function closeSafeSpendModal() {
+      const modal = document.getElementById("safe-spend-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    // --- PENDING HOLD MODAL ---
+    function showPendingHoldExplanation() {
+      const modal = document.getElementById("pending-hold-modal");
+      if (modal) modal.classList.remove("hidden");
+    }
+    function closePendingHoldModal() {
+      const modal = document.getElementById("pending-hold-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+    function highlightPendingTransaction() {
+      const row = document.getElementById("row-pending-tx");
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.classList.add("pending-row-pulse");
+        setTimeout(() => row.classList.remove("pending-row-pulse"), 4000);
+      }
+      const dd = document.getElementById("notifications-dropdown");
+      if (dd) dd.classList.add("hidden");
+    }
+
+    // --- NOTIFICATIONS DROPDOWN ---
+    function toggleNotifications() {
+      const dd = document.getElementById("notifications-dropdown");
+      if (dd) dd.classList.toggle("hidden");
+    }
+
+    // --- PILLAR 4: SPEED BUMP "SLIDE TO TRANSFER" DRAG ENGINE ---
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
+    let maxDrag = 0;
+
+    function initDraggableSlider() {
+      const thumb = document.getElementById("slider-thumb");
+      const track = document.getElementById("slider-track");
+      if (!thumb || !track) return;
+
+      const onStart = (clientX) => {
+        isDragging = true;
+        startX = clientX;
+        maxDrag = track.clientWidth - thumb.clientWidth - 8;
+      };
+
+      const onMove = (clientX) => {
+        if (!isDragging) return;
+        let delta = clientX - startX;
+        if (delta < 0) delta = 0;
+        if (delta > maxDrag) delta = maxDrag;
+
+        currentX = delta;
+        thumb.style.transform = `translateX(${delta}px)`;
+        const progress = document.getElementById("slider-progress");
+        if (progress) progress.style.width = `${delta + 40}px`;
+
+        if (delta >= maxDrag * 0.95) {
+          // Completed slide!
+          isDragging = false;
+          triggerTransferCompletion();
+        }
+      };
+
+      const onEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        // Snap back if not reached end
+        thumb.style.transition = "transform 0.25s ease-out";
+        thumb.style.transform = "translateX(0px)";
+        const progress = document.getElementById("slider-progress");
+        if (progress) {
+          progress.style.transition = "width 0.25s ease-out";
+          progress.style.width = "44px";
+        }
+        setTimeout(() => {
+          thumb.style.transition = "none";
+          if (progress) progress.style.transition = "none";
+        }, 250);
+      };
+
+      // Mouse Listeners
+      thumb.addEventListener("mousedown", (e) => onStart(e.clientX));
+      window.addEventListener("mousemove", (e) => onMove(e.clientX));
+      window.addEventListener("mouseup", onEnd);
+
+      // Touch Listeners
+      thumb.addEventListener("touchstart", (e) => onStart(e.touches[0].clientX));
+      window.addEventListener("touchmove", (e) => onMove(e.touches[0].clientX));
+      window.addEventListener("touchend", onEnd);
+    }
+
+    function triggerTransferCompletion() {
+      const amtInput = document.getElementById("transfer-amount");
+      const recipient = document.getElementById("transfer-recipient")?.value || "Marcus Vance";
+      const amt = amtInput ? parseFloat(amtInput.value).toFixed(2) : "1,250.00";
+
+      closeTransferModal();
+
+      // Non-dismissible audit receipt toast
+      const refNum = `TX-${Math.floor(100000 + Math.random() * 900000)}`;
+      showToast(
+        `High-Value Wire Executed: $${amt} transferred to ${recipient}. Ref #${refNum}. Push & email receipt dispatched.`,
+        "audit"
+      );
+
+      // Reset slider thumb
+      const thumb = document.getElementById("slider-thumb");
+      const progress = document.getElementById("slider-progress");
+      if (thumb) thumb.style.transform = "translateX(0px)";
+      if (progress) progress.style.width = "44px";
+    }
+
+    function updateSpeedBumpThreshold() {
+      const amtInput = document.getElementById("transfer-amount");
+      const amt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
+      const speedBox = document.getElementById("speed-bump-box");
+      const instantBtn = document.getElementById("btn-instant-transfer");
+
+      if (amt >= 500) {
+        if (speedBox) speedBox.classList.remove("hidden");
+        if (instantBtn) instantBtn.classList.add("hidden");
+      } else {
+        if (speedBox) speedBox.classList.add("hidden");
+        if (instantBtn) instantBtn.classList.remove("hidden");
+      }
+    }
+
+    function openTransferModal(accountType = 'checking') {
+      const modal = document.getElementById("transfer-modal");
+      if (modal) modal.classList.remove("hidden");
+      updateSpeedBumpThreshold();
+    }
+
+    function closeTransferModal() {
+      const modal = document.getElementById("transfer-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function executeTransfer(isHighValue) {
+      if (!isHighValue) {
+        const amt = document.getElementById("transfer-amount")?.value || "50.00";
+        closeTransferModal();
+        showToast(`Standard Transfer of $${amt} scheduled. Ref #TX-${Math.floor(100000 + Math.random() * 900000)}`, "success");
+      }
+    }
+
+    // --- SELF-SERVICE DISPUTE MODAL ---
+    function openDisputeModal(txId) {
+      const modal = document.getElementById("dispute-modal");
+      const merchantEl = document.getElementById("dispute-merchant-name");
+      const amountEl = document.getElementById("dispute-amount");
+
+      if (txId && state.rawMerchantStrings[txId]) {
+        if (merchantEl) merchantEl.textContent = state.rawMerchantStrings[txId].clean;
+      }
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    function closeDisputeModal() {
+      const modal = document.getElementById("dispute-modal");
+      if (modal) modal.classList.add("hidden");
+    }
+
+    function submitDisputeTicket() {
+      closeDisputeModal();
+      const ref = `DSP-${Math.floor(100000 + Math.random() * 900000)}`;
+      showToast(`Zero-Liability Dispute Filed (${ref}). Temporary credit will post within 24 hours. No phone call required.`, "audit");
+    }
+
+    // --- PAY BILL EARLY SIMULATION ---
+    function payBillEarly(bName, bAmount) {
+      showToast(`Scheduled bill '${bName}' ($${bAmount.toFixed(2)}) processed early. Safe-to-spend balance adjusted.`, "success");
+    }
+
+    function toggleForecastChart() {
+      const container = document.getElementById("forward-chart-container");
+      if (container) container.classList.toggle("hidden");
+    }
+
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Copied ${label} (${text}) to clipboard`, "info");
+      }).catch(() => {
+        showToast(`Account identifier: ${text}`, "info");
+      });
+    }
+
+    function scrollToCards() {
+      const el = document.getElementById("cards-section");
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function downloadStatements() {
+      showToast("Generating official encrypted monthly statement (PDF/CSV)... Download starting.", "info");
+    }
+
+    function openPfmDrawer() {
+      showToast("Discretionary Dining Budget: $345 spent of $545 monthly cap. Remaining: $200.00.", "info");
+    }
+
+    function showSecurityPolicy() {
+      showToast("Security Doctrine: Multi-factor authentication required for wire transfers exceeding $500.", "info");
+    }
+
+    // --- AUDITABILITY TOAST SYSTEM (PILLAR 4) ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = "pointer-events-auto p-3.5 rounded-xl border shadow-xl flex items-start gap-3 bg-white transition-all transform duration-200 translate-y-2 opacity-0";
+
+      let icon = "info";
+      let borderClass = "border-slate-200 text-slate-900";
+      let iconColor = "text-sky-600";
+
+      if (type === 'success') {
+        icon = "check_circle";
+        borderClass = "border-emerald-200 bg-emerald-50/90 text-emerald-950";
+        iconColor = "text-emerald-600";
+      } else if (type === 'warning') {
+        icon = "warning";
+        borderClass = "border-amber-300 bg-amber-50 text-amber-950";
+        iconColor = "text-amber-600";
+      } else if (type === 'audit') {
+        icon = "verified_user";
+        borderClass = "border-slate-900 bg-slate-900 text-white shadow-2xl";
+        iconColor = "text-sky-400";
+      }
+
+      toast.className += ` ${borderClass}`;
+      toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px] shrink-0 mt-0.5 ${iconColor}">${icon}</span>
+        <div class="flex-1 text-xs font-medium leading-tight">
+          ${message}
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-0.5">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      // Animation in
+      requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-2", "opacity-0");
+      });
+
+      // Auto dismiss after 6s (or persistent for audit)
+      const timeout = (type === 'audit') ? 8000 : 5000;
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, timeout);
+    }
+  </script>
+
+</body>
+</html>
