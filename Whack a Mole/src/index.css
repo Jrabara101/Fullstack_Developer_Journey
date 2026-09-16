@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    overscroll-behavior: none;
+    background-color: #08020f;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* CRT Scanline & Phosphor Overlay */
+.crt-scanline {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* 80s Synthwave Perspective Wireframe Floor */
+.synth-grid-container {
+  perspective: 380px;
+  perspective-origin: 50% 38%;
+}
+
+.synth-grid-plane {
+  transform: rotateX(66deg);
+  background-image:
+    linear-gradient(to right, rgba(0, 240, 255, 0.35) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(236, 72, 153, 0.45) 2px, transparent 2px);
+  background-size: 55px 55px;
+  animation: gridScroll 1.6s linear infinite;
+}
+
+@keyframes gridScroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 55px;
+  }
+}
+
+/* Sunset Segmented Strip Sun */
+.sunset-sun {
+  background: linear-gradient(to bottom, #ffea00 0%, #ff007f 55%, #7c3aed 100%);
+  box-shadow: 0 0 60px rgba(255, 0, 127, 0.75), 0 0 120px rgba(255, 234, 0, 0.4);
+  mask-image: linear-gradient(to bottom,
+      black 0%, black 50%,
+      transparent 50%, transparent 53%,
+      black 53%, black 63%,
+      transparent 63%, transparent 67%,
+      black 67%, black 77%,
+      transparent 77%, transparent 82%,
+      black 82%, black 91%,
+      transparent 91%, transparent 97%,
+      black 97%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom,
+      black 0%, black 50%,
+      transparent 50%, transparent 53%,
+      black 53%, black 63%,
+      transparent 63%, transparent 67%,
+      black 67%, black 77%,
+      transparent 77%, transparent 82%,
+      black 82%, black 91%,
+      transparent 91%, transparent 97%,
+      black 97%, black 100%);
+}
+
+/* Chrome Metallic Italic Text */
+.chrome-text {
+  background: linear-gradient(180deg, #ffffff 0%, #d8e8f8 28%, #7290b0 48%, #1f3045 52%, #fce682 54%, #ff9500 80%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+}
+
+/* Neon Tube Glow Shadows */
+.neon-pink-box {
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.6), inset 0 0 15px rgba(236, 72, 153, 0.3);
+}
+
+.neon-cyan-box {
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.6), inset 0 0 12px rgba(6, 182, 212, 0.3);
+}
+
+.neon-gold-box {
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.7), inset 0 0 14px rgba(234, 179, 8, 0.3);
+}
+
+.text-glow-pink {
+  text-shadow: 0 0 8px #f43f5e, 0 0 20px #ec4899;
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 8px #00f0ff, 0 0 20px #06b6d4;
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 8px #facc15, 0 0 20px #eab308;
+}
+
+/* Spring physical popup animation for moles */
+.mole-spring-enter {
+  animation: molePopUp 0.16s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.mole-spring-exit {
+  animation: moleRetract 0.14s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
+
+@keyframes molePopUp {
+  0% {
+    transform: translateY(105%) scale(0.92);
+    opacity: 0.3;
+  }
+  70% {
+    transform: translateY(-4%) scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes moleRetract {
+  0% {
+    transform: translateY(0%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110%) scale(0.95);
+    opacity: 0;
+  }
+}
