@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CYBER-BREAK // Neon Arcade Arena</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Space Grotesk & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              cyan: '#06b6d4',
+              magenta: '#d946ef',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              violet: '#8b5cf6',
+            }
+          },
+          boxShadow: {
+            'neon-cyan': '0 0 20px rgba(6, 182, 212, 0.45), 0 0 40px rgba(6, 182, 212, 0.2)',
+            'neon-magenta': '0 0 20px rgba(217, 70, 239, 0.45), 0 0 40px rgba(217, 70, 239, 0.2)',
+            'neon-emerald': '0 0 20px rgba(16, 185, 129, 0.45)',
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2.5s infinite ease-in-out',
+            'scanline': 'scanline 8s linear infinite',
+            'float': 'float 3s ease-in-out infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.6', filter: 'drop-shadow(0 0 8px rgba(6,182,212,0.6))' },
+              '50%': { opacity: '1', filter: 'drop-shadow(0 0 16px rgba(6,182,212,0.9))' },
+            },
+            scanline: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(1000%)' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-4px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom CRT & Grid Effects */
+    .crt-grid {
+      background-image: 
+        linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .crt-lines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+      background-size: 100% 4px;
+    }
+    /* Glassmorphism token base */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .glass-panel-glow {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      box-shadow: 0 8px 32px -4px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(6, 182, 212, 0.05);
+    }
+    /* Custom Scrollbar prevention */
+    html, body {
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-screen w-screen flex flex-col justify-between items-center p-3 md:p-5 relative overflow-hidden select-none">
+
+  <!-- Ambient Glow Background Blobs -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-fuchsia-600/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-slate-900/40 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- TOP FLOATING HUD CARD -->
+  <header class="w-full max-w-5xl z-20 transition-all duration-300">
+    <div class="glass-panel-glow rounded-2xl px-4 py-3 md:px-6 md:py-3.5 flex items-center justify-between shadow-2xl relative overflow-hidden">
+      <!-- Top edge neon highlight line -->
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80"></div>
+      
+      <!-- LEFT: SCORE & COMBO MULTIPLIER -->
+      <div class="flex items-center gap-3 md:gap-5">
+        <div class="flex flex-col">
+          <span class="text-[10px] md:text-xs font-mono font-medium uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+            Current Score
+          </span>
+          <div class="flex items-baseline gap-2">
+            <span id="hud-score" class="font-mono tabular-nums text-2xl md:text-3xl font-bold tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+              028,450
+            </span>
+          </div>
+        </div>
+
+        <!-- Combo Multiplier Badge -->
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 shadow-[0_0_12px_rgba(217,70,239,0.3)]">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-fuchsia-400 fill-fuchsia-400 animate-bounce"></i>
+          <span id="combo-pill" class="text-xs font-mono font-extrabold text-fuchsia-300 tracking-wide uppercase">
+            x3 STREAK
+          </span>
+        </div>
+      </div>
+
+      <!-- CENTER: TITLE, SECTOR, HI-SCORE -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 tracking-wider">
+            SECTOR 04
+          </span>
+          <h1 class="font-display font-bold text-sm md:text-base tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-fuchsia-300 drop-shadow">
+            CYBER//BREAK
+          </h1>
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-0.5">
+          <i data-lucide="trophy" class="w-3 h-3 text-amber-400"></i>
+          <span>RECORD:</span>
+          <span class="text-slate-200 font-bold tabular-nums">094,200</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: LIVES, SETTINGS & AUDIO -->
+      <div class="flex items-center gap-3 md:gap-4">
+        <!-- Shield/Heart Lives -->
+        <div class="flex flex-col items-end">
+          <span class="text-[10px] md:text-xs font-mono uppercase text-slate-400 tracking-wider">Shield Core</span>
+          <div id="lives-container" class="flex items-center gap-1.5 mt-0.5">
+            <span class="relative group">
+              <i data-lucide="shield" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 fill-cyan-400/30 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>
+            </span>
+            <span class="relative group">
+              <i data-lucide="shield" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 fill-cyan-400/30 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>
+            </span>
+            <span class="relative group">
+              <i data-lucide="shield" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 fill-cyan-400/30 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- Utility Buttons (Shadcn style icon triggers) -->
+        <div class="flex items-center gap-1.5 pl-2 border-l border-slate-700/60">
+          <button id="sound-toggle-btn" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-cyan-400 transition-colors border border-slate-700" title="Toggle Synth Audio (M)">
+            <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+          </button>
+          <button id="pause-toggle-btn" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-cyan-400 transition-colors border border-slate-700" title="Pause / Menu (Esc / Space)">
+            <i data-lucide="pause" id="pause-icon" class="w-4 h-4"></i>
+          </button>
+          <button id="modal-settings-btn" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-fuchsia-400 transition-colors border border-slate-700" title="Preferences & Accessibility">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PRIMARY SECTION: THE ARCADE ARENA -->
+  <main class="w-full flex-1 flex flex-col items-center justify-center my-2 max-h-[calc(100vh-170px)] relative z-10">
+    <div id="canvas-wrapper" class="relative w-full max-w-4xl aspect-[16/10] max-h-[70vh] rounded-2xl overflow-hidden glass-panel border border-cyan-500/30 shadow-[0_0_35px_rgba(6,182,212,0.15)] flex items-center justify-center">
+      
+      <!-- CRT Monitor Visual Layers -->
+      <div class="absolute inset-0 crt-grid pointer-events-none opacity-40"></div>
+      <div class="absolute inset-0 crt-lines pointer-events-none opacity-20 z-10"></div>
+      
+      <!-- Subtle Scanline bar moving down -->
+      <div class="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent pointer-events-none animate-scanline z-10"></div>
+      
+      <!-- Corner Neon Accents -->
+      <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400 pointer-events-none"></div>
+      <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400 pointer-events-none"></div>
+      <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400 pointer-events-none"></div>
+      <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none"></div>
+
+      <!-- Main Game Canvas -->
+      <canvas id="gameCanvas" width="800" height="500" class="w-full h-full block cursor-none touch-none"></canvas>
+
+      <!-- Overlay: Start / Launch Prompt (When idle or respawning) -->
+      <div id="launch-overlay" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-opacity duration-300">
+        <div class="glass-panel-glow p-6 md:p-8 rounded-2xl text-center max-w-sm border border-cyan-500/40 shadow-2xl animate-float">
+          <div class="inline-flex p-3 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-3 text-cyan-400">
+            <i data-lucide="play" class="w-6 h-6 fill-cyan-400/30"></i>
+          </div>
+          <h2 class="text-xl font-display font-bold uppercase tracking-wider text-white">Grid Linked</h2>
+          <p class="text-xs text-slate-300 mt-1 font-sans">Move paddle with cursor or touch. Hit space or tap below to eject photon core.</p>
+          <button id="btn-launch-ball" class="mt-4 w-full py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-mono font-bold text-sm tracking-wider uppercase rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all transform active:scale-95 flex items-center justify-center gap-2">
+            <span>ENGAGE DISK [SPACE]</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- In-Game Combo Splash Toast -->
+      <div id="combo-toast" class="absolute top-10 pointer-events-none opacity-0 transform -translate-y-4 transition-all duration-300 z-20 flex flex-col items-center">
+        <span class="px-4 py-1.5 rounded-full bg-fuchsia-600/90 text-white font-mono font-black text-sm tracking-widest shadow-[0_0_25px_rgba(217,70,239,0.8)] uppercase border border-fuchsia-300">
+          SUPER COMBO x4!
+        </span>
+      </div>
+
+      <!-- Quick Accessibility Motion Indicator -->
+      <div id="reduced-motion-tag" class="hidden absolute bottom-3 right-3 z-10 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 text-[10px] font-mono text-slate-400">
+        Reduced Motion Active
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER CONTROLS & STATUS DOCK -->
+  <footer class="w-full max-w-5xl z-20">
+    <div class="glass-panel rounded-xl px-4 py-2.5 md:py-3 flex flex-wrap items-center justify-between gap-2 border border-slate-800">
+      
+      <!-- DESKTOP KEYBOARD / SHORTCUT LEGEND -->
+      <div class="hidden md:flex items-center gap-4 text-xs font-mono text-slate-400">
+        <div class="flex items-center gap-1.5">
+          <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-[11px] shadow-sm">MOUSE / ◄ ►</kbd>
+          <span>Move Paddle</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-[11px] shadow-sm">SPACE</kbd>
+          <span>Launch / Resume</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-cyan-300 font-bold text-[11px] shadow-sm">ESC</kbd>
+          <span>Pause Menu</span>
+        </div>
+      </div>
+
+      <!-- BRICK TIER COLOR LEGEND (MINIMALIST) -->
+      <div class="flex items-center gap-3 text-[11px] font-mono">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-sm bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]"></span>
+          <span class="text-slate-300">1-Hit (100)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-sm bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.7)]"></span>
+          <span class="text-slate-300">2-Hit (250)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-sm bg-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.7)]"></span>
+          <span class="text-slate-300">Armored</span>
+        </div>
+      </div>
+
+      <!-- POWER-UP / ACTIVE STATE BADGE -->
+      <div class="flex items-center gap-2 ml-auto">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900/90 border border-cyan-500/30 text-xs font-mono text-cyan-400">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span id="paddle-mod-text">Photon Surge Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE VIRTUAL SLIDE-STRIP TOUCH BAR (Visible on small screens) -->
+    <div class="md:hidden mt-2 w-full h-11 glass-panel-glow rounded-xl flex items-center justify-between px-3 relative overflow-hidden border border-cyan-500/40">
+      <div class="flex items-center gap-2 text-[10px] font-mono text-cyan-300 uppercase">
+        <i data-lucide="move-horizontal" class="w-4 h-4 animate-pulse"></i>
+        <span>Touch Slider Zone</span>
+      </div>
+      <div class="flex-1 mx-3 h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+        <div id="mobile-paddle-indicator" class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-full bg-cyan-400 rounded-full shadow-[0_0_10px_#06b6d4]"></div>
+      </div>
+      <span class="text-[10px] font-mono text-slate-400">Slide finger</span>
+    </div>
+  </footer>
+
+  <!-- SHADCN DIALOG: VICTORY / GAME OVER MODAL -->
+  <div id="game-over-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="glass-panel-glow rounded-2xl w-full max-w-md border border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.25)] p-6 relative overflow-hidden transform scale-95 transition-transform duration-300" id="game-over-dialog-content">
+      <!-- Glow top gradient -->
+      <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-fuchsia-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Status Header Badge -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span id="modal-status-icon-wrap" class="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <i data-lucide="award" class="w-5 h-5"></i>
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Mission Report</span>
+            <h3 id="modal-status-title" class="font-display font-bold text-xl text-white tracking-wide">VICTORY ACHIEVED</h3>
+          </div>
+        </div>
+        <span id="modal-rank-badge" class="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-mono font-black text-xs shadow-md">
+          RANK S+
+        </span>
+      </div>
+
+      <!-- Stats Grid (Shadcn Card layout) -->
+      <div class="grid grid-cols-2 gap-2.5 my-5 font-mono">
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-[10px] uppercase text-slate-400 tracking-wider">Final Score</span>
+          <p id="modal-final-score" class="text-2xl font-bold text-cyan-400 tabular-nums mt-0.5">042,900</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-[10px] uppercase text-slate-400 tracking-wider">Sector Best</span>
+          <p id="modal-high-score" class="text-2xl font-bold text-white tabular-nums mt-0.5">094,200</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-[10px] uppercase text-slate-400 tracking-wider">Bricks Shattered</span>
+          <p id="modal-bricks-count" class="text-xl font-bold text-emerald-400 tabular-nums mt-0.5">48 / 48</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <span class="text-[10px] uppercase text-slate-400 tracking-wider">Max Combo Streak</span>
+          <p id="modal-max-combo" class="text-xl font-bold text-fuchsia-400 tabular-nums mt-0.5">x7 STREAK</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons (Shadcn Button primitives) -->
+      <div class="flex flex-col gap-2.5 mt-6">
+        <button id="btn-restart-game" class="w-full py-3 px-4 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-mono font-bold text-sm tracking-wider uppercase rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all transform active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>REPLAY SECTOR (SPACE)</span>
+        </button>
+        <button id="btn-close-modal" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-mono font-medium text-xs tracking-wider uppercase rounded-xl transition-all">
+          EXIT TO MAINFRAME
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHADCN DIALOG: SETTINGS & ACCESSIBILITY MODAL -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="glass-panel-glow rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl p-6 relative transform scale-95 transition-transform duration-300">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="font-display font-bold text-base text-white">Arena Configurations</h3>
+        </div>
+        <button id="btn-close-settings" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs font-mono">
+        <!-- Reduced Motion Toggle -->
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div>
+            <p class="font-bold text-white">Reduced Motion</p>
+            <p class="text-[10px] text-slate-400 font-sans">Disable screen shake & intense particle trails</p>
+          </div>
+          <button id="toggle-reduced-motion" class="w-11 h-6 bg-slate-700 rounded-full relative p-1 transition-colors">
+            <div id="reduced-motion-knob" class="w-4 h-4 bg-white rounded-full transition-transform"></div>
+          </button>
+        </div>
+
+        <!-- Synth Audio SFX Toggle -->
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div>
+            <p class="font-bold text-white">WebAudio Synth SFX</p>
+            <p class="text-[10px] text-slate-400 font-sans">Procedural 8-bit retro neon sound</p>
+          </div>
+          <button id="toggle-sfx" class="w-11 h-6 bg-cyan-600 rounded-full relative p-1 transition-colors">
+            <div id="sfx-knob" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-5"></div>
+          </button>
+        </div>
+
+        <!-- CRT Scanline Intensity -->
+        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="flex justify-between mb-1">
+            <span class="font-bold text-white">Neon Glow Intensity</span>
+            <span id="glow-val" class="text-cyan-400">HIGH</span>
+          </div>
+          <input type="range" min="1" max="3" value="3" id="glow-slider" class="w-full accent-cyan-400 h-1 bg-slate-700 rounded-lg cursor-pointer">
+        </div>
+      </div>
+
+      <button id="btn-save-settings" class="mt-5 w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider rounded-xl transition-all">
+        APPLY SETTINGS
+      </button>
+    </div>
+  </div>
+
+  <!-- GAME ENGINE & INTERACTIVITY JAVASCRIPT -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    /* ==========================================================
+       SOUND SYSTEM (Synthesized Web Audio API - Zero External Dependencies)
+       ========================================================== */
+    class RetroAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playTone(freq, type = 'sine', duration = 0.08, vol = 0.15) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+      paddleHit() { this.playTone(320, 'triangle', 0.1, 0.2); }
+      brickHit(tier) {
+        const freqs = [440, 580, 780];
+        this.playTone(freqs[tier] || 500, 'square', 0.08, 0.12);
+      }
+      brickBreak() { this.playTone(880, 'sine', 0.14, 0.22); }
+      comboSound(streak) {
+        const pitch = Math.min(1200, 500 + streak * 120);
+        this.playTone(pitch, 'sine', 0.18, 0.25);
+      }
+      loseLife() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.35);
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.35);
+        } catch(e) {}
+      }
+      victory() {
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'triangle', 0.25, 0.2), i * 120);
+        });
+      }
+    }
+
+    const sound = new RetroAudio();
+
+    /* ==========================================================
+       BREAKOUT GAME ENGINE & STATE MANAGEMENT
+       ========================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const hudScore = document.getElementById('hud-score');
+    const comboPill = document.getElementById('combo-pill');
+    const launchOverlay = document.getElementById('launch-overlay');
+    const btnLaunch = document.getElementById('btn-launch-ball');
+    const livesContainer = document.getElementById('lives-container');
+    const gameOverModal = document.getElementById('game-over-modal');
+    const gameOverContent = document.getElementById('game-over-dialog-content');
+    const soundToggleBtn = document.getElementById('sound-toggle-btn');
+    const soundIcon = document.getElementById('sound-icon');
+    const pauseToggleBtn = document.getElementById('pause-toggle-btn');
+    const mobileIndicator = document.getElementById('mobile-paddle-indicator');
+    const reducedMotionTag = document.getElementById('reduced-motion-tag');
+
+    // Accessibility & Settings State
+    let settings = {
+      reducedMotion: false,
+      sfx: true,
+      glowLevel: 3
+    };
+
+    // Game Variables
+    let score = 28450;
+    let highScore = 94200;
+    let lives = 3;
+    let combo = 3;
+    let maxCombo = 5;
+    let bricksDestroyed = 24;
+    let totalBricks = 48;
+    let isPlaying = false;
+    let isPaused = false;
+    let screenShake = 0;
+
+    // Paddle
+    const paddle = {
+      width: 120,
+      height: 14,
+      x: (800 - 120) / 2,
+      y: 500 - 32,
+      speed: 8,
+      targetX: (800 - 120) / 2,
+      glowTimer: 0
+    };
+
+    // Ball
+    const ball = {
+      x: 400,
+      y: 500 - 45,
+      radius: 7,
+      vx: 4.8,
+      vy: -5.2,
+      speed: 7.2,
+      attached: true,
+      trail: []
+    };
+
+    // Brick Configuration
+    const brickConfig = {
+      rows: 6,
+      cols: 8,
+      width: 82,
+      height: 20,
+      padding: 10,
+      offsetTop: 48,
+      offsetLeft: 36
+    };
+
+    // Brick Tiers: 0: Emerald (1-hit), 1: Amber (2-hit), 2: Magenta (Armored/Special 3-hit)
+    let bricks = [];
+
+    function initBricks() {
+      bricks = [];
+      totalBricks = brickConfig.rows * brickConfig.cols;
+      for (let r = 0; r < brickConfig.rows; r++) {
+        bricks[r] = [];
+        for (let c = 0; c < brickConfig.cols; c++) {
+          let tier = 0;
+          let hits = 1;
+          if (r < 2) {
+            tier = 2; // Magenta Armored
+            hits = 2;
+          } else if (r < 4) {
+            tier = 1; // Amber 2-hit
+            hits = 2;
+          } else {
+            tier = 0; // Emerald 1-hit
+            hits = 1;
+          }
+
+          // Preset some demo shattered bricks to make the arena look lively instantly
+          let destroyed = false;
+          if ((r === 4 && (c === 2 || c === 3 || c === 5)) || 
+              (r === 5 && (c === 1 || c === 2 || c === 3 || c === 6 || c === 7))) {
+            destroyed = true;
+          }
+
+          bricks[r][c] = {
+            x: c * (brickConfig.width + brickConfig.padding) + brickConfig.offsetLeft,
+            y: r * (brickConfig.height + brickConfig.padding) + brickConfig.offsetTop,
+            tier: tier,
+            hits: hits,
+            maxHits: hits,
+            status: destroyed ? 0 : 1,
+            pulse: 0
+          };
+        }
+      }
+    }
+
+    // Particle System for neon shatter effects
+    let particles = [];
+    function createShatter(x, y, color) {
+      if (settings.reducedMotion) return;
+      const count = 14;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 4 + 1.5;
+        particles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: Math.random() * 3 + 1.5,
+          color: color,
+          alpha: 1,
+          decay: Math.random() * 0.03 + 0.02
+        });
+      }
+    }
+
+    // UI Updates
+    function updateHUD() {
+      hudScore.textContent = score.toLocaleString('en-US', { minimumIntegerDigits: 6, useGrouping: true });
+      comboPill.textContent = `x${combo} STREAK`;
+      
+      // Update Lives Icons
+      let heartsHtml = '';
+      for (let i = 0; i < 3; i++) {
+        if (i < lives) {
+          heartsHtml += `<i data-lucide="shield" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 fill-cyan-400/30 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"></i>`;
+        } else {
+          heartsHtml += `<i data-lucide="shield" class="w-4 h-4 md:w-5 md:h-5 text-slate-700 fill-transparent"></i>`;
+        }
+      }
+      livesContainer.innerHTML = heartsHtml;
+      lucide.createIcons();
+
+      // Mobile indicator sync
+      const pct = (paddle.x / (canvas.width - paddle.width)) * 100;
+      mobileIndicator.style.left = `${Math.min(92, Math.max(8, pct))}%`;
+    }
+
+    function showComboToast(text) {
+      const toast = document.getElementById('combo-toast');
+      toast.firstElementChild.textContent = text;
+      toast.classList.remove('opacity-0', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-4');
+      }, 1200);
+    }
+
+    function triggerLaunch() {
+      if (ball.attached) {
+        sound.init();
+        ball.attached = false;
+        isPlaying = true;
+        launchOverlay.classList.add('opacity-0', 'pointer-events-none');
+        sound.paddleHit();
+      }
+    }
+
+    // Keyboard & Mouse Listeners
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (gameOverModal.classList.contains('opacity-100')) {
+          restartGame();
+        } else if (ball.attached) {
+          triggerLaunch();
+        } else {
+          togglePause();
+        }
+      } else if (e.code === 'Escape') {
+        togglePause();
+      } else if (e.code === 'KeyM') {
+        toggleAudio();
+      } else if (e.code === 'ArrowLeft') {
+        paddle.targetX = Math.max(0, paddle.targetX - 35);
+      } else if (e.code === 'ArrowRight') {
+        paddle.targetX = Math.min(canvas.width - paddle.width, paddle.targetX + 35);
+      }
+    });
+
+    // Mouse Tracking in Arena
+    function handlePointerMove(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const relativeX = (clientX - rect.left) * scaleX;
+      paddle.targetX = Math.max(0, Math.min(canvas.width - paddle.width, relativeX - paddle.width / 2));
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+      handlePointerMove(e.clientX);
+    });
+
+    canvas.addEventListener('click', () => {
+      if (ball.attached) triggerLaunch();
+    });
+
+    // Touch Support for Mobile & Tablets
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (ball.attached) triggerLaunch();
+    }, { passive: true });
+
+    btnLaunch.addEventListener('click', triggerLaunch);
+
+    // Audio & Pause Toggles
+    function toggleAudio() {
+      sound.enabled = !sound.enabled;
+      if (sound.enabled) {
+        sound.init();
+        soundIcon.setAttribute('data-lucide', 'volume-2');
+        soundToggleBtn.classList.remove('text-slate-500');
+        soundToggleBtn.classList.add('text-slate-300');
+      } else {
+        soundIcon.setAttribute('data-lucide', 'volume-x');
+        soundToggleBtn.classList.add('text-slate-500');
+        soundToggleBtn.classList.remove('text-slate-300');
+      }
+      lucide.createIcons();
+    }
+    soundToggleBtn.addEventListener('click', toggleAudio);
+
+    function togglePause() {
+      if (ball.attached) return;
+      isPaused = !isPaused;
+      const pauseIcon = document.getElementById('pause-icon');
+      if (isPaused) {
+        pauseIcon.setAttribute('data-lucide', 'play');
+        launchOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        launchOverlay.querySelector('h2').textContent = 'GRID PAUSED';
+        launchOverlay.querySelector('p').textContent = 'Tactical standby initiated. Press Space to re-engage.';
+        btnLaunch.innerHTML = '<span>RESUME BATTLE</span><i data-lucide="play" class="w-4 h-4"></i>';
+      } else {
+        pauseIcon.setAttribute('data-lucide', 'pause');
+        launchOverlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+      lucide.createIcons();
+    }
+    pauseToggleBtn.addEventListener('click', togglePause);
+
+    // Modal / Victory / GameOver Triggers
+    function showEndModal(isWin) {
+      isPlaying = false;
+      const title = document.getElementById('modal-status-title');
+      const rank = document.getElementById('modal-rank-badge');
+      const scoreEl = document.getElementById('modal-final-score');
+      const iconWrap = document.getElementById('modal-status-icon-wrap');
+      
+      scoreEl.textContent = score.toLocaleString('en-US', { minimumIntegerDigits: 6 });
+      document.getElementById('modal-high-score').textContent = Math.max(score, highScore).toLocaleString('en-US', { minimumIntegerDigits: 6 });
+      document.getElementById('modal-bricks-count').textContent = `${bricksDestroyed} / ${totalBricks}`;
+      document.getElementById('modal-max-combo').textContent = `x${maxCombo} STREAK`;
+
+      if (isWin) {
+        title.textContent = "SECTOR PURGED";
+        title.className = "font-display font-bold text-xl text-cyan-300 tracking-wide";
+        rank.textContent = "RANK S+";
+        rank.className = "px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-mono font-black text-xs shadow-md";
+        iconWrap.className = "p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400";
+        sound.victory();
+      } else {
+        title.textContent = "SHIELD CORE BREACHED";
+        title.className = "font-display font-bold text-xl text-fuchsia-400 tracking-wide";
+        rank.textContent = "DEFEAT";
+        rank.className = "px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 font-mono font-bold text-xs";
+        iconWrap.className = "p-2 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-400";
+        sound.loseLife();
+      }
+
+      gameOverModal.classList.remove('opacity-0', 'pointer-events-none');
+      gameOverModal.classList.add('opacity-100');
+      gameOverContent.classList.remove('scale-95');
+      gameOverContent.classList.add('scale-100');
+    }
+
+    function restartGame() {
+      gameOverModal.classList.remove('opacity-100');
+      gameOverModal.classList.add('opacity-0', 'pointer-events-none');
+      gameOverContent.classList.remove('scale-100');
+      gameOverContent.classList.add('scale-95');
+
+      score = 0;
+      combo = 1;
+      maxCombo = 1;
+      lives = 3;
+      bricksDestroyed = 0;
+      initBricks();
+
+      ball.attached = true;
+      ball.x = paddle.x + paddle.width / 2;
+      ball.y = paddle.y - ball.radius - 2;
+      ball.vx = 4.8;
+      ball.vy = -5.2;
+
+      launchOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      launchOverlay.querySelector('h2').textContent = 'GRID LINKED';
+      launchOverlay.querySelector('p').textContent = 'Move paddle with cursor or touch. Hit space or tap below to eject photon core.';
+      btnLaunch.innerHTML = '<span>ENGAGE DISK [SPACE]</span><i data-lucide="chevron-right" class="w-4 h-4"></i>';
+      lucide.createIcons();
+
+      updateHUD();
+    }
+
+    document.getElementById('btn-restart-game').addEventListener('click', restartGame);
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      gameOverModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+
+    // Settings Modal Listeners
+    const settingsModal = document.getElementById('settings-modal');
+    document.getElementById('modal-settings-btn').addEventListener('click', () => {
+      settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+      settingsModal.classList.add('opacity-100');
+    });
+    document.getElementById('btn-close-settings').addEventListener('click', () => {
+      settingsModal.classList.remove('opacity-100');
+      settingsModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+    document.getElementById('btn-save-settings').addEventListener('click', () => {
+      settingsModal.classList.remove('opacity-100');
+      settingsModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+
+    // Toggle reduced motion
+    const btnReducedMotion = document.getElementById('toggle-reduced-motion');
+    const knobReducedMotion = document.getElementById('reduced-motion-knob');
+    btnReducedMotion.addEventListener('click', () => {
+      settings.reducedMotion = !settings.reducedMotion;
+      if (settings.reducedMotion) {
+        btnReducedMotion.classList.remove('bg-slate-700');
+        btnReducedMotion.classList.add('bg-cyan-600');
+        knobReducedMotion.classList.add('translate-x-5');
+        reducedMotionTag.classList.remove('hidden');
+      } else {
+        btnReducedMotion.classList.add('bg-slate-700');
+        btnReducedMotion.classList.remove('bg-cyan-600');
+        knobReducedMotion.classList.remove('translate-x-5');
+        reducedMotionTag.classList.add('hidden');
+      }
+    });
+
+    /* ==========================================================
+       PHYSICS & RENDER LOOP
+       ========================================================== */
+    function updatePhysics() {
+      // Smooth paddle interpolation
+      paddle.x += (paddle.targetX - paddle.x) * 0.22;
+
+      // Ball attached to paddle
+      if (ball.attached) {
+        ball.x = paddle.x + paddle.width / 2;
+        ball.y = paddle.y - ball.radius - 2;
+        return;
+      }
+
+      if (isPaused) return;
+
+      // Ball Motion & Trails
+      if (!settings.reducedMotion) {
+        ball.trail.push({ x: ball.x, y: ball.y, alpha: 0.7 });
+        if (ball.trail.length > 7) ball.trail.shift();
+      } else {
+        ball.trail = [];
+      }
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Arena Boundary Collisions (Left / Right / Top)
+      if (ball.x - ball.radius < 0) {
+        ball.x = ball.radius;
+        ball.vx = -ball.vx;
+        sound.paddleHit();
+      } else if (ball.x + ball.radius > canvas.width) {
+        ball.x = canvas.width - ball.radius;
+        ball.vx = -ball.vx;
+        sound.paddleHit();
+      }
+
+      if (ball.y - ball.radius < 0) {
+        ball.y = ball.radius;
+        ball.vy = -ball.vy;
+        sound.paddleHit();
+      }
+
+      // Paddle Collision
+      if (
+        ball.y + ball.radius >= paddle.y &&
+        ball.y - ball.radius <= paddle.y + paddle.height &&
+        ball.x >= paddle.x &&
+        ball.x <= paddle.x + paddle.width
+      ) {
+        // Angled deflection based on impact offset
+        const hitOffset = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+        const maxAngle = Math.PI / 2.7; // ~66 degrees
+        const currentSpeed = Math.min(10.5, Math.hypot(ball.vx, ball.vy) * 1.02);
+        
+        ball.vx = Math.sin(hitOffset * maxAngle) * currentSpeed;
+        ball.vy = -Math.abs(Math.cos(hitOffset * maxAngle) * currentSpeed);
+        ball.y = paddle.y - ball.radius - 1;
+
+        paddle.glowTimer = 15;
+        sound.paddleHit();
+
+        // Combo reset on paddle bounce if no brick was hit recently
+        if (combo > 1) {
+          combo = Math.max(1, combo - 1);
+          updateHUD();
+        }
+      }
+
+      // Brick Collisions
+      let activeRemaining = 0;
+      for (let r = 0; r < brickConfig.rows; r++) {
+        for (let c = 0; c < brickConfig.cols; c++) {
+          const b = bricks[r][c];
+          if (b.status === 1) {
+            activeRemaining++;
+            // Check bounding box intersection
+            if (
+              ball.x + ball.radius > b.x &&
+              ball.x - ball.radius < b.x + brickConfig.width &&
+              ball.y + ball.radius > b.y &&
+              ball.y - ball.radius < b.y + brickConfig.height
+            ) {
+              // Determine collision normal
+              const overlapLeft = (ball.x + ball.radius) - b.x;
+              const overlapRight = (b.x + brickConfig.width) - (ball.x - ball.radius);
+              const overlapTop = (ball.y + ball.radius) - b.y;
+              const overlapBottom = (b.y + brickConfig.height) - (ball.y - ball.radius);
+
+              const minOverlapX = Math.min(overlapLeft, overlapRight);
+              const minOverlapY = Math.min(overlapTop, overlapBottom);
+
+              if (minOverlapX < minOverlapY) {
+                ball.vx = -ball.vx;
+              } else {
+                ball.vy = -ball.vy;
+              }
+
+              // Process damage
+              b.hits--;
+              b.pulse = 10;
+              
+              if (b.hits <= 0) {
+                b.status = 0;
+                bricksDestroyed++;
+                const color = b.tier === 2 ? '#d946ef' : (b.tier === 1 ? '#f59e0b' : '#10b981');
+                createShatter(b.x + brickConfig.width / 2, b.y + brickConfig.height / 2, color);
+                
+                // Score scoring with combo
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                const pointValues = [100, 250, 500];
+                score += (pointValues[b.tier] || 100) * combo;
+                
+                sound.brickBreak();
+                sound.comboSound(combo);
+                if (combo >= 4) {
+                  showComboToast(`MEGA STREAK x${combo}!`);
+                }
+              } else {
+                sound.brickHit(b.tier);
+              }
+
+              if (!settings.reducedMotion) screenShake = 4;
+              updateHUD();
+              break;
+            }
+          }
+        }
+      }
+
+      // Check Victory Condition
+      if (activeRemaining === 0) {
+        showEndModal(true);
+        return;
+      }
+
+      // Bottom Floor - Life Lost
+      if (ball.y - ball.radius > canvas.height) {
+        lives--;
+        combo = 1;
+        updateHUD();
+        sound.loseLife();
+        if (!settings.reducedMotion) screenShake = 8;
+
+        if (lives <= 0) {
+          showEndModal(false);
+        } else {
+          // Respawn ball
+          ball.attached = true;
+          ball.x = paddle.x + paddle.width / 2;
+          ball.y = paddle.y - ball.radius - 2;
+          ball.vx = 4.8;
+          ball.vy = -5.2;
+          launchOverlay.classList.remove('opacity-0', 'pointer-events-none');
+          launchOverlay.querySelector('h2').textContent = 'CORE RESTORED';
+          launchOverlay.querySelector('p').textContent = 'Life lost. Re-align cursor and press space to eject disk.';
+          btnLaunch.innerHTML = '<span>RE-ENGAGE [SPACE]</span><i data-lucide="chevron-right" class="w-4 h-4"></i>';
+          lucide.createIcons();
+        }
+      }
+
+      // Update particle decay
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+    }
+
+    function renderArena() {
+      ctx.save();
+      
+      // Screen shake offset
+      if (screenShake > 0 && !settings.reducedMotion) {
+        const sx = (Math.random() - 0.5) * screenShake;
+        const sy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(sx, sy);
+        screenShake *= 0.85;
+        if (screenShake < 0.2) screenShake = 0;
+      }
+
+      // Clear Canvas
+      ctx.fillStyle = '#020617'; // slate-950 deep midnight
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Vector Grid Overlay
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
+      ctx.lineWidth = 1;
+      const gridSize = 25;
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Draw Bricks
+      for (let r = 0; r < brickConfig.rows; r++) {
+        for (let c = 0; c < brickConfig.cols; c++) {
+          const b = bricks[r][c];
+          if (b.status === 1) {
+            ctx.save();
+            let fillColor, strokeColor, glowColor;
+            
+            if (b.tier === 0) {
+              // Emerald (1 Hit)
+              fillColor = 'rgba(16, 185, 129, 0.25)';
+              strokeColor = '#10b981';
+              glowColor = 'rgba(16, 185, 129, 0.6)';
+            } else if (b.tier === 1) {
+              // Amber (2 Hit)
+              fillColor = b.hits === 1 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.4)';
+              strokeColor = '#f59e0b';
+              glowColor = 'rgba(245, 158, 11, 0.7)';
+            } else {
+              // Armored Magenta
+              fillColor = b.hits === 1 ? 'rgba(217, 70, 239, 0.3)' : 'rgba(217, 70, 239, 0.55)';
+              strokeColor = '#d946ef';
+              glowColor = 'rgba(217, 70, 239, 0.8)';
+            }
+
+            // Outer Neon Glow
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = b.pulse > 0 ? 18 : 8;
+            ctx.fillStyle = fillColor;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 1.5;
+
+            // Draw rounded brick
+            const radius = 4;
+            ctx.beginPath();
+            ctx.roundRect(b.x, b.y, brickConfig.width, brickConfig.height, radius);
+            ctx.fill();
+            ctx.stroke();
+
+            // Inner core bevel highlight
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(b.x + 4, b.y + 3);
+            ctx.lineTo(b.x + brickConfig.width - 4, b.y + 3);
+            ctx.stroke();
+
+            // Armored plate indicator
+            if (b.tier === 2 && b.hits === 2) {
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+              ctx.fillRect(b.x + brickConfig.width / 2 - 8, b.y + brickConfig.height / 2 - 1.5, 16, 3);
+            }
+
+            if (b.pulse > 0) b.pulse--;
+            ctx.restore();
+          }
+        }
+      }
+
+      // Draw Particles
+      for (const p of particles) {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.restore();
+      }
+
+      // Draw Ball Trail
+      if (!settings.reducedMotion) {
+        for (let i = 0; i < ball.trail.length; i++) {
+          const pt = ball.trail[i];
+          const trAlpha = (i / ball.trail.length) * 0.4;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, ball.radius * (0.6 + (i / ball.trail.length) * 0.4), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(6, 182, 212, ${trAlpha})`;
+          ctx.shadowColor = '#06b6d4';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Draw Ball (Photon Sphere)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 16;
+      ctx.fill();
+      // Outer aura ring
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius + 2, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.8)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw Paddle
+      ctx.save();
+      const pGlow = paddle.glowTimer > 0;
+      ctx.shadowColor = pGlow ? '#ffffff' : '#06b6d4';
+      ctx.shadowBlur = pGlow ? 24 : 14;
+
+      // Main paddle body
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#06b6d4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 7);
+      ctx.fill();
+      ctx.stroke();
+
+      // Core Neon Light Beam inside paddle
+      const paddleGrad = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x + paddle.width, paddle.y);
+      paddleGrad.addColorStop(0, '#d946ef');
+      paddleGrad.addColorStop(0.2, '#06b6d4');
+      paddleGrad.addColorStop(0.5, '#ffffff');
+      paddleGrad.addColorStop(0.8, '#06b6d4');
+      paddleGrad.addColorStop(1, '#d946ef');
+      ctx.fillStyle = paddleGrad;
+      ctx.fillRect(paddle.x + 8, paddle.y + 4, paddle.width - 16, paddle.height - 8);
+
+      // Dynamic outer impact edge caps
+      ctx.fillStyle = '#d946ef';
+      ctx.shadowColor = '#d946ef';
+      ctx.shadowBlur = 12;
+      ctx.fillRect(paddle.x, paddle.y + 2, 4, paddle.height - 4);
+      ctx.fillRect(paddle.x + paddle.width - 4, paddle.y + 2, 4, paddle.height - 4);
+
+      if (paddle.glowTimer > 0) paddle.glowTimer--;
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // Main Animation Loop
+    function gameLoop() {
+      updatePhysics();
+      renderArena();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Initialize Game on Load
+    initBricks();
+    updateHUD();
+    requestAnimationFrame(gameLoop);
+
+    // Responsive Canvas Size handling on window resize
+    function handleResize() {
+      // Keep canvas resolution fixed at 800x500 for consistent physics, aspect-ratio handles CSS scaling
+      updateHUD();
+    }
+    window.addEventListener('resize', handleResize);
+  </script>
+</body>
+</html>
