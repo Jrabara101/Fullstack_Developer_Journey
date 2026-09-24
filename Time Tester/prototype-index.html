@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYNAPSE // Reflex Telemetry Deck</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,700&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        void: '#090A0F',
+                        wait: '#DC2626',
+                        trigger: '#16A34A',
+                        penalty: '#D97706',
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06B6D4',
+                            900: '#164e63',
+                        }
+                    },
+                    animation: {
+                        'early-shake': 'shake 0.15s ease-in-out infinite',
+                        'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'radar': 'radarSweep 4s linear infinite',
+                    },
+                    keyframes: {
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-6px)' },
+                            '75%': { transform: 'translateX(6px)' },
+                        },
+                        radarSweep: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Supersonic Ripple Shockwave */
+        .shockwave {
+            position: absolute;
+            border-radius: 9999px;
+            border: 2px solid rgba(34, 211, 238, 0.85);
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0) 70%);
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none;
+            animation: shockwaveExpand 0.6s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+        }
+
+        @keyframes shockwaveExpand {
+            0% {
+                width: 0px;
+                height: 0px;
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.2);
+            }
+
+            100% {
+                width: 750px;
+                height: 750px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Subgrid HUD Reticle lines */
+        .hud-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+
+        /* Scanline effect */
+        .scanlines {
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.35) 50%,
+                    rgba(0, 0, 0, 0.35));
+            background-size: 100% 4px;
+        }
+
+        /* Custom scrollbar for telemetry logs */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(9, 10, 15, 0.8);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(113, 113, 122, 0.4);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-void text-white h-screen w-screen overflow-hidden select-none font-sans relative antialiased flex flex-col justify-between">
+
+    <!-- Reticle & Scanline Ambient Layer -->
+    <div class="absolute inset-0 hud-grid pointer-events-none z-0"></div>
+    <div class="absolute inset-0 scanlines pointer-events-none opacity-40 z-0"></div>
+
+    <!-- Telemetry Vignette & Corner Targets -->
+    <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-6">
+        <div class="flex justify-between items-start">
+            <div class="border-l-2 border-t-2 border-cyan-500/40 w-6 h-6"></div>
+            <div class="border-r-2 border-t-2 border-cyan-500/40 w-6 h-6"></div>
+        </div>
+        <div class="flex justify-between items-end">
+            <div class="border-l-2 border-b-2 border-cyan-500/40 w-6 h-6"></div>
+            <div class="border-r-2 border-b-2 border-cyan-500/40 w-6 h-6"></div>
+        </div>
+    </div>
+
+    <!-- TOP FLOATING PILL HUD (Z-Index 30) -->
+    <header class="relative z-30 pt-6 px-8 flex items-center justify-between pointer-events-none">
+        <!-- Brand & Diagnostic Mode -->
+        <div class="flex items-center gap-3.5 pointer-events-auto">
+            <div
+                class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 shadow-xl backdrop-blur-md">
+                <span class="relative flex h-2.5 w-2.5">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+                </span>
+                <span class="font-mono text-xs font-bold tracking-widest text-zinc-100 uppercase">SYNAPSE-V4</span>
+                <span class="text-[10px] font-mono text-zinc-500 border-l border-zinc-700/80 pl-2">CAL_SYS_READY</span>
+            </div>
+
+            <div
+                class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900/70 border border-zinc-800/80 backdrop-blur-md font-mono text-[11px] text-zinc-400">
+                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>LATENCY: <span class="text-cyan-400 font-bold">RAW / UNBUFFERED</span></span>
+            </div>
+        </div>
+
+        <!-- Center Floating Pill HUD: Round Tracker -->
+        <div
+            class="pointer-events-auto flex items-center gap-3 px-5 py-2 rounded-full bg-zinc-900/90 border border-zinc-700/60 shadow-2xl backdrop-blur-xl">
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">ROUND</span>
+                <div class="font-mono text-sm font-bold text-white tracking-wider flex items-center">
+                    <span id="hud-round-current" class="text-cyan-400">01</span>
+                    <span class="text-zinc-600 mx-1">/</span>
+                    <span class="text-zinc-400">05</span>
+                </div>
+            </div>
+
+            <div class="w-[1px] h-4 bg-zinc-700/80"></div>
+
+            <!-- Mode Badge -->
+            <div class="flex items-center gap-1.5">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+                <span class="font-mono text-[10px] font-semibold tracking-wider text-zinc-300">F1_TELEMETRY</span>
+            </div>
+        </div>
+
+        <!-- Audio / Telemetry Diagnostics Toggles -->
+        <div class="flex items-center gap-2.5 pointer-events-auto">
+            <button id="btn-audio-toggle" title="Toggle Sensory Audio Cues"
+                class="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900/80 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-cyan-400 transition-colors backdrop-blur-md shadow-lg">
+                <svg id="icon-sound" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+
+            <button id="btn-reset-session" title="Reset Session"
+                class="px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 hover:border-cyan-500/60 font-mono text-xs text-zinc-400 hover:text-cyan-300 transition-colors backdrop-blur-md">
+                RST_ALL
+            </button>
+        </div>
+    </header>
+
+    <!-- CENTER MASSIVE INTERACTIVE ARENA (100vw/100vh Target Area) -->
+    <main id="strike-arena"
+        class="absolute inset-0 z-20 flex flex-col items-center justify-center cursor-pointer transition-colors duration-0 select-none overflow-hidden touch-manipulation">
+
+        <!-- State 1: IDLE / READY PROMPT -->
+        <div id="content-idle"
+            class="flex flex-col items-center text-center px-6 max-w-2xl pointer-events-none transition-all duration-200">
+            <div class="relative mb-6">
+                <div
+                    class="w-24 h-24 rounded-full border border-cyan-500/30 flex items-center justify-center bg-cyan-950/20 backdrop-blur-md shadow-[0_0_40px_rgba(6,182,212,0.15)] group-hover:scale-105 transition-transform">
+                    <svg class="w-10 h-10 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                </div>
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
+            </div>
+
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono tracking-widest text-cyan-400 uppercase mb-3">
+                <span>BIOMETRIC TELEMETRY ENGAGED</span>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-4">
+                CLICK TO ENGAGE
+            </h1>
+            <p class="text-zinc-400 text-base md:text-lg max-w-lg font-normal mb-8">
+                Once armed, hold steady. As soon as the screen flashes emerald green, strike anywhere as quickly as
+                humanly possible.
+            </p>
+
+            <div class="flex items-center gap-6 font-mono text-xs text-zinc-500">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span>WAIT FOR GREEN</span>
+                </div>
+                <div class="w-1 h-1 rounded-full bg-zinc-700"></div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>INSTANT STRIKE</span>
+                </div>
+                <div class="w-1 h-1 rounded-full bg-zinc-700"></div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>EARLY = PENALTY</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- State 2: WAITING FOR GREEN (Red Tension Chamber) -->
+        <div id="content-wait" class="hidden flex-col items-center text-center px-6 max-w-xl pointer-events-none">
+            <div class="relative w-28 h-28 mb-6 flex items-center justify-center">
+                <!-- Tension ring radar -->
+                <div class="absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-60"></div>
+                <div
+                    class="w-24 h-24 rounded-full border border-white/40 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                    <svg class="w-10 h-10 text-white animate-pulse" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="4 4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="font-mono text-sm tracking-[0.3em] font-bold text-white/80 uppercase mb-2">
+                // PROTOCOL_ARMED: HOLD CONTACT
+            </div>
+            <h2 class="text-6xl md:text-8xl font-black tracking-tighter text-white mb-2 uppercase drop-shadow-md">
+                WAIT...
+            </h2>
+            <p class="font-mono text-xs text-white/70 max-w-sm tracking-wide">
+                Sensory cortex primed. Do NOT click until color transition occurs.
+            </p>
+        </div>
+
+        <!-- State 3: STRIKE TRIGGER (Green Flash) -->
+        <div id="content-trigger" class="hidden flex-col items-center text-center px-6 pointer-events-none">
+            <div
+                class="w-28 h-28 mb-4 rounded-full bg-white/20 flex items-center justify-center border-2 border-white animate-bounce">
+                <svg class="w-14 h-14 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <h2
+                class="text-7xl md:text-9xl font-black tracking-tight text-white uppercase drop-shadow-[0_10px_35px_rgba(0,0,0,0.4)]">
+                CLICK!
+            </h2>
+            <span
+                class="font-mono text-sm md:text-base font-bold text-emerald-100 tracking-widest mt-2 uppercase bg-black/20 px-4 py-1 rounded-full">
+                REFLEX CAPTURE IN FLIGHT
+            </span>
+        </div>
+
+        <!-- State 4: PENALTY / TOO EARLY (Amber Alert) -->
+        <div id="content-penalty" class="hidden flex-col items-center text-center px-6 max-w-xl pointer-events-none">
+            <div
+                class="w-20 h-20 rounded-full bg-black/30 border border-white/30 flex items-center justify-center mb-5">
+                <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="font-mono text-xs tracking-widest text-white/90 uppercase mb-2">
+                // TELEMETRY INVALIDATED
+            </div>
+            <h2 class="text-5xl md:text-7xl font-black text-white uppercase tracking-tight mb-3">
+                TOO EARLY!
+            </h2>
+            <p class="text-white/85 text-sm md:text-base max-w-md font-medium mb-6">
+                Motor impulse preceded optical stimulus trigger. False start recorded.
+            </p>
+            <div
+                class="px-5 py-2 rounded-full bg-black/40 border border-white/20 font-mono text-xs text-white tracking-widest uppercase">
+                CLICK ANYWHERE TO RETRY ROUND
+            </div>
+        </div>
+
+        <!-- State 5: RESULT LOGGED FOR ROUND -->
+        <div id="content-result" class="hidden flex-col items-center text-center px-6 max-w-3xl pointer-events-none">
+
+            <!-- Reflex Grade Badge -->
+            <div id="result-grade-badge"
+                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold tracking-widest uppercase mb-4 backdrop-blur-md">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                <span id="result-grade-text">PRO-ATHLETE GRADE</span>
+            </div>
+
+            <!-- Main Rolling Counter Display -->
+            <div class="flex items-baseline justify-center font-mono font-black tracking-tight text-white mb-3">
+                <span id="result-counter-display"
+                    class="text-7xl md:text-9xl text-white drop-shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+                    0.0
+                </span>
+                <span class="text-2xl md:text-4xl text-zinc-500 font-medium ml-3">ms</span>
+            </div>
+
+            <!-- Delta Indicator & Neurological Classification -->
+            <div class="flex flex-wrap items-center justify-center gap-3 font-mono text-xs mb-8">
+                <div class="px-3 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                    DELTA: <span id="result-delta" class="text-emerald-400 font-bold">-14.2 ms</span>
+                </div>
+                <div class="px-3 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                    PERCENTILE: <span id="result-percentile" class="text-cyan-400 font-bold">TOP 4.2%</span>
+                </div>
+                <div class="px-3 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                    LATENCY BIAS: <span class="text-zinc-400">HARDWARE ~1.2ms</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btn-next-action"
+                    class="pointer-events-auto px-8 py-3 rounded-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold font-mono text-xs md:text-sm tracking-wider uppercase shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all hover:scale-105 active:scale-95">
+                    CONTINUE TO ROUND <span id="result-next-round-num">02</span> →
+                </button>
+            </div>
+
+            <div class="mt-4 font-mono text-[11px] text-zinc-500">
+                OR PRESS [SPACE] / CLICK ANYWHERE
+            </div>
+        </div>
+
+        <!-- State 6: FINAL SESSION COMPLETE TELEMETRY REPORT -->
+        <div id="content-summary" class="hidden flex-col items-center text-center px-6 max-w-4xl pointer-events-none">
+            <div
+                class="px-3.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/50 text-emerald-400 font-mono text-xs font-bold uppercase tracking-widest mb-3">
+                DIAGNOSTIC BENCHMARK COMPLETE
+            </div>
+
+            <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-2">
+                NEURAL LATENCY SCORECARD
+            </h2>
+            <p class="font-mono text-xs text-zinc-400 mb-8">
+                TEST COMPLETED • 5/5 SAMPLES LOGGED • STATISTICAL INTEGRITY VERIFIED
+            </p>
+
+            <!-- Key Aggregate Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-2xl mb-8">
+                <div class="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 text-left">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">MEAN AVERAGE</div>
+                    <div id="summary-mean" class="font-mono text-2xl md:text-3xl font-bold text-white mt-1">178.4 <span
+                            class="text-xs text-zinc-500 font-normal">ms</span></div>
+                    <div class="text-[10px] font-mono text-emerald-400 mt-1">↑ TIER 1 HYPER</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 text-left">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">BEST APEX</div>
+                    <div id="summary-best" class="font-mono text-2xl md:text-3xl font-bold text-cyan-400 mt-1">154.2
+                        <span class="text-xs text-zinc-500 font-normal">ms</span></div>
+                    <div class="text-[10px] font-mono text-cyan-500 mt-1">SUPERSONIC</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 text-left">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">CONSISTENCY</div>
+                    <div id="summary-stddev" class="font-mono text-2xl md:text-3xl font-bold text-zinc-200 mt-1">±6.4
+                        <span class="text-xs text-zinc-500 font-normal">ms</span></div>
+                    <div class="text-[10px] font-mono text-zinc-400 mt-1">HIGH STABILITY</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 text-left">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">FALSE STARTS</div>
+                    <div id="summary-penalties" class="font-mono text-2xl md:text-3xl font-bold text-amber-400 mt-1">0
+                    </div>
+                    <div class="text-[10px] font-mono text-zinc-400 mt-1">PERFECT CADENCE</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btn-restart-full"
+                    class="pointer-events-auto px-8 py-3 rounded-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-mono font-bold text-xs md:text-sm tracking-wider uppercase shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-transform hover:scale-105 active:scale-95">
+                    INITIATE NEW TEST TRIAL ↻
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- BOTTOM MICRO-DOCK (Z-Index 30) -->
+    <footer
+        class="relative z-30 pb-6 px-8 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-none">
+
+        <!-- Previous Run Pills Dock -->
+        <div
+            class="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/90 border border-zinc-800/90 shadow-2xl backdrop-blur-xl">
+            <span
+                class="text-[10px] font-mono font-semibold text-zinc-500 uppercase tracking-widest pr-2 border-r border-zinc-800">
+                RUN_HISTORY
+            </span>
+
+            <!-- 5 Dynamic Round Slots -->
+            <div id="dock-runs-container" class="flex items-center gap-2">
+                <!-- Sample Slot 1 -->
+                <div
+                    class="run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600">
+                    <span class="text-[10px] text-zinc-600">R1</span>
+                    <span class="slot-val">---</span>
+                </div>
+                <!-- Sample Slot 2 -->
+                <div
+                    class="run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600">
+                    <span class="text-[10px] text-zinc-600">R2</span>
+                    <span class="slot-val">---</span>
+                </div>
+                <!-- Sample Slot 3 -->
+                <div
+                    class="run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600">
+                    <span class="text-[10px] text-zinc-600">R3</span>
+                    <span class="slot-val">---</span>
+                </div>
+                <!-- Sample Slot 4 -->
+                <div
+                    class="run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600">
+                    <span class="text-[10px] text-zinc-600">R4</span>
+                    <span class="slot-val">---</span>
+                </div>
+                <!-- Sample Slot 5 -->
+                <div
+                    class="run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600">
+                    <span class="text-[10px] text-zinc-600">R5</span>
+                    <span class="slot-val">---</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Telemetry Stream Stats (Mean & Consistency) -->
+        <div class="pointer-events-auto flex items-center gap-4 text-xs font-mono text-zinc-400">
+            <div class="hidden sm:flex items-center gap-2">
+                <span class="text-zinc-600 uppercase text-[10px]">AVG:</span>
+                <span id="footer-live-avg" class="text-zinc-200 font-bold">--- ms</span>
+            </div>
+
+            <div class="hidden sm:block w-[1px] h-3 bg-zinc-800"></div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-zinc-600 uppercase text-[10px]">BENCHMARK:</span>
+                <span class="text-cyan-400 font-medium">NEURO_STANDARDS_v2.4</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT FOR STATE ENGINE, AUDIO SYNTHESIS, AND KINETIC ANIMATIONS -->
+    <script>
+            (function () {
+                // Configuration & State
+                const TOTAL_ROUNDS = 5;
+                let currentRound = 1;
+                let currentState = 'IDLE'; // 'IDLE' | 'WAIT' | 'TRIGGER' | 'PENALTY' | 'RESULT' | 'SUMMARY'
+                let timerId = null;
+                let triggerTimestamp = 0;
+                let recordedScores = [];
+                let penaltyCount = 0;
+                let soundEnabled = true;
+
+                // Audio Synthesis (Web Audio API - Zero External Assets)
+                let audioCtx = null;
+                function initAudio() {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                }
+
+                function playTone(freq, type = 'sine', duration = 0.08, gainVal = 0.15) {
+                    if (!soundEnabled) return;
+                    try {
+                        initAudio();
+                        if (audioCtx.state === 'suspended') {
+                            audioCtx.resume();
+                        }
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    } catch (e) {
+                        console.warn("Audio unavailable", e);
+                    }
+                }
+
+                // Sound presets
+                const SFX = {
+                    arm: () => playTone(300, 'triangle', 0.1, 0.1),
+                    trigger: () => {
+                        playTone(880, 'sine', 0.12, 0.25);
+                        setTimeout(() => playTone(1760, 'sine', 0.08, 0.2), 60);
+                    },
+                    clickGood: () => playTone(620, 'sine', 0.08, 0.2),
+                    supersonic: () => {
+                        playTone(523, 'sine', 0.08, 0.25);
+                        setTimeout(() => playTone(1046, 'triangle', 0.15, 0.3), 70);
+                        setTimeout(() => playTone(2093, 'sine', 0.2, 0.2), 140);
+                    },
+                    penalty: () => {
+                        playTone(180, 'sawtooth', 0.22, 0.3);
+                        setTimeout(() => playTone(140, 'sawtooth', 0.25, 0.25), 90);
+                    }
+                };
+
+                // DOM Elements
+                const arena = document.getElementById('strike-arena');
+                const contentIdle = document.getElementById('content-idle');
+                const contentWait = document.getElementById('content-wait');
+                const contentTrigger = document.getElementById('content-trigger');
+                const contentPenalty = document.getElementById('content-penalty');
+                const contentResult = document.getElementById('content-result');
+                const contentSummary = document.getElementById('content-summary');
+
+                const hudRound = document.getElementById('hud-round-current');
+                const resultCounterDisplay = document.getElementById('result-counter-display');
+                const resultGradeBadge = document.getElementById('result-grade-badge');
+                const resultGradeText = document.getElementById('result-grade-text');
+                const resultDelta = document.getElementById('result-delta');
+                const resultPercentile = document.getElementById('result-percentile');
+                const resultNextRoundNum = document.getElementById('result-next-round-num');
+                const btnNextAction = document.getElementById('btn-next-action');
+                const btnResetSession = document.getElementById('btn-reset-session');
+                const btnRestartFull = document.getElementById('btn-restart-full');
+                const btnAudioToggle = document.getElementById('btn-audio-toggle');
+                const footerLiveAvg = document.getElementById('footer-live-avg');
+
+                // State Transition Helpers
+                function hideAllContents() {
+                    contentIdle.classList.add('hidden');
+                    contentWait.classList.add('hidden');
+                    contentTrigger.classList.add('hidden');
+                    contentPenalty.classList.add('hidden');
+                    contentResult.classList.add('hidden');
+                    contentSummary.classList.add('hidden');
+                    arena.classList.remove('animate-early-shake');
+                }
+
+                function setState(newState) {
+                    currentState = newState;
+                    hideAllContents();
+
+                    // Arena surface color tokens according to spec
+                    arena.className = "absolute inset-0 z-20 flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden touch-manipulation";
+
+                    switch (newState) {
+                        case 'IDLE':
+                            arena.classList.add('bg-void');
+                            contentIdle.classList.remove('hidden');
+                            break;
+
+                        case 'WAIT':
+                            arena.classList.add('bg-wait'); // Crimson alert
+                            contentWait.classList.remove('hidden');
+                            SFX.arm();
+                            break;
+
+                        case 'TRIGGER':
+                            arena.classList.add('bg-trigger'); // Instant emerald flash
+                            contentTrigger.classList.remove('hidden');
+                            SFX.trigger();
+                            break;
+
+                        case 'PENALTY':
+                            arena.classList.add('bg-penalty'); // Amber penalty
+                            arena.classList.add('animate-early-shake');
+                            contentPenalty.classList.remove('hidden');
+                            SFX.penalty();
+                            break;
+
+                        case 'RESULT':
+                            arena.classList.add('bg-void');
+                            contentResult.classList.remove('hidden');
+                            break;
+
+                        case 'SUMMARY':
+                            arena.classList.add('bg-void');
+                            contentSummary.classList.remove('hidden');
+                            break;
+                    }
+                }
+
+                // Supersonic Shockwave Ripple Generator (<190ms scores)
+                function spawnShockwave(x, y) {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'shockwave';
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    arena.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 700);
+                }
+
+                // Smooth Roll-up Counter Animation over 200ms
+                function rollUpCounter(finalValue, duration = 220) {
+                    const start = 0;
+                    const startTime = performance.now();
+
+                    function update(now) {
+                        const elapsed = now - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        // Ease-out cubic curve
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const current = (start + (finalValue - start) * easeOut).toFixed(1);
+                        resultCounterDisplay.textContent = current;
+
+                        if (progress < 1) {
+                            requestAnimationFrame(update);
+                        } else {
+                            resultCounterDisplay.textContent = finalValue.toFixed(1);
+                        }
+                    }
+                    requestAnimationFrame(update);
+                }
+
+                // Update Dock Run Tag
+                function updateDockSlot(roundIdx, scoreMs) {
+                    const slots = document.querySelectorAll('#dock-runs-container .run-slot');
+                    if (slots[roundIdx - 1]) {
+                        const slot = slots[roundIdx - 1];
+                        const valEl = slot.querySelector('.slot-val');
+                        valEl.textContent = `${Math.round(scoreMs)}ms`;
+
+                        slot.classList.remove('text-zinc-600', 'bg-zinc-950/80', 'border-zinc-800');
+                        if (scoreMs < 190) {
+                            slot.classList.add('bg-cyan-950/80', 'border-cyan-500/60', 'text-cyan-300', 'shadow-[0_0_10px_rgba(6,182,212,0.3)]');
+                        } else if (scoreMs < 250) {
+                            slot.classList.add('bg-emerald-950/80', 'border-emerald-500/60', 'text-emerald-300');
+                        } else {
+                            slot.classList.add('bg-zinc-900', 'border-zinc-700', 'text-zinc-300');
+                        }
+                    }
+
+                    // Update Average
+                    if (recordedScores.length > 0) {
+                        const avg = recordedScores.reduce((a, b) => a + b, 0) / recordedScores.length;
+                        footerLiveAvg.textContent = `${avg.toFixed(1)} ms`;
+                    }
+                }
+
+                // Arm the wait phase with randomized delay (1.8s to 4.5s)
+                function armWaitPhase() {
+                    setState('WAIT');
+                    hudRound.textContent = `0${currentRound}`;
+
+                    const randomDelay = Math.floor(Math.random() * 2700) + 1800; // 1800ms - 4500ms
+                    timerId = setTimeout(() => {
+                        triggerTimestamp = performance.now();
+                        setState('TRIGGER');
+                    }, randomDelay);
+                }
+
+                // Arena Click / Interaction Handler
+                function handleInteraction(e) {
+                    // Prevent clicking child buttons from bubbling duplicate triggers
+                    if (e && e.target && (e.target.closest('button') || e.target.closest('header') || e.target.closest('footer'))) {
+                        return;
+                    }
+
+                    const clickX = e && e.clientX ? e.clientX : window.innerWidth / 2;
+                    const clickY = e && e.clientY ? e.clientY : window.innerHeight / 2;
+
+                    if (currentState === 'IDLE') {
+                        armWaitPhase();
+                    }
+                    else if (currentState === 'WAIT') {
+                        // False start detected! Early click penalty
+                        clearTimeout(timerId);
+                        penaltyCount++;
+                        setState('PENALTY');
+                    }
+                    else if (currentState === 'PENALTY') {
+                        // Reset same round after penalty
+                        armWaitPhase();
+                    }
+                    else if (currentState === 'TRIGGER') {
+                        // Valid Reflex Capture!
+                        const reactionTime = performance.now() - triggerTimestamp;
+                        recordedScores.push(reactionTime);
+                        updateDockSlot(currentRound, reactionTime);
+
+                        // Audio & Kinetic feedback
+                        if (reactionTime < 190) {
+                            SFX.supersonic();
+                            spawnShockwave(clickX, clickY);
+                        } else {
+                            SFX.clickGood();
+                        }
+
+                        // Evaluate Classification & Metrics
+                        let grade = "OLYMPIC PRO REFLEX";
+                        let percentile = "TOP 1.4%";
+                        let delta = "-32.4 ms";
+
+                        if (reactionTime < 180) {
+                            grade = "SUPERSONIC // ESPORTS TIER";
+                            percentile = "TOP 0.8%";
+                            delta = "-46.1 ms";
+                            resultGradeBadge.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-400 text-cyan-300 font-mono text-xs font-bold tracking-widest uppercase mb-4 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.4)]";
+                        } else if (reactionTime < 220) {
+                            grade = "PRO-ATHLETE MOTOR SPEED";
+                            percentile = "TOP 6.5%";
+                            delta = "-18.2 ms";
+                            resultGradeBadge.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/70 border border-emerald-400 text-emerald-300 font-mono text-xs font-bold tracking-widest uppercase mb-4 backdrop-blur-md";
+                        } else if (reactionTime < 290) {
+                            grade = "STANDARD HUMAN BENCHMARK";
+                            percentile = "TOP 42.0%";
+                            delta = "+8.5 ms";
+                            resultGradeBadge.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-300 font-mono text-xs font-bold tracking-widest uppercase mb-4 backdrop-blur-md";
+                        } else {
+                            grade = "NEURO-FATIGUE LATENCY DETECTED";
+                            percentile = "BOTTOM 28%";
+                            delta = "+44.0 ms";
+                            resultGradeBadge.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-950/70 border border-amber-500 text-amber-300 font-mono text-xs font-bold tracking-widest uppercase mb-4 backdrop-blur-md";
+                        }
+
+                        resultGradeText.textContent = grade;
+                        resultPercentile.textContent = percentile;
+                        resultDelta.textContent = delta;
+                        resultNextRoundNum.textContent = currentRound < TOTAL_ROUNDS ? `0${currentRound + 1}` : 'FINISH';
+
+                        setState('RESULT');
+                        rollUpCounter(reactionTime);
+                    }
+                    else if (currentState === 'RESULT') {
+                        proceedToNextRound();
+                    }
+                }
+
+                function proceedToNextRound() {
+                    if (currentRound < TOTAL_ROUNDS) {
+                        currentRound++;
+                        hudRound.textContent = `0${currentRound}`;
+                        armWaitPhase();
+                    } else {
+                        // Show full summary report
+                        renderSummary();
+                        setState('SUMMARY');
+                    }
+                }
+
+                function renderSummary() {
+                    const mean = recordedScores.reduce((a, b) => a + b, 0) / recordedScores.length;
+                    const best = Math.min(...recordedScores);
+
+                    // Compute standard deviation
+                    const variance = recordedScores.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / recordedScores.length;
+                    const stdDev = Math.sqrt(variance);
+
+                    document.getElementById('summary-mean').innerHTML = `${mean.toFixed(1)} <span class="text-xs text-zinc-500 font-normal">ms</span>`;
+                    document.getElementById('summary-best').innerHTML = `${best.toFixed(1)} <span class="text-xs text-zinc-500 font-normal">ms</span>`;
+                    document.getElementById('summary-stddev').innerHTML = `±${stdDev.toFixed(1)} <span class="text-xs text-zinc-500 font-normal">ms</span>`;
+                    document.getElementById('summary-penalties').textContent = penaltyCount;
+                }
+
+                function resetSession() {
+                    clearTimeout(timerId);
+                    currentRound = 1;
+                    recordedScores = [];
+                    penaltyCount = 0;
+                    hudRound.textContent = "01";
+                    footerLiveAvg.textContent = "--- ms";
+
+                    // Reset dock slots
+                    const slots = document.querySelectorAll('#dock-runs-container .run-slot');
+                    slots.forEach((slot, idx) => {
+                        slot.className = "run-slot flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/80 border border-zinc-800 font-mono text-xs text-zinc-600";
+                        slot.querySelector('.slot-val').textContent = "---";
+                    });
+
+                    setState('IDLE');
+                }
+
+                // Event Listeners
+                arena.addEventListener('pointerdown', (e) => {
+                    handleInteraction(e);
+                });
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        handleInteraction();
+                    }
+                });
+
+                btnNextAction.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    proceedToNextRound();
+                });
+
+                btnResetSession.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resetSession();
+                });
+
+                btnRestartFull.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resetSession();
+                });
+
+                btnAudioToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    soundEnabled = !soundEnabled;
+                    btnAudioToggle.classList.toggle('text-zinc-600', !soundEnabled);
+                    btnAudioToggle.classList.toggle('text-zinc-400', soundEnabled);
+                    btnAudioToggle.classList.toggle('border-cyan-500/50', soundEnabled);
+                    if (soundEnabled) {
+                        SFX.arm();
+                    }
+                });
+
+                // Initial State
+                setState('IDLE');
+            })();
+    </script>
+</body>
+
+</html>
