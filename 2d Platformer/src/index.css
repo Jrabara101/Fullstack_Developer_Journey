@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 220 20% 5%;
+    --foreground: 0 0% 95%;
+    --card: 225 18% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 225 18% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 220 20% 5%;
+    --secondary: 222 16% 14%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 222 16% 16%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 18 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 224 16% 20%;
+    --input: 224 16% 20%;
+    --ring: 38 92% 50%;
+    --radius: 0.25rem;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0A0B0E;
+    color: #EDEDED;
+    font-family: 'Chakra Petch', sans-serif;
+    overscroll-behavior: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0B0E;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #282C38;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #F59E0B;
+  }
+}
+
+.font-mono-tech {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.font-teko {
+  font-family: 'Teko', sans-serif;
+}
+
+.font-chakra {
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+/* Industrial Chamfer Corners & Hazard Stripes */
+.clip-chamfer-tl {
+  clip-path: polygon(12px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 12px);
+}
+
+.clip-chamfer-br {
+  clip-path: polygon(0% 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%);
+}
+
+.clip-cockpit-notch {
+  clip-path: polygon(16px 0%, calc(100% - 16px) 0%, 100% 16px, 100% 100%, 0% 100%, 0% 16px);
+}
+
+.hazard-stripe-amber {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(245, 158, 11, 0.85),
+    rgba(245, 158, 11, 0.85) 8px,
+    #14161D 8px,
+    #14161D 16px
+  );
+}
+
+.hazard-stripe-lime {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(132, 204, 22, 0.85),
+    rgba(132, 204, 22, 0.85) 6px,
+    #14161D 6px,
+    #14161D 12px
+  );
+}
+
+.scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.3)
+  );
+  background-size: 100% 4px;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_standard" name="shell-type" />
+    <title>CYBER-CHASM // SOLAR CRUCIBLE [MECHA COCKPIT]</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <!-- Industrial mecha typography: Chakra Petch for bold angular headers & Teko for gauges, Share Tech Mono for military telemetry -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&amp;family=Share+Tech+Mono&amp;family=Teko:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        @layer base {
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #0A0B0E;
+                color: #EDEDED;
+                font-family: 'Chakra Petch', sans-serif;
+            }
+
+            body {
+                overscroll-behavior: none;
+            }
+
+            ::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .font-teko {
+            font-family: 'Teko', sans-serif;
+        }
+
+        /* Industrial Chamfer Corners & Hazard Stripes */
+        .clip-chamfer-tl {
+            clip-path: polygon(12px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 12px);
+        }
+
+        .clip-chamfer-br {
+            clip-path: polygon(0% 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%);
+        }
+
+        .clip-cockpit-notch {
+            clip-path: polygon(16px 0%, calc(100% - 16px) 0%, 100% 16px, 100% 100%, 0% 100%, 0% 16px);
+        }
+
+        .hazard-stripe-amber {
+            background: repeating-linear-gradient(-45deg,
+                    rgba(245, 158, 11, 0.85),
+                    rgba(245, 158, 11, 0.85) 8px,
+                    #14161D 8px,
+                    #14161D 16px);
+        }
+
+        .hazard-stripe-lime {
+            background: repeating-linear-gradient(-45deg,
+                    rgba(132, 204, 22, 0.8),
+                    rgba(132, 204, 22, 0.8) 6px,
+                    #14161D 6px,
+                    #14161D 12px);
+        }
+
+        /* Subtle CRT Scanline overlay */
+        .scanlines {
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.28) 50%,
+                    rgba(0, 0, 0, 0.28));
+            background-size: 100% 4px;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "carbon-deep": "#08090C",
+                        "carbon-bg": "#0A0B0E",
+                        "carbon-card": "#14161D",
+                        "carbon-elevated": "#1C1F28",
+                        "carbon-border": "#282C38",
+                        "amber-flare": "#F59E0B",
+                        "magma-orange": "#FF5500",
+                        "caution-lime": "#84CC16",
+                        "magma-dim": "#3A1604",
+                        "plasma-glow": "#FFAA00"
+                    },
+                    fontFamily: {
+                        display: ['Chakra Petch', 'sans-serif'],
+                        teko: ['Teko', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="bg-carbon-bg text-neutral-100 min-h-screen flex flex-col selection:bg-amber-flare selection:text-black">
+    <!-- ULTRA-SLIM MISSION STATUS RIBBON (AIRCRAFT COCKPIT CANOPY HEADER) -->
+    <header
+        class="w-full bg-carbon-deep border-b border-carbon-border/80 sticky top-0 z-50 px-4 md:px-8 py-1.5 flex items-center justify-between text-xs font-mono">
+        <!-- Left: Rig Identification & Sector Status -->
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 bg-amber-flare shadow-[0_0_8px_#F59E0B] rotate-45"></span>
+                <span class="font-bold tracking-widest text-white uppercase text-sm">CHASM-MK IV // MECHA RIG</span>
+            </div>
+            <div class="h-3.5 w-px bg-carbon-border hidden sm:block"></div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-amber-flare font-bold">SECTOR 07</span>
+                <span class="text-neutral-500">//</span>
+                <span class="text-neutral-300 font-semibold tracking-wide uppercase">SOLAR FORGE</span>
+            </div>
+            <div
+                class="hidden lg:flex items-center gap-1.5 bg-carbon-card px-2 py-0.5 border border-carbon-border text-[11px]">
+                <span class="text-neutral-400">BIOME:</span>
+                <span class="text-magma-orange font-bold uppercase">MOLTEN CRUCIBLE</span>
+            </div>
+        </div>
+        <!-- Center: Thermal Warning Alert Flag -->
+        <div class="flex items-center gap-2 bg-magma-orange/15 border border-magma-orange/60 px-3 py-0.5 rounded-sm">
+            <span class="w-2 h-2 rounded-full bg-magma-orange animate-ping"></span>
+            <span class="text-magma-orange font-bold tracking-widest text-[11px] uppercase">CRITICAL THERMAL LEVEL:
+                1,420°C</span>
+        </div>
+        <!-- Right: Telemetry Par & Spectator Sync -->
+        <div class="flex items-center gap-5">
+            <div class="hidden sm:flex items-center gap-2">
+                <span class="text-neutral-400">PAR TARGET:</span>
+                <span class="text-amber-flare font-bold">01:35.000</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[15px] text-caution-lime">sensors</span>
+                <span class="text-neutral-400">SYNC:</span>
+                <span class="text-caution-lime font-bold">142 SPECTATORS</span>
+            </div>
+            <div class="hidden md:flex items-center gap-1 bg-carbon-card px-2 py-0.5 border border-carbon-border">
+                <span class="text-neutral-500">TICK:</span>
+                <span class="text-white">128HZ FIXED</span>
+            </div>
+        </div>
+    </header>
+    <!-- MAIN FLIGHT / COCKPIT INTERFACE CONTAINER -->
+    <main class="w-full flex-1 flex flex-col px-3 md:px-6 pt-2 pb-3 gap-3 max-w-[1920px] mx-auto overflow-hidden">
+        <!-- VIEWPORT + FLANK DIAGNOSTICS ROW -->
+        <div class="w-full grid grid-cols-12 gap-3 items-stretch">
+            <!-- CENTER-LEFT: PRIMARY SOLAR FURNACE ARENA VIEWPORT (16:9 Interactive HUD) -->
+            <div class="col-span-12 xl:col-span-9 flex flex-col">
+                <!-- Frame Outer Mecha Casing with Cutout Corner styling -->
+                <div
+                    class="w-full aspect-[16/9] bg-carbon-deep border-2 border-carbon-border relative rounded-sm overflow-hidden shadow-[0_0_35px_rgba(255,85,0,0.15)] flex flex-col group">
+                    <!-- Tactical Viewport Top Chamfer Banner -->
+                    <div
+                        class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-2 pointer-events-none bg-gradient-to-b from-carbon-deep/90 to-transparent">
+                        <!-- Left Corner: Coordinates & Cam Feed -->
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-magma-orange rounded-full animate-pulse"></span>
+                            <span class="font-mono text-xs text-amber-flare font-bold tracking-wider">HUD_COCKPIT_OPTICS
+                                // CAM-01 FRONT</span>
+                            <span class="font-mono text-[10px] text-neutral-400">LOC: [X 441.90 // Y 882.14 // Z
+                                +14.2]</span>
+                        </div>
+                        <!-- Right Corner: Live Checkpoint Milestone Indicator -->
+                        <div
+                            class="flex items-center gap-2 bg-carbon-card/90 border border-amber-flare/40 px-2.5 py-1 text-xs font-mono">
+                            <span
+                                class="material-symbols-outlined text-amber-flare text-[14px]">shield_with_heart</span>
+                            <span class="text-white font-bold tracking-wider">HEAT-SHIELD CP 03: ONLINE</span>
+                            <span class="text-caution-lime font-bold ml-1">+00:00.64 G-DELTA</span>
+                        </div>
+                    </div>
+                    <!-- PARALLAX MOLTEN FURNACE SVG SCENE -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewbox="0 0 960 540"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Magma Abyss Sky gradient -->
+                            <lineargradient id="furnace-sky" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#08090C"></stop>
+                                <stop offset="45%" stop-color="#141113"></stop>
+                                <stop offset="85%" stop-color="#260C03"></stop>
+                                <stop offset="100%" stop-color="#451101"></stop>
+                            </lineargradient>
+                            <!-- Magma River Glow -->
+                            <lineargradient id="magma-conduit-glow" x1="0" x2="1" y1="0" y2="0">
+                                <stop offset="0%" stop-color="#FF5500"></stop>
+                                <stop offset="50%" stop-color="#F59E0B"></stop>
+                                <stop offset="100%" stop-color="#FF5500"></stop>
+                            </lineargradient>
+                            <!-- Platform Heat Shield Gradient -->
+                            <lineargradient id="heat-shield-edge" x1="0" x2="1" y1="0" y2="0">
+                                <stop offset="0%" stop-color="#F59E0B"></stop>
+                                <stop offset="50%" stop-color="#FFFFFF"></stop>
+                                <stop offset="100%" stop-color="#FF5500"></stop>
+                            </lineargradient>
+                            <!-- Laser Barricade Pulse -->
+                            <lineargradient id="laser-fire" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#FF5500" stop-opacity="0.9"></stop>
+                                <stop offset="50%" stop-color="#F59E0B" stop-opacity="1"></stop>
+                                <stop offset="100%" stop-color="#FF5500" stop-opacity="0.2"></stop>
+                            </lineargradient>
+                            <pattern height="20" id="diag-hazard-pattern" patterntransform="rotate(45)"
+                                patternunits="userSpaceOnUse" width="20">
+                                <rect fill="#F59E0B" height="20" width="10"></rect>
+                                <rect fill="#14161D" height="20" width="10" x="10"></rect>
+                            </pattern>
+                        </defs>
+                        <!-- Deep Furnace Background -->
+                        <rect fill="url(#furnace-sky)" height="540" width="960"></rect>
+                        <!-- Distant Molten Foundry Silhouette Structures & Smokestacks -->
+                        <g fill="#1B1D26" opacity="0.35">
+                            <rect height="380" width="50" x="40" y="160"></rect>
+                            <polygon points="40,160 65,120 90,160"></polygon>
+                            <rect height="330" width="70" x="180" y="210"></rect>
+                            <rect height="400" width="90" x="340" y="140"></rect>
+                            <rect height="360" width="80" x="680" y="180"></rect>
+                            <polygon points="680,180 720,130 760,180"></polygon>
+                            <rect height="300" width="60" x="840" y="240"></rect>
+                        </g>
+                        <!-- Distant Heat Waves & Laser Conduit Beams -->
+                        <g opacity="0.25" stroke="#F59E0B" stroke-dasharray="4 4" stroke-width="0.75">
+                            <line x1="0" x2="960" y1="260" y2="260"></line>
+                            <line x1="0" x2="960" y1="320" y2="320"></line>
+                            <line x1="0" x2="960" y1="390" y2="390"></line>
+                            <line x1="480" x2="0" y1="120" y2="540"></line>
+                            <line x1="480" x2="960" y1="120" y2="540"></line>
+                        </g>
+                        <!-- Molten Heat Rising Spark Particles -->
+                        <g fill="#F59E0B" opacity="0.7">
+                            <circle cx="210" cy="340" r="1.5"></circle>
+                            <circle cx="230" cy="290" r="1"></circle>
+                            <circle cx="480" cy="380" r="2"></circle>
+                            <circle cx="510" cy="310" r="1.5"></circle>
+                            <circle cx="560" cy="240" r="1"></circle>
+                            <circle cx="730" cy="270" r="2.5"></circle>
+                            <circle cx="790" cy="210" r="1.5"></circle>
+                            <circle cx="340" cy="420" r="2"></circle>
+                        </g>
+                        <!-- IN-ARENA PLATFORM 1: Left Launch Gantry with Hazard Striping -->
+                        <rect fill="#14161D" height="160" width="210" x="0" y="380"></rect>
+                        <rect fill="url(#heat-shield-edge)" height="5" width="210" x="0" y="376"></rect>
+                        <rect fill="url(#diag-hazard-pattern)" height="6" opacity="0.85" width="200" x="0" y="385">
+                        </rect>
+                        <!-- Steam vent emitter -->
+                        <circle cx="30" cy="380" fill="#F59E0B" r="3"></circle>
+                        <circle cx="180" cy="380" fill="#FF5500" r="3"></circle>
+                        <!-- HAZARD POOL: Molten Core Abyss beneath P1 and P2 -->
+                        <rect fill="url(#magma-conduit-glow)" height="40" opacity="0.9" width="100" x="210" y="500">
+                        </rect>
+                        <polygon fill="#FF5500" opacity="0.7" points="210,500 230,470 250,500 270,475 290,500 310,500">
+                        </polygon>
+                        <!-- IN-ARENA PLATFORM 2: Slanted Ferro-Steel Heat Duct -->
+                        <polygon fill="#1C1F28" points="290,340 430,340 400,365 260,365"></polygon>
+                        <line stroke="#F59E0B" stroke-width="4" x1="288" x2="432" y1="340" y2="340"></line>
+                        <!-- Thermal glow rim -->
+                        <circle cx="360" cy="340" fill="#FFFFFF" r="3"></circle>
+                        <!-- HAZARD VERTICAL LASER GATE (Sector separator) -->
+                        <rect fill="url(#laser-fire)" height="280" width="4" x="465" y="70"></rect>
+                        <rect fill="#FF5500" height="280" opacity="0.3" width="8" x="463" y="70"></rect>
+                        <!-- Laser projector nodes -->
+                        <rect fill="#F59E0B" height="12" width="16" x="459" y="60"></rect>
+                        <rect fill="#F59E0B" height="12" width="16" x="459" y="350"></rect>
+                        <!-- IN-ARENA PLATFORM 3: Suspended High-Thrust Boost Pad -->
+                        <rect fill="#14161D" height="16" rx="1" width="150" x="510" y="240"></rect>
+                        <rect fill="#84CC16" height="3" width="150" x="510" y="238"></rect>
+                        <line stroke="#F59E0B" stroke-dasharray="6 3" stroke-width="2" x1="520" x2="650" y1="252"
+                            y2="252"></line>
+                        <!-- COLLECTIBLE: Industrial Uranium/Fuel Cell #6 (Floating Diamond) -->
+                        <g transform="translate(680, 190)">
+                            <polygon fill="#F59E0B" points="0,-14 12,0 0,14 -12,0" stroke="#FFFFFF" stroke-width="1.5">
+                            </polygon>
+                            <polygon fill="#FF5500" points="0,-7 6,0 0,7 -6,0"></polygon>
+                            <!-- Energy aura rings -->
+                            <circle cx="0" cy="0" opacity="0.6" r="18" stroke="#F59E0B" stroke-dasharray="3 3"
+                                stroke-width="1"></circle>
+                            <text fill="#F59E0B" font-family="'Share Tech Mono'" font-size="9" font-weight="bold" x="16"
+                                y="4">CELL // 06</text>
+                        </g>
+                        <!-- RIVAL GHOST CHASSIS: (Lilac/Silver ghost trailing) -->
+                        <g opacity="0.6" transform="translate(610, 205)">
+                            <rect fill="#A855F7" height="28" opacity="0.25" width="22" x="-24" y="0"></rect>
+                            <rect fill="#A855F7" height="28" opacity="0.45" width="22" x="-12" y="1"></rect>
+                            <rect fill="#C084FC" height="28" rx="2" width="22" x="0" y="0"></rect>
+                            <rect fill="#FFFFFF" height="4" width="6" x="14" y="4"></rect>
+                            <text fill="#C084FC" font-family="'Share Tech Mono'" font-size="9" font-weight="bold"
+                                x="-12" y="-6">GHOST +0.42s</text>
+                        </g>
+                        <!-- IN-ARENA PLATFORM 4: Extraction Furnace Gate Platform -->
+                        <rect fill="#14161D" height="250" width="200" x="760" y="290"></rect>
+                        <rect fill="url(#heat-shield-edge)" height="5" width="200" x="760" y="287"></rect>
+                        <rect fill="url(#diag-hazard-pattern)" height="5" opacity="0.8" width="180" x="770" y="298">
+                        </rect>
+                        <!-- HEAT SHIELD RECOVERY CHECKPOINT BEACON -->
+                        <g transform="translate(850, 287)">
+                            <rect fill="url(#magma-conduit-glow)" height="140" opacity="0.8" width="12" x="-6" y="-140">
+                            </rect>
+                            <ellipse cx="0" cy="0" fill="#FF5500" opacity="0.7" rx="36" ry="8"></ellipse>
+                            <ellipse cx="0" cy="-60" fill="none" rx="20" ry="40" stroke="#F59E0B" stroke-dasharray="4 2"
+                                stroke-width="1.5"></ellipse>
+                            <circle cx="0" cy="-110" fill="#FFFFFF" r="10"></circle>
+                        </g>
+                        <!-- PLAYER MECHA RUNNER CHASSIS (Industrial Molten Gold & Carbon) -->
+                        <g id="player-avatar" transform="translate(350, 298)">
+                            <!-- Plasma propulsion tail flames -->
+                            <polygon fill="#FF5500" points="-8,10 -34,14 -8,18"></polygon>
+                            <polygon fill="#FFFFFF" points="-6,12 -22,14 -6,16"></polygon>
+                            <!-- Afterimages (Motion Blur) -->
+                            <rect fill="#FF5500" height="30" opacity="0.25" rx="2" width="24" x="-24" y="2"></rect>
+                            <rect fill="#F59E0B" height="30" opacity="0.45" rx="2" width="24" x="-12" y="1"></rect>
+                            <!-- Mecha Heavy Armor Shell -->
+                            <rect fill="#14161D" height="32" rx="2" stroke="#F59E0B" stroke-width="1.5" width="26" x="0"
+                                y="0"></rect>
+                            <!-- Chestplate / Core Ingot -->
+                            <rect fill="#F59E0B" height="14" width="18" x="4" y="4"></rect>
+                            <!-- Molten Visor Strip -->
+                            <rect fill="#FFFFFF" height="4" width="10" x="14" y="6"></rect>
+                            <!-- Leg Stabilizers -->
+                            <rect fill="#FF5500" height="10" width="6" x="4" y="22"></rect>
+                            <rect fill="#FF5500" height="10" width="6" x="14" y="22"></rect>
+                            <!-- Player Tag -->
+                            <rect fill="#0A0B0E" height="13" stroke="#F59E0B" stroke-width="1" width="46" x="-10"
+                                y="-18"></rect>
+                            <text fill="#F59E0B" font-family="'Chakra Petch'" font-size="9" font-weight="700" x="-6"
+                                y="-8">P1 // MECHA</text>
+                        </g>
+                    </svg>
+                    <!-- Scanline overlay effect -->
+                    <div class="absolute inset-0 pointer-events-none scanlines opacity-60"></div>
+                    <!-- Crosshairs & Mecha HUD Boresight overlay -->
+                    <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <div class="w-16 h-16 border border-amber-flare/30 relative flex items-center justify-center">
+                            <div class="w-1.5 h-1.5 bg-magma-orange"></div>
+                            <div class="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-amber-flare"></div>
+                            <div class="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-amber-flare"></div>
+                            <div class="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-amber-flare">
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-amber-flare">
+                            </div>
+                            <span class="absolute -bottom-4 font-mono text-[9px] text-amber-flare/70">RADAR LOCK</span>
+                        </div>
+                    </div>
+                    <!-- Bottom Viewport Utility Quick Bar -->
+                    <div class="absolute bottom-3 right-3 flex items-center gap-2 z-30">
+                        <button
+                            class="bg-carbon-card/90 hover:bg-carbon-elevated border border-carbon-border text-white px-3 py-1 text-xs font-mono flex items-center gap-1.5 transition-all"
+                            id="ghost-toggle-btn">
+                            <span class="material-symbols-outlined text-amber-flare text-[14px]">visibility</span>
+                            <span>GHOST FEED: ON</span>
+                        </button>
+                        <button
+                            class="bg-magma-orange hover:bg-amber-flare text-black font-bold px-3 py-1 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[0_0_12px_#FF5500] active:scale-95"
+                            id="sim-jump-btn">
+                            <span class="material-symbols-outlined text-[15px]">local_fire_department</span>
+                            <span>FIRE OVERTHRUST</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- RIGHT FLANK: MODULAR DIAGNOSTIC BAYS (HEAT SINKS, THRUSTERS & RIVAL DELTA) -->
+            <div class="col-span-12 xl:col-span-3 flex flex-col gap-3">
+                <!-- Diagnostic Card 1: Heat Sink & Core Thermal Matrix -->
+                <div
+                    class="bg-carbon-card border border-carbon-border p-3.5 flex flex-col gap-2.5 clip-chamfer-tl relative">
+                    <!-- Top Tag -->
+                    <div
+                        class="flex items-center justify-between border-b border-carbon-border pb-1.5 font-mono text-xs">
+                        <span class="text-neutral-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-magma-orange text-[16px]">thermostat</span>
+                            THERMAL REJECTION
+                        </span>
+                        <span class="text-magma-orange font-bold">WARNING: HIGH</span>
+                    </div>
+                    <!-- Core Temperature Reading -->
+                    <div class="flex items-baseline justify-between pt-1">
+                        <span class="text-xs font-mono text-neutral-400">CORE TEMP:</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="font-teko text-3xl leading-none text-white tracking-wide">1,420</span>
+                            <span class="font-mono text-xs text-magma-orange">°C / 1,600°C MAX</span>
+                        </div>
+                    </div>
+                    <!-- Heat Sink Multi-Bar Capacity -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-mono text-neutral-400">
+                            <span>HEAT SINK BANK A [VENTING]</span>
+                            <span class="text-amber-flare font-bold">88.5%</span>
+                        </div>
+                        <div class="w-full h-2 bg-carbon-deep border border-carbon-border overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-amber-flare via-magma-orange to-red-600 w-[88%]">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-mono text-neutral-400">
+                            <span>HEAT SINK BANK B [AUXILIARY]</span>
+                            <span class="text-caution-lime font-bold">42.0%</span>
+                        </div>
+                        <div class="w-full h-2 bg-carbon-deep border border-carbon-border overflow-hidden">
+                            <div class="h-full bg-caution-lime w-[42%]"></div>
+                        </div>
+                    </div>
+                    <!-- Caution Stripe Mini Strip -->
+                    <div class="w-full h-2 hazard-stripe-amber mt-1"></div>
+                </div>
+                <!-- Diagnostic Card 2: Thruster Efficiency & Propellant -->
+                <div class="bg-carbon-card border border-carbon-border p-3.5 flex flex-col gap-2.5 relative">
+                    <div
+                        class="flex items-center justify-between border-b border-carbon-border pb-1.5 font-mono text-xs">
+                        <span class="text-neutral-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-amber-flare text-[16px]">speed</span>
+                            THRUSTER DYNAMICS
+                        </span>
+                        <span class="text-caution-lime font-bold">EFFICIENCY 97%</span>
+                    </div>
+                    <!-- Fuel Cells & Ejection Count -->
+                    <div class="grid grid-cols-2 gap-2 text-center pt-1 font-mono">
+                        <div class="bg-carbon-deep p-2 border border-carbon-border">
+                            <span class="text-[10px] text-neutral-400 block uppercase">FUEL CELLS</span>
+                            <span class="text-amber-flare font-bold text-lg">05 <span
+                                    class="text-neutral-500 font-normal">/ 08</span></span>
+                        </div>
+                        <div class="bg-carbon-deep p-2 border border-carbon-border">
+                            <span class="text-[10px] text-neutral-400 block uppercase">EJECTIONS</span>
+                            <span class="text-magma-orange font-bold text-lg">03 FAILURES</span>
+                        </div>
+                    </div>
+                    <!-- Nozzle Gimbal & Vector Angle -->
+                    <div
+                        class="bg-carbon-deep p-2 border border-carbon-border flex justify-between items-center text-xs font-mono">
+                        <span class="text-neutral-400">VECTOR GIMBAL:</span>
+                        <span class="text-white font-bold">+18.4° REARWARD</span>
+                    </div>
+                </div>
+                <!-- Diagnostic Card 3: Rival Ghost Delta & Sector Matrix -->
+                <div
+                    class="bg-carbon-card border border-carbon-border p-3.5 flex flex-col gap-2.5 clip-chamfer-br relative">
+                    <div
+                        class="flex items-center justify-between border-b border-carbon-border pb-1.5 font-mono text-xs">
+                        <span class="text-neutral-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-purple-400 text-[16px]">radar</span>
+                            RIVAL GHOST FLIGHT
+                        </span>
+                        <span class="text-purple-400 font-bold">LIVE TELEMETRY</span>
+                    </div>
+                    <!-- Rival Info -->
+                    <div class="flex items-center justify-between pt-1 font-mono">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="bg-purple-950 border border-purple-500/50 text-purple-300 font-bold px-2 py-0.5 text-xs">
+                                #2 GHOST
+                            </span>
+                            <span class="text-white font-bold text-sm tracking-wide">RAVEN-SOL-09</span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-caution-lime font-bold text-sm">+00:00.42</span>
+                            <span class="text-[10px] text-neutral-400 font-mono">BEHIND YOU</span>
+                        </div>
+                    </div>
+                    <!-- Delta Sector Gauge -->
+                    <div class="w-full bg-carbon-deep h-2 border border-carbon-border overflow-hidden flex">
+                        <div class="bg-caution-lime h-full w-[58%]"></div>
+                        <div class="bg-purple-500 h-full w-[42%]"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-mono text-neutral-400">
+                        <span>YOU (LEAD: 14.8m)</span>
+                        <span>TARGET PB GAP: -01.82s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- LOWER HUD COCKPIT: ANCHORED BOTTOM TELEMETRY DECK -->
+        <div
+            class="w-full bg-carbon-card border-2 border-carbon-border p-3.5 rounded-sm relative shadow-2xl clip-cockpit-notch">
+            <!-- Top Cockpit Edge Bar with Yellow Caution Ticks -->
+            <div class="absolute -top-2 left-6 right-6 h-1 hazard-stripe-lime pointer-events-none opacity-80"></div>
+            <div class="grid grid-cols-12 gap-4 items-center">
+                <!-- DECK SECTION 1: DUAL THRUST INPUT MATRIX (Q / W / E / R + SPACEBAR) -->
+                <div
+                    class="col-span-12 lg:col-span-3 flex flex-col gap-2 border-b lg:border-b-0 lg:border-r border-carbon-border pb-3 lg:pb-0 lg:pr-4">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                        <span class="text-neutral-400 font-bold tracking-wider uppercase flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-amber-flare"></span>
+                            THRUSTER ACTUATION
+                        </span>
+                        <span class="text-caution-lime font-bold text-[11px]">HYDRAULICS 100%</span>
+                    </div>
+                    <!-- Flight Key Cluster: Q W E R -->
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <!-- Q: Retro Thruster -->
+                        <div class="bg-carbon-deep border border-carbon-border p-1.5 flex flex-col items-center justify-center rounded-sm transition-all"
+                            id="key-q">
+                            <span class="text-[9px] font-mono text-neutral-400">RETRO</span>
+                            <span class="font-teko text-xl font-bold text-neutral-300 leading-tight">Q</span>
+                        </div>
+                        <!-- W: Main Thruster (Active) -->
+                        <div class="bg-amber-flare text-black border border-amber-flare p-1.5 flex flex-col items-center justify-center rounded-sm font-bold shadow-[0_0_10px_#F59E0B]"
+                            id="key-w">
+                            <span class="text-[9px] font-mono text-black font-semibold">BOOST</span>
+                            <span class="font-teko text-xl font-bold leading-tight">W</span>
+                        </div>
+                        <!-- E: Vector Port -->
+                        <div class="bg-carbon-deep border border-carbon-border p-1.5 flex flex-col items-center justify-center rounded-sm transition-all"
+                            id="key-e">
+                            <span class="text-[9px] font-mono text-neutral-400">VECTOR</span>
+                            <span class="font-teko text-xl font-bold text-neutral-300 leading-tight">E</span>
+                        </div>
+                        <!-- R: Heat Dump -->
+                        <div class="bg-magma-orange/20 border border-magma-orange text-magma-orange p-1.5 flex flex-col items-center justify-center rounded-sm transition-all"
+                            id="key-r">
+                            <span class="text-[9px] font-mono text-magma-orange">VENT</span>
+                            <span class="font-teko text-xl font-bold leading-tight">R</span>
+                        </div>
+                    </div>
+                    <!-- Bottom: Spacebar Overthrust Ignition Bar -->
+                    <div
+                        class="bg-carbon-deep border border-carbon-border py-1 px-3 flex items-center justify-between text-xs font-mono">
+                        <span class="text-neutral-400">[SPACE] APEX IGNITION</span>
+                        <span class="text-amber-flare font-bold">READY</span>
+                    </div>
+                </div>
+                <!-- DECK SECTION 2: CENTRAL DIGITAL TACHOMETER / SPEEDOMETER & G-METER -->
+                <div
+                    class="col-span-12 lg:col-span-4 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-carbon-border pb-3 lg:pb-0 lg:pr-4">
+                    <div class="w-full flex items-center justify-between text-xs font-mono mb-1">
+                        <span class="text-neutral-400 uppercase tracking-widest font-bold">KINETIC VELOCITY &amp;
+                            G-FORCE</span>
+                        <span class="text-amber-flare font-bold">WARP LIMIT: 1,200</span>
+                    </div>
+                    <div class="w-full flex items-baseline justify-around gap-2">
+                        <!-- Large Digital Speed Display -->
+                        <div class="flex items-baseline gap-2">
+                            <span
+                                class="font-teko text-6xl md:text-7xl font-bold leading-none text-white tracking-wider"
+                                id="active-speedometer">894</span>
+                            <div class="flex flex-col">
+                                <span class="font-mono text-xs text-amber-flare font-bold">KM/H</span>
+                                <span class="font-mono text-[10px] text-neutral-400">SPEED</span>
+                            </div>
+                        </div>
+                        <!-- G-Force & Mach Readout -->
+                        <div class="flex flex-col items-end font-mono">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-2xl font-teko font-bold text-caution-lime">6.8</span>
+                                <span class="text-xs text-neutral-400">G-LOAD</span>
+                            </div>
+                            <span class="text-xs text-magma-orange font-bold">MACH 1.14</span>
+                        </div>
+                    </div>
+                    <!-- Curving / Segmented Speed Gauge Bar -->
+                    <div class="w-full mt-2 grid grid-cols-12 gap-1 h-2.5">
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-amber-flare col-span-1"></div>
+                        <div class="bg-magma-orange col-span-1"></div>
+                        <div class="bg-magma-orange col-span-1 animate-pulse"></div>
+                        <div class="bg-carbon-deep border border-carbon-border col-span-1"></div>
+                        <div class="bg-carbon-deep border border-carbon-border col-span-1"></div>
+                    </div>
+                </div>
+                <!-- DECK SECTION 3: REAL-TIME SECTOR SPLIT BAR & AUDIO WAVE ANALYZER -->
+                <div
+                    class="col-span-12 lg:col-span-3 flex flex-col gap-2 border-b lg:border-b-0 lg:border-r border-carbon-border pb-3 lg:pb-0 lg:pr-4">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                        <span class="text-neutral-400 uppercase tracking-wider font-bold">SECTOR SPLITS [LIVE
+                            DELTA]</span>
+                        <span class="text-caution-lime font-bold">-00:01.14 PB</span>
+                    </div>
+                    <!-- Mini Sector Block Strip -->
+                    <div class="grid grid-cols-5 gap-1 text-[10px] font-mono text-center">
+                        <div class="bg-carbon-deep border border-carbon-border p-1">
+                            <span class="text-neutral-400 block text-[9px]">S1</span>
+                            <span class="text-magma-orange font-bold">+0.12</span>
+                        </div>
+                        <div class="bg-carbon-deep border border-carbon-border p-1">
+                            <span class="text-neutral-400 block text-[9px]">S2</span>
+                            <span class="text-amber-flare font-bold">-0.45</span>
+                        </div>
+                        <div class="bg-carbon-deep border border-carbon-border p-1">
+                            <span class="text-neutral-400 block text-[9px]">S3</span>
+                            <span class="text-caution-lime font-bold">-0.81</span>
+                        </div>
+                        <div class="bg-amber-flare/20 border border-amber-flare p-1">
+                            <span class="text-amber-flare block text-[9px]">S4</span>
+                            <span class="text-white font-bold">-1.14</span>
+                        </div>
+                        <div class="bg-carbon-deep border border-carbon-border p-1 opacity-50">
+                            <span class="text-neutral-400 block text-[9px]">S5</span>
+                            <span class="text-neutral-500">--:--</span>
+                        </div>
+                    </div>
+                    <!-- Acoustic / Audio Harmonic Waveform -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-[10px] font-mono text-neutral-400">
+                            <span>TURBINE ACOUSTIC WAVE</span>
+                            <span class="text-white">432.8 Hz</span>
+                        </div>
+                        <div
+                            class="w-full h-5 bg-carbon-deep border border-carbon-border flex items-end gap-1 px-1.5 py-0.5">
+                            <div class="w-1 bg-amber-flare h-2"></div>
+                            <div class="w-1 bg-amber-flare h-3"></div>
+                            <div class="w-1 bg-amber-flare h-4"></div>
+                            <div class="w-1 bg-magma-orange h-5"></div>
+                            <div class="w-1 bg-magma-orange h-3"></div>
+                            <div class="w-1 bg-amber-flare h-4"></div>
+                            <div class="w-1 bg-amber-flare h-2"></div>
+                            <div class="w-1 bg-caution-lime h-3"></div>
+                            <div class="w-1 bg-amber-flare h-4"></div>
+                            <div class="w-1 bg-magma-orange h-5"></div>
+                            <div class="w-1 bg-amber-flare h-3"></div>
+                            <div class="w-1 bg-amber-flare h-2"></div>
+                            <div class="w-1 bg-amber-flare h-4"></div>
+                            <div class="w-1 bg-caution-lime h-3"></div>
+                            <div class="w-1 bg-amber-flare h-1"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- DECK SECTION 4: MISSION ACTIONS & VICTORY DIALOG TRIGGER -->
+                <div class="col-span-12 lg:col-span-2 flex flex-col gap-2">
+                    <!-- Live Mission Clock -->
+                    <div class="bg-carbon-deep border border-carbon-border p-2 text-center">
+                        <span class="text-[10px] font-mono text-neutral-400 block uppercase">MISSION CLOCK</span>
+                        <span class="font-mono text-xl font-bold text-amber-flare tracking-tight"
+                            id="active-stopwatch">01:24.823</span>
+                    </div>
+                    <!-- Quick Action Buttons -->
+                    <button
+                        class="w-full bg-amber-flare hover:bg-plasma-glow text-black font-bold py-1.5 px-2 text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-[0_0_10px_rgba(245,158,11,0.4)] active:scale-95"
+                        id="toggle-victory-btn">
+                        <span class="material-symbols-outlined text-[16px]">military_tech</span>
+                        <span>DEBRIEF / VICTORY</span>
+                    </button>
+                    <button
+                        class="w-full bg-carbon-elevated hover:bg-carbon-border text-neutral-300 font-mono py-1 px-2 text-xs uppercase tracking-wider flex items-center justify-center gap-1 border border-carbon-border transition-all"
+                        id="restart-run-btn">
+                        <span class="material-symbols-outlined text-[14px]">replay</span>
+                        <span>RESET RIG [R]</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- INDUSTRIAL FOOTER STATUS BAR -->
+    <footer
+        class="w-full bg-carbon-deep border-t border-carbon-border px-4 md:px-8 py-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono text-neutral-400">
+        <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-1.5">
+                <span class="text-neutral-500 uppercase">PROPULSION:</span>
+                <span class="text-amber-flare font-bold">SOLAR-ION V6</span>
+            </div>
+            <div class="h-3 w-px bg-carbon-border"></div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-neutral-500 uppercase">CHASSIS INTEGRITY:</span>
+                <span class="text-caution-lime font-bold">100% NOMINAL</span>
+            </div>
+            <div class="h-3 w-px bg-carbon-border"></div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-neutral-500 uppercase">HOTKEYS:</span>
+                <span class="text-neutral-300">[Q/W/E] THRUSTERS // [R] DUMP VENT // [SPACE] APEX BOOST // [ESC]
+                    MENU</span>
+            </div>
+        </div>
+        <div>
+            <span class="text-neutral-500">© 2025 MECHA-CHASM TACTICAL SPEEDRUN SYSTEMS</span>
+        </div>
+    </footer>
+    <!-- VICTORY / MISSION COMPLETE MODAL (RADICALLY RESTYLED FOR INDUSTRIAL MECHA) -->
+    <div class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden"
+        id="victory-modal">
+        <div
+            class="w-full max-w-lg bg-carbon-card border-2 border-amber-flare p-6 relative clip-chamfer-tl shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+            <!-- Top Caution Strip -->
+            <div class="w-full h-2 hazard-stripe-amber mb-4"></div>
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-carbon-border pb-3">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2.5 h-2.5 bg-caution-lime animate-ping"></span>
+                        <span class="font-mono text-xs text-caution-lime uppercase tracking-widest font-bold">COURSE
+                            COMPLETED // TARGET SURPASSED</span>
+                    </div>
+                    <h2 class="font-teko text-4xl text-white tracking-wider uppercase leading-none">SECTOR 07 PURGED
+                    </h2>
+                    <span class="font-mono text-xs text-neutral-400">Solar Crucible core run verified by telemetry
+                        consensus.</span>
+                </div>
+                <button class="text-neutral-400 hover:text-white p-1" id="close-victory-btn">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <!-- Main Result Panel -->
+            <div class="bg-carbon-deep border border-carbon-border p-4 my-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 bg-amber-flare/20 border border-amber-flare flex items-center justify-center text-amber-flare">
+                        <span class="material-symbols-outlined text-3xl">military_tech</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-mono text-amber-flare uppercase block">TIER RATING</span>
+                        <span class="font-teko text-3xl text-white uppercase leading-none">SOLAR GOLD</span>
+                        <span class="text-[10px] font-mono text-caution-lime block">BEAT PAR BY 00:04.18</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-mono text-neutral-400 uppercase block">FINAL RUN TIME</span>
+                    <span class="font-mono text-2xl font-bold text-amber-flare">01:30.820</span>
+                    <span class="text-[10px] font-mono text-neutral-300 block">GLOBAL LADDER: #04</span>
+                </div>
+            </div>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-3 gap-2 font-mono text-center text-xs mb-4">
+                <div class="bg-carbon-deep p-2 border border-carbon-border">
+                    <span class="text-[10px] text-neutral-400 block uppercase">PEAK SPEED</span>
+                    <span class="text-white font-bold text-sm">1,040 KM/H</span>
+                </div>
+                <div class="bg-carbon-deep p-2 border border-carbon-border">
+                    <span class="text-[10px] text-neutral-400 block uppercase">FUEL CELLS</span>
+                    <span class="text-amber-flare font-bold text-sm">08 / 08 (100%)</span>
+                </div>
+                <div class="bg-carbon-deep p-2 border border-carbon-border">
+                    <span class="text-[10px] text-neutral-400 block uppercase">EJECTIONS</span>
+                    <span class="text-caution-lime font-bold text-sm">0 (CLEAN)</span>
+                </div>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3 pt-2 font-mono">
+                <button
+                    class="flex-1 py-2 bg-carbon-elevated hover:bg-carbon-border text-white border border-carbon-border text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                    id="modal-restart-btn">
+                    <span class="material-symbols-outlined text-[16px]">replay</span>
+                    <span>RETRY RIG [R]</span>
+                </button>
+                <button
+                    class="flex-1 py-2 bg-amber-flare hover:bg-plasma-glow text-black font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_#F59E0B]"
+                    id="modal-next-btn">
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    <span>SECTOR 08 [SPACE]</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- SCRIPT FOR SIMULATED GAUGES, STOPWATCH & MICRO-INTERACTIONS -->
+    <script>
+        (function initMechaSpeedrunner() {
+            // 1. Rolling Digital Stopwatch
+            let ms = 823;
+            let sec = 24;
+            let min = 1;
+            const clockEl = document.getElementById('active-stopwatch');
+
+            setInterval(() => {
+                ms += 17;
+                if (ms >= 1000) {
+                    ms = ms % 1000;
+                    sec++;
+                    if (sec >= 60) {
+                        sec = 0;
+                        min++;
+                    }
+                }
+                if (clockEl) {
+                    const strMin = String(min).padStart(2, '0');
+                    const strSec = String(sec).padStart(2, '0');
+                    const strMs = String(ms).padStart(3, '0');
+                    clockEl.textContent = `${strMin}:${strSec}.${strMs}`;
+                }
+            }, 17);
+
+            // 2. Dynamic Tachometer Fluctuations
+            const speedometer = document.getElementById('active-speedometer');
+            let baseSpeed = 894;
+            setInterval(() => {
+                if (speedometer) {
+                    const jitter = Math.floor(Math.random() * 9) - 4;
+                    speedometer.textContent = (baseSpeed + jitter).toString();
+                }
+            }, 140);
+
+            // 3. Test Fire Overthrust Button Interaction
+            const jumpBtn = document.getElementById('sim-jump-btn');
+            const playerAvatar = document.getElementById('player-avatar');
+            const keyW = document.getElementById('key-w');
+
+            if (jumpBtn && playerAvatar) {
+                jumpBtn.addEventListener('click', () => {
+                    baseSpeed = 1048;
+                    playerAvatar.setAttribute('transform', 'translate(410, 255)');
+                    if (keyW) keyW.classList.add('scale-105', 'bg-white');
+
+                    setTimeout(() => {
+                        baseSpeed = 894;
+                        playerAvatar.setAttribute('transform', 'translate(350, 298)');
+                        if (keyW) keyW.classList.remove('scale-105', 'bg-white');
+                    }, 450);
+                });
+            }
+
+            // 4. Ghost Feed Toggle
+            const ghostToggleBtn = document.getElementById('ghost-toggle-btn');
+            let ghostActive = true;
+            if (ghostToggleBtn) {
+                ghostToggleBtn.addEventListener('click', () => {
+                    ghostActive = !ghostActive;
+                    ghostToggleBtn.innerHTML = ghostActive
+                        ? '<span class="material-symbols-outlined text-amber-flare text-[14px]">visibility</span><span>GHOST FEED: ON</span>'
+                        : '<span class="material-symbols-outlined text-neutral-500 text-[14px]">visibility_off</span><span>GHOST FEED: OFF</span>';
+                });
+            }
+
+            // 5. Victory Dialog Toggle
+            const victoryModal = document.getElementById('victory-modal');
+            const toggleVictoryBtn = document.getElementById('toggle-victory-btn');
+            const closeVictoryBtn = document.getElementById('close-victory-btn');
+            const modalRestartBtn = document.getElementById('modal-restart-btn');
+            const modalNextBtn = document.getElementById('modal-next-btn');
+            const restartRunBtn = document.getElementById('restart-run-btn');
+
+            function openModal() {
+                if (victoryModal) victoryModal.classList.remove('hidden');
+            }
+            function closeModal() {
+                if (victoryModal) victoryModal.classList.add('hidden');
+            }
+
+            if (toggleVictoryBtn) toggleVictoryBtn.addEventListener('click', openModal);
+            if (closeVictoryBtn) closeVictoryBtn.addEventListener('click', closeModal);
+            if (modalRestartBtn) modalRestartBtn.addEventListener('click', closeModal);
+            if (modalNextBtn) modalNextBtn.addEventListener('click', closeModal);
+
+            if (restartRunBtn) {
+                restartRunBtn.addEventListener('click', () => {
+                    min = 0; sec = 0; ms = 0;
+                });
+            }
+
+            // Keyboard Controls
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'r' || e.key === 'R') {
+                    min = 0; sec = 0; ms = 0;
+                    closeModal();
+                }
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+                if (e.code === 'Space') {
+                    if (jumpBtn) jumpBtn.click();
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
