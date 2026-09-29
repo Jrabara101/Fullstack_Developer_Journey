@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>ChromaLab — Tactile Chromatic Laboratory & Color Mix Puzzle</title>
+    <meta name="description" content="A tactile, browser-native chromatic laboratory that turns color theory and fluid optics into a satisfying spatial deduction puzzle." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230284c7'/><circle cx='38' cy='40' r='20' fill='%23ec4899' opacity='0.7'/><circle cx='62' cy='40' r='20' fill='%23eab308' opacity='0.7'/><circle cx='50' cy='62' r='20' fill='%2306b6d4' opacity='0.7'/></svg>" />
+  </head>
+  <body class="bg-[#0c0e14] text-slate-200 antialiased font-sans select-none overflow-x-hidden min-h-screen">
+    <!-- Daltonization SVG Colorblind Simulation Filters -->
+    <svg class="hidden" aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Protanopia (Red-Blind) -->
+        <filter id="protanopia-filter">
+          <feColorMatrix type="matrix" values="
+            0.56667, 0.43333, 0.00000, 0, 0
+            0.55833, 0.44167, 0.00000, 0, 0
+            0.00000, 0.24167, 0.75833, 0, 0
+            0,       0,       0,       1, 0" />
+        </filter>
+        <!-- Deuteranopia (Green-Blind) -->
+        <filter id="deuteranopia-filter">
+          <feColorMatrix type="matrix" values="
+            0.62500, 0.37500, 0.00000, 0, 0
+            0.70000, 0.30000, 0.00000, 0, 0
+            0.00000, 0.30000, 0.70000, 0, 0
+            0,       0,       0,       1, 0" />
+        </filter>
+        <!-- Tritanopia (Blue-Blind) -->
+        <filter id="tritanopia-filter">
+          <feColorMatrix type="matrix" values="
+            0.95000, 0.05000, 0.00000, 0, 0
+            0.00000, 0.43333, 0.56667, 0, 0
+            0.00000, 0.47500, 0.52500, 0, 0
+            0,       0,       0,       1, 0" />
+        </filter>
+      </defs>
+    </svg>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

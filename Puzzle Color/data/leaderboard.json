@@ -1,0 +1,41 @@
+[
+  {
+    "id": "seed-1",
+    "puzzleId": "DAILY-2026-09-27",
+    "playerName": "ArchAlchemist",
+    "movesUsed": 3,
+    "volumeUsedMl": 14.5,
+    "volumeEfficiency": 98,
+    "deltaE": 0.54,
+    "timeElapsedMs": 38000,
+    "date": "2026-09-27",
+    "verified": true,
+    "signature": "sig_authoritative_a18f"
+  },
+  {
+    "id": "seed-2",
+    "puzzleId": "DAILY-2026-09-27",
+    "playerName": "PhotonSeeker",
+    "movesUsed": 4,
+    "volumeUsedMl": 16,
+    "volumeEfficiency": 94,
+    "deltaE": 0.82,
+    "timeElapsedMs": 45000,
+    "date": "2026-09-27",
+    "verified": true,
+    "signature": "sig_authoritative_c94d"
+  },
+  {
+    "id": "seed-3",
+    "puzzleId": "DAILY-2026-09-27",
+    "playerName": "PrismMaster",
+    "movesUsed": 4,
+    "volumeUsedMl": 17.5,
+    "volumeEfficiency": 91,
+    "deltaE": 1.18,
+    "timeElapsedMs": 52000,
+    "date": "2026-09-27",
+    "verified": true,
+    "signature": "sig_authoritative_e22b"
+  }
+]
