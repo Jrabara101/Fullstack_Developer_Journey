@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canvas-gradient: linear-gradient(180deg, #0E1B2E 0%, #1E3A5F 100%);
+  }
+
+  body {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  /* Glassmorphic Panel from Stitch.md */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-panel-subtle {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-panel-elevated {
+    background: rgba(20, 24, 32, 0.95);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-panel-interactive {
+    @apply transition-all duration-300 ease-out;
+  }
+  .glass-panel-interactive:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.20);
+    transform: translateY(-2px);
+  }
+
+  /* Stitch Typography */
+  .hero-temperature {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    font-weight: 200;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .metric-tabular {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Rain / Weather Canvas Animation */
+@keyframes rainDrop {
+  0% {
+    transform: translateY(-20px) translateX(-5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) translateX(25px);
+    opacity: 0.1;
+  }
+}
+
+/* Compass Needle Damping from Stitch.md */
+.compass-needle {
+  transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Custom Range Slider for 24-hour Scrubber */
+input[type="range"] {
+  accent-color: #38BDF8;
+}
