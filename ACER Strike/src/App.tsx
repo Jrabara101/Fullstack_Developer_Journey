@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GameEngine } from './game/gameEngine';
+import { soundEngine } from './audio/SoundEngine';
 import { HUD } from './components/HUD';
+import { TouchControls } from './components/TouchControls';
 import { BuyMenu } from './components/BuyMenu';
 import { Scoreboard } from './components/Scoreboard';
 import { TacticalDevPanel } from './components/TacticalDevPanel';
@@ -28,6 +30,10 @@ export default function App() {
   const [isPaused, setIsPaused] = useState(false);
   const [fps, setFps] = useState(0);
   const [, setTick] = useState(0);
+  const [showTouchControls, setShowTouchControls] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
+  });
+  const [dismissCapturePrompt, setDismissCapturePrompt] = useState(false);
 
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
 
@@ -40,6 +46,8 @@ export default function App() {
   const showSettingsRef = useRef(showSettings);
   const buyMenuRef = useRef(showBuyMenu);
   const hadPointerLockRef = useRef(false);
+  const isMouseDownRef = useRef(false);
+  const lastMousePosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -184,6 +192,7 @@ export default function App() {
 
   const startMatch = useCallback(
     (team: Team) => {
+      soundEngine.unlock();
       const engine = engineRef.current;
       if (!engine) return;
       engine.setPlayerTeam(team);
@@ -192,12 +201,15 @@ export default function App() {
       setScreen('PLAYING');
       setIsPaused(false);
       setShowSettings(false);
+      setDismissCapturePrompt(false);
       requestPointerLock();
+      canvasRef.current?.focus();
     },
     [requestPointerLock]
   );
 
   const resumeFromPause = useCallback(() => {
+    soundEngine.unlock();
     setIsPaused(false);
     setShowSettings(false);
     requestPointerLock();
@@ -214,6 +226,7 @@ export default function App() {
   }, []);
 
   const rematch = useCallback(() => {
+    soundEngine.unlock();
     const engine = engineRef.current;
     if (!engine) return;
     engine.restartMatch();
@@ -229,6 +242,9 @@ export default function App() {
       const wasLocked = hadPointerLockRef.current;
       hadPointerLockRef.current = locked;
       setIsPointerLocked(locked);
+      if (locked) {
+        setDismissCapturePrompt(true);
+      }
 
       // Only pause when the mouse is released after actually being held
       // (Esc, alt-tab). If lock was never granted the match keeps running and
@@ -240,21 +256,38 @@ export default function App() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (document.pointerLockElement !== canvasRef.current || !engineRef.current) return;
-      if (overlayOpenRef.current) return;
-
       const engine = engineRef.current;
-      const { sensitivity, invertY } = settingsRef.current;
+      if (!engine || overlayOpenRef.current) return;
 
-      engine.playerYaw -= e.movementX * sensitivity;
-      const pitchDelta = e.movementY * sensitivity * (invertY ? -1 : 1);
+      const isLocked = document.pointerLockElement === canvasRef.current;
+      let dx = 0;
+      let dy = 0;
+
+      if (isLocked) {
+        dx = e.movementX;
+        dy = e.movementY;
+      } else if (isMouseDownRef.current && lastMousePosRef.current) {
+        // Drag-to-aim fallback when pointer lock is not active or on trackpads/touch laptops
+        dx = e.clientX - lastMousePosRef.current.x;
+        dy = e.clientY - lastMousePosRef.current.y;
+        lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      } else {
+        return;
+      }
+
+      const { sensitivity, invertY } = settingsRef.current;
+      engine.playerYaw -= dx * sensitivity;
+      const pitchDelta = dy * sensitivity * (invertY ? -1 : 1);
       engine.playerPitch = Math.max(-1.35, Math.min(1.35, engine.playerPitch - pitchDelta));
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       const engine = engineRef.current;
       if (!engine || overlayOpenRef.current) return;
-      if (document.pointerLockElement !== canvasRef.current) return;
+
+      isMouseDownRef.current = true;
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      canvasRef.current?.focus();
 
       if (e.button === 0) {
         engine.isShooting = true;
@@ -269,6 +302,8 @@ export default function App() {
     };
 
     const handleMouseUp = (e: MouseEvent) => {
+      isMouseDownRef.current = false;
+      lastMousePosRef.current = null;
       const engine = engineRef.current;
       if (!engine) return;
       if (e.button === 0) {
@@ -281,11 +316,12 @@ export default function App() {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const code = e.code;
+      const key = e.key?.toLowerCase();
       const engine = engineRef.current;
       if (!engine || e.repeat) return;
 
       // Escape is the only key that works from every screen.
-      if (code === 'Escape') {
+      if (code === 'Escape' || key === 'escape') {
         if (screenRef.current !== 'PLAYING') return;
         if (showSettingsRef.current) {
           setShowSettings(false);
@@ -310,67 +346,69 @@ export default function App() {
 
       // Buy menu owns the keyboard except for its own toggle.
       if (buyMenuRef.current) {
-        if (code === 'KeyB') setShowBuyMenu(false);
+        if (code === 'KeyB' || key === 'b') setShowBuyMenu(false);
         return;
       }
 
       if (overlayOpenRef.current) return;
 
-      if (code === 'KeyW') inputState.current.moveForward = true;
-      if (code === 'KeyS') inputState.current.moveBackward = true;
-      if (code === 'KeyA') inputState.current.moveLeft = true;
-      if (code === 'KeyD') inputState.current.moveRight = true;
-      if (code === 'Space') inputState.current.jump = true;
-      if (code === 'ControlLeft' || code === 'ControlRight') inputState.current.crouch = true;
-      if (code === 'ShiftLeft' || code === 'ShiftRight') inputState.current.walk = true;
+      // Support WASD, Arrow Keys, and case-insensitive keys
+      if (code === 'KeyW' || key === 'w' || code === 'ArrowUp' || key === 'arrowup') inputState.current.moveForward = true;
+      if (code === 'KeyS' || key === 's' || code === 'ArrowDown' || key === 'arrowdown') inputState.current.moveBackward = true;
+      if (code === 'KeyA' || key === 'a' || code === 'ArrowLeft' || key === 'arrowleft') inputState.current.moveLeft = true;
+      if (code === 'KeyD' || key === 'd' || code === 'ArrowRight' || key === 'arrowright') inputState.current.moveRight = true;
+      if (code === 'Space' || key === ' ') inputState.current.jump = true;
+      if (code === 'ControlLeft' || code === 'ControlRight' || code === 'KeyC' || key === 'control' || key === 'c') inputState.current.crouch = true;
+      if (code === 'ShiftLeft' || code === 'ShiftRight' || key === 'shift') inputState.current.walk = true;
 
-      if (code === 'KeyV') {
+      if (code === 'KeyV' || key === 'v') {
         engine.toggleShoulderSwap();
-      } else if (code === 'KeyR') {
+      } else if (code === 'KeyR' || key === 'r') {
         engine.reload();
-      } else if (code === 'Digit1') {
+      } else if (code === 'Digit1' || key === '1') {
         engine.selectWeaponSlot(1);
-      } else if (code === 'Digit2') {
+      } else if (code === 'Digit2' || key === '2') {
         engine.selectWeaponSlot(2);
-      } else if (code === 'Digit3') {
+      } else if (code === 'Digit3' || key === '3') {
         engine.selectWeaponSlot(3);
-      } else if (code === 'Digit5') {
+      } else if (code === 'Digit5' || key === '5') {
         engine.selectWeaponSlot(5);
-      } else if (code === 'KeyE') {
+      } else if (code === 'KeyE' || key === 'e') {
         if (engine.bombPlanted) {
           engine.startDefusingBomb();
         } else if (engine.activeWeapon.id === 'c4' || engine.playerTeam === 'T') {
           engine.startPlantingBomb();
         }
-      } else if (code === 'KeyB') {
+      } else if (code === 'KeyB' || key === 'b') {
         clearMovementInput();
         setShowBuyMenu(true);
-      } else if (code === 'Tab') {
+      } else if (code === 'Tab' || key === 'tab') {
         e.preventDefault();
         setShowScoreboard(true);
-      } else if (code === 'Backquote' || code === 'F1') {
+      } else if (code === 'Backquote' || code === 'F1' || key === '`') {
         setShowDevPanel((prev) => !prev);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       const code = e.code;
+      const key = e.key?.toLowerCase();
       const engine = engineRef.current;
 
-      if (code === 'KeyW') inputState.current.moveForward = false;
-      if (code === 'KeyS') inputState.current.moveBackward = false;
-      if (code === 'KeyA') inputState.current.moveLeft = false;
-      if (code === 'KeyD') inputState.current.moveRight = false;
-      if (code === 'Space') inputState.current.jump = false;
-      if (code === 'ControlLeft' || code === 'ControlRight') inputState.current.crouch = false;
-      if (code === 'ShiftLeft' || code === 'ShiftRight') inputState.current.walk = false;
+      if (code === 'KeyW' || key === 'w' || code === 'ArrowUp' || key === 'arrowup') inputState.current.moveForward = false;
+      if (code === 'KeyS' || key === 's' || code === 'ArrowDown' || key === 'arrowdown') inputState.current.moveBackward = false;
+      if (code === 'KeyA' || key === 'a' || code === 'ArrowLeft' || key === 'arrowleft') inputState.current.moveLeft = false;
+      if (code === 'KeyD' || key === 'd' || code === 'ArrowRight' || key === 'arrowright') inputState.current.moveRight = false;
+      if (code === 'Space' || key === ' ') inputState.current.jump = false;
+      if (code === 'ControlLeft' || code === 'ControlRight' || code === 'KeyC' || key === 'control' || key === 'c') inputState.current.crouch = false;
+      if (code === 'ShiftLeft' || code === 'ShiftRight' || key === 'shift') inputState.current.walk = false;
 
-      if (code === 'KeyE' && engine) {
+      if ((code === 'KeyE' || key === 'e') && engine) {
         engine.stopPlantingBomb();
         engine.stopDefusingBomb();
       }
 
-      if (code === 'Tab') setShowScoreboard(false);
+      if (code === 'Tab' || key === 'tab') setShowScoreboard(false);
     };
 
     const handleWheel = (e: WheelEvent) => {
@@ -428,10 +466,26 @@ export default function App() {
       )}
       {inMatch && engine && !isPaused && <HitFeedback engine={engine} />}
 
-      {/* FPS counter */}
-      {settings.showFps && inMatch && (
-        <div className="absolute left-4 top-4 z-30 rounded-md border border-slate-700 bg-slate-950/80 px-2 py-1 font-mono text-[11px] font-bold tabular-nums text-emerald-400">
-          {fps} FPS
+      {/* In-match Touch Controls */}
+      {inMatch && engine && showTouchControls && !overlayOpen && (
+        <TouchControls engine={engine} inputState={inputState} sensitivity={settings.sensitivity} />
+      )}
+
+      {/* Top Left: FPS counter & Touch Controls Toggle */}
+      {inMatch && !overlayOpen && (
+        <div className="absolute left-4 top-4 z-30 flex items-center gap-2">
+          {settings.showFps && (
+            <div className="rounded-md border border-slate-700 bg-slate-950/80 px-2 py-1 font-mono text-[11px] font-bold tabular-nums text-emerald-400 shadow-md">
+              {fps} FPS
+            </div>
+          )}
+          <button
+            onClick={() => setShowTouchControls((prev) => !prev)}
+            className="rounded-md border border-slate-700 bg-slate-950/80 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300 hover:border-amber-500/50 hover:text-amber-400 transition-colors shadow-md"
+            title="Toggle On-Screen Touch / Button Controls"
+          >
+            {showTouchControls ? 'On-Screen Keys: ON' : 'On-Screen Keys: OFF'}
+          </button>
         </div>
       )}
 
@@ -445,18 +499,44 @@ export default function App() {
         <TacticalDevPanel engine={engine} onClose={() => setShowDevPanel(false)} />
       )}
 
-      {/* Click-to-capture prompt: only when actually in a live round */}
-      {inMatch && !isPointerLocked && !overlayOpen && (
+      {/* Click-to-capture prompt: only when actually in a live round, not dismissed, and touch controls are not in use */}
+      {inMatch && !isPointerLocked && !overlayOpen && !dismissCapturePrompt && !showTouchControls && (
         <div
-          onClick={requestPointerLock}
-          className="absolute inset-0 z-30 flex cursor-pointer items-center justify-center bg-slate-950/70 font-mono backdrop-blur-sm"
+          onClick={() => {
+            requestPointerLock();
+            setDismissCapturePrompt(true);
+          }}
+          className="absolute inset-0 z-30 flex cursor-pointer items-center justify-center bg-slate-950/60 font-mono backdrop-blur-sm"
         >
-          <div className="rounded-2xl border border-slate-700/80 bg-slate-900/95 px-8 py-6 text-center shadow-2xl">
+          <div className="rounded-2xl border border-slate-700/80 bg-slate-900/95 px-8 py-6 text-center shadow-2xl max-w-sm">
             <Crosshair className="mx-auto mb-3 h-7 w-7 animate-pulse text-amber-400" />
             <p className="text-xs font-black uppercase tracking-widest text-slate-100">
               Click to capture mouse
             </p>
-            <p className="mt-1.5 text-[11px] text-slate-500">Esc to pause</p>
+            <p className="mt-1.5 text-[11px] text-slate-400">
+              WASD or Arrow Keys to move · Drag mouse to aim
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDismissCapturePrompt(true);
+                }}
+                className="rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-1.5 text-[11px] font-bold text-slate-200 hover:bg-slate-700 transition-colors"
+              >
+                Play without lock
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTouchControls(true);
+                  setDismissCapturePrompt(true);
+                }}
+                className="rounded-lg border border-amber-500/40 bg-amber-500/20 px-3.5 py-1.5 text-[11px] font-bold text-amber-300 hover:bg-amber-500/30 transition-colors"
+              >
+                On-Screen Buttons
+              </button>
+            </div>
           </div>
         </div>
       )}

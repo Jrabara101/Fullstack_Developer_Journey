@@ -20,6 +20,8 @@ export class CharacterRig {
   public torsoMesh: THREE.Mesh;
   public leftLeg: THREE.Group;
   public rightLeg: THREE.Group;
+  public leftBoot: THREE.Mesh;
+  public rightBoot: THREE.Mesh;
   public leftArm: THREE.Group;
   public rightArm: THREE.Group;
   public weaponSocket: THREE.Group;
@@ -93,10 +95,10 @@ export class CharacterRig {
     this.leftLeg.add(leftThigh);
 
     const bootGeo = new THREE.BoxGeometry(0.17, 0.42, 0.24);
-    const leftBoot = new THREE.Mesh(bootGeo, bootMat);
-    leftBoot.position.set(0, -0.58, 0.02);
-    leftBoot.castShadow = true;
-    this.leftLeg.add(leftBoot);
+    this.leftBoot = new THREE.Mesh(bootGeo, bootMat);
+    this.leftBoot.position.set(0, -0.54, 0.02);
+    this.leftBoot.castShadow = true;
+    this.leftLeg.add(this.leftBoot);
     this.pelvisGroup.add(this.leftLeg);
 
     // Right Leg
@@ -107,10 +109,10 @@ export class CharacterRig {
     rightThigh.castShadow = true;
     this.rightLeg.add(rightThigh);
 
-    const rightBoot = new THREE.Mesh(bootGeo, bootMat);
-    rightBoot.position.set(0, -0.58, 0.02);
-    rightBoot.castShadow = true;
-    this.rightLeg.add(rightBoot);
+    this.rightBoot = new THREE.Mesh(bootGeo, bootMat);
+    this.rightBoot.position.set(0, -0.54, 0.02);
+    this.rightBoot.castShadow = true;
+    this.rightLeg.add(this.rightBoot);
     this.pelvisGroup.add(this.rightLeg);
 
     // 2. Upper Body Group (Decoupled Aim Offset)
@@ -158,6 +160,12 @@ export class CharacterRig {
     if (team === 'CT') {
       const visorGeo = new THREE.BoxGeometry(0.22, 0.06, 0.08);
       const visorMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9 });
+      const visor = new THREE.Mesh(visorGeo, visorMat);
+      visor.position.set(0, 0.02, 0.13);
+      headGroup.add(visor);
+    } else {
+      const visorGeo = new THREE.BoxGeometry(0.20, 0.06, 0.08);
+      const visorMat = new THREE.MeshStandardMaterial({ color: 0x1a1614, roughness: 0.2, metalness: 0.7 });
       const visor = new THREE.Mesh(visorGeo, visorMat);
       visor.position.set(0, 0.02, 0.13);
       headGroup.add(visor);
@@ -355,34 +363,44 @@ export class CharacterRig {
     const targetCrouch = crouching ? 1 : 0;
     this.crouchFraction += (targetCrouch - this.crouchFraction) * Math.min(1, delta * 14);
 
-    this.pelvisGroup.position.y = 0.85 - this.crouchFraction * 0.45;
+    const crouchPelvisDrop = this.crouchFraction * 0.40;
+    this.pelvisGroup.position.y = 0.85 - crouchPelvisDrop;
 
     // 2. Decoupled Upper-Body Aim Offset
-    // The spine and arms aim smoothly along the camera vector independently of lower-body running!
-    this.upperBodyGroup.rotation.x = this.aimPitch;
+    // Tilting upper body along camera pitch: negative X rotation tilts forward +Z vector UP towards target
+    this.upperBodyGroup.rotation.x = -this.aimPitch;
     this.upperBodyGroup.rotation.y = 0; // Torso stays aligned with body yaw
 
     // Arm positioning for rifle grip
-    this.rightArm.rotation.set(-0.6 + this.aimPitch * 0.2, 0.25, 0);
-    this.leftArm.rotation.set(-0.7 + this.aimPitch * 0.2, -0.45, 0.3);
+    this.rightArm.rotation.set(-0.6, 0.25, 0);
+    this.leftArm.rotation.set(-0.7, -0.45, 0.3);
 
-    // 3. Lower Body Leg Swings (CS walk cycle)
+    // 3. Lower Body Leg Swings (CS walk cycle) & Grounded Crouch
     const isMoving = movementState === 'RUNNING' || movementState === 'WALKING';
+    let legSwing = 0;
     if (isMoving) {
       const stepFreq = movementState === 'WALKING' ? 8 : 14;
       this.walkTime += delta * stepFreq * Math.max(0.2, speedRatio);
+      legSwing = Math.sin(this.walkTime) * (movementState === 'WALKING' ? 0.35 : 0.65);
 
-      const legSwing = Math.sin(this.walkTime) * (movementState === 'WALKING' ? 0.35 : 0.65);
-      this.leftLeg.rotation.x = legSwing;
-      this.rightLeg.rotation.x = -legSwing;
-
-      // Subtle hip bobbing
-      this.pelvisGroup.position.y += Math.abs(Math.cos(this.walkTime)) * 0.04;
+      // Subtle hip bobbing only while standing
+      this.pelvisGroup.position.y += Math.abs(Math.cos(this.walkTime)) * (0.03 * (1 - this.crouchFraction));
     } else {
-      // Return legs to neutral standing
-      this.leftLeg.rotation.x *= 0.8;
-      this.rightLeg.rotation.x *= 0.8;
+      this.walkTime = 0;
     }
+
+    // Bend thighs at hips
+    const swingFactor = 1 - this.crouchFraction * 0.6;
+    this.leftLeg.rotation.x = -0.75 * this.crouchFraction + legSwing * swingFactor;
+    this.rightLeg.rotation.x = -0.75 * this.crouchFraction - legSwing * swingFactor;
+
+    // Counter-adjust boots so soles remain planted firmly on the floor at Y = 0
+    const bootLift = crouchPelvisDrop;
+    const bootForward = this.crouchFraction * 0.16;
+    this.leftBoot.position.set(0, -0.54 + bootLift, 0.02 + bootForward);
+    this.rightBoot.position.set(0, -0.54 + bootLift, 0.02 + bootForward);
+    this.leftBoot.rotation.x = 0.75 * this.crouchFraction;
+    this.rightBoot.rotation.x = 0.75 * this.crouchFraction;
 
     // 4. Update Hitbox world matrices
     this.updateHitboxWorldBounds();
@@ -394,7 +412,7 @@ export class CharacterRig {
     const torsoHitbox = this.hitboxes.find((h) => h.zone === 'TORSO');
     const legsHitbox = this.hitboxes.find((h) => h.zone === 'LEGS');
 
-    const yOffset = -this.crouchFraction * 0.45;
+    const yOffset = -this.crouchFraction * 0.40;
 
     if (headHitbox) {
       headHitbox.mesh.position.y = 1.65 + yOffset;
@@ -407,7 +425,7 @@ export class CharacterRig {
       torsoHitbox.worldBox.setFromObject(torsoHitbox.mesh);
     }
     if (legsHitbox) {
-      legsHitbox.mesh.position.y = 0.42 + yOffset * 0.3;
+      legsHitbox.mesh.position.y = 0.38 + yOffset * 0.2;
       legsHitbox.mesh.updateMatrixWorld(true);
       legsHitbox.worldBox.setFromObject(legsHitbox.mesh);
     }

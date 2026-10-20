@@ -110,7 +110,8 @@ export class TacticalBot {
     this.shotsFiredInBurst = 0;
     this.interactionTimer = 0;
     this.velocity.set(0, 0, 0);
-
+    const floorY = map.getFloorHeightAt(spawnPos.x, spawnPos.z, spawnPos.y);
+    spawnPos.y = floorY;
     const initialFacingYaw = this.team === 'T' ? Math.PI : 0;
     this.rig.reset(spawnPos, initialFacingYaw);
 
@@ -180,6 +181,7 @@ export class TacticalBot {
     }
 
     const currentPos = this.rig.root.position;
+    currentPos.y = map.getFloorHeightAt(currentPos.x, currentPos.z, currentPos.y);
 
     // 1. Enemy Perception & Line of Sight Scanning
     this.scanForEnemies(currentPos, allEnemies, mapColliders);
@@ -211,7 +213,7 @@ export class TacticalBot {
           this.actionState = 'ROUTING';
           this.targetWaypoints = [bombPos.clone()];
           this.currentWaypointIndex = 0;
-          this.moveToTarget(delta, bombPos);
+          this.moveToTarget(delta, bombPos, map);
         }
       }
     } else if (this.team === 'T' && this.hasC4 && !bombPlanted && map.isInsideBombSite(currentPos)) {
@@ -238,7 +240,7 @@ export class TacticalBot {
           }
         } else {
           this.actionState = 'ROUTING';
-          this.moveToTarget(delta, wp);
+          this.moveToTarget(delta, wp, map);
         }
       } else {
         // Holding Angle behind cover
@@ -309,7 +311,7 @@ export class TacticalBot {
     this.targetEnemy = closestEnemy;
   }
 
-  private moveToTarget(delta: number, target: THREE.Vector3) {
+  private moveToTarget(delta: number, target: THREE.Vector3, map: MapBuilder) {
     const currentPos = this.rig.root.position;
     const moveDir = new THREE.Vector3().subVectors(target, currentPos);
     moveDir.y = 0;
@@ -320,6 +322,7 @@ export class TacticalBot {
       const moveSpeed = 4.2; // ~220 units CS run speed
       this.velocity.copy(moveDir).multiplyScalar(moveSpeed);
       currentPos.addScaledVector(this.velocity, delta);
+      currentPos.y = map.getFloorHeightAt(currentPos.x, currentPos.z, currentPos.y);
 
       // Rotate body toward move direction
       const targetYaw = Math.atan2(moveDir.x, moveDir.z);

@@ -1,0 +1,15 @@
+{
+  "name": "profile-management-server",
+  "version": "1.0.0",
+  "description": "Resilient Profile Management Backend with PostgreSQL/Supabase & S3 architecture",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

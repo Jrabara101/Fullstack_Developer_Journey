@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-canvas: #07090E;
+  --surface-dock: #0C101A;
+  --surface-card: #131926;
+  --surface-elevated: #1C2436;
+  --border-subtle: #1E283D;
+  --border-active: #38BDF8;
+  --accent-live: #EF4444;
+  --accent-victory: #10B981;
+  --accent-gold: #F59E0B;
+  --bracket-connector: #334155;
+  --bracket-highlight: #06B6D4;
+  --text-display: #F8FAFC;
+  --text-muted: #64748B;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-canvas);
+  color: var(--text-display);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0C101A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E283D;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #38BDF8;
+}
+
+/* Stadium Floodlight Grid Backdrop */
+.arena-grid-bg {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(30, 40, 61, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 40, 61, 0.3) 1px, transparent 1px);
+}
+
+.arena-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, rgba(7, 9, 14, 0) 70%);
+}
+
+.arena-live-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.15) 0%, rgba(7, 9, 14, 0) 65%);
+}
+
+/* Prime Broadcast Deck Glass Panels */
+.broadcast-panel {
+  background: rgba(19, 25, 38, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.broadcast-panel-elevated {
+  background: rgba(28, 36, 54, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* SVG Line Animations */
+@keyframes dashAnimation {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.connector-pulse-live {
+  stroke: #EF4444;
+  stroke-dasharray: 6 4;
+  animation: dashAnimation 1.2s linear infinite;
+}
+
+.connector-highlight {
+  stroke: var(--bracket-highlight);
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 6px #06B6D4);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.connector-victory {
+  stroke: var(--accent-victory);
+  stroke-width: 2.5px;
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.7));
+}

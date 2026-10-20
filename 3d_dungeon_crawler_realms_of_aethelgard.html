@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Realms of Aethelgard - 3D Dungeon Crawler</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #090b10;
+            font-family: 'Inter', sans-serif;
+            color: #f8fafc;
+        }
+        .font-fantasy {
+            font-family: 'Cinzel', serif;
+        }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas#game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        /* Custom Game Buttons */
+        .game-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        .game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        }
+        .game-btn:active {
+            transform: translateY(1px);
+        }
+        .realm-active {
+            ring: 2px solid #fbbf24;
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.55);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.35; }
+            50% { opacity: 0.75; }
+        }
+        .damage-flash {
+            pointer-events: none;
+            transition: opacity 0.15s ease-out;
+        }
+        /* Scrollbar styling for modals */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.4);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen bg-slate-950 select-none">
+
+    <header class="w-full bg-slate-900/95 border-b border-slate-700/80 px-3 py-2 flex flex-wrap items-center justify-between gap-2 z-30 shadow-lg">
+        <!-- Title & Current Biome Badge -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-red-700 flex items-center justify-center shadow-md border border-amber-300/40">
+                <i class="fa-solid fa-dungeon text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-fantasy text-sm sm:text-base md:text-lg font-bold tracking-wider text-amber-400 leading-none">
+                    AETHELGARD CRAWLER
+                </h1>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <span id="biome-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="biome-subtitle" class="text-xs text-slate-300 font-medium">Realm 1: Royal Fantasy Kingdom</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map / Biome Switcher Buttons (Outside Canvas at Top Center) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-950/90 p-1 rounded-xl border border-slate-800">
+            <button id="btn-map-0" onclick="switchMap(0)" class="game-btn px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 text-white border border-amber-400/50 realm-active">
+                <i class="fa-solid fa-chess-rook"></i>
+                <span>(1) Kingdom</span>
+            </button>
+            <button id="btn-map-1" onclick="switchMap(1)" class="game-btn px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 bg-slate-800 hover:bg-stone-700 text-stone-200 border border-stone-600/50">
+                <i class="fa-solid fa-mountain"></i>
+                <span>(2) Cave</span>
+            </button>
+            <button id="btn-map-2" onclick="switchMap(2)" class="game-btn px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 bg-slate-800 hover:bg-cyan-800 text-cyan-200 border border-cyan-600/50">
+                <i class="fa-solid fa-icicles"></i>
+                <span>(3) Ice Cave</span>
+            </button>
+        </div>
+
+        <!-- Quick Utility Buttons -->
+        <div class="flex items-center gap-2">
+            <button onclick="toggleFullMapModal()" class="game-btn px-2.5 py-1.5 rounded-lg bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-500/40 text-xs sm:text-sm flex items-center gap-1.5" title="World Map Overview (M)">
+                <i class="fa-solid fa-map"></i>
+                <span class="hidden md:inline">Map Overview</span>
+            </button>
+            <button id="btn-sound" onclick="toggleAudio()" class="game-btn w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600/50 flex items-center justify-center text-xs sm:text-sm" title="Toggle Sound">
+                <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+            <button onclick="toggleHelpModal()" class="game-btn w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-600/50 flex items-center justify-center text-xs sm:text-sm" title="Controls & Guide">
+                <i class="fa-solid fa-circle-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="canvas-container" class="flex-1 relative">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Red/Blue Screen Flash Overlay for Damage/Heals/Portals -->
+        <div id="screen-flash" class="damage-flash absolute inset-0 bg-red-600 opacity-0 z-10"></div>
+
+        <!-- Center Crosshair & Interaction Prompt -->
+        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
+            <div id="crosshair" class="w-5 h-5 relative flex items-center justify-center opacity-75 transition-transform duration-100">
+                <div class="w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_6px_#fbbf24]"></div>
+                <div class="absolute w-4 h-0.5 bg-white/40"></div>
+                <div class="absolute h-4 w-0.5 bg-white/40"></div>
+            </div>
+            <div id="interaction-prompt" class="mt-8 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-400/60 text-amber-300 text-xs font-semibold tracking-wide shadow-lg hidden">
+                Press <span class="text-white font-bold">[E]</span> or Tap to Interact
+            </div>
+        </div>
+
+        <!-- Top-Left Player Stats HUD -->
+        <div class="absolute top-3 left-3 z-20 flex flex-col gap-2 pointer-events-none w-52 sm:w-64">
+            <div class="bg-slate-900/85 backdrop-blur-md p-3 rounded-xl border border-slate-700/80 shadow-xl">
+                <!-- Health Bar -->
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <span class="font-semibold text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-heart"></i> HP
+                    </span>
+                    <span id="hud-hp-text" class="text-slate-200 font-mono">100 / 100</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800 mb-2.5">
+                    <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-red-600 to-rose-400 transition-all duration-200" style="width: 100%;"></div>
+                </div>
+
+                <!-- Mana / Arcane Energy Bar -->
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <span class="font-semibold text-sky-400 flex items-center gap-1">
+                        <i class="fa-solid fa-bolt"></i> Arcane
+                    </span>
+                    <span id="hud-mp-text" class="text-slate-200 font-mono">100 / 100</span>
+                </div>
+                <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800 mb-3">
+                    <div id="hud-mp-bar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-200" style="width: 100%;"></div>
+                </div>
+
+                <!-- Gold, Level & Enemies Remaining -->
+                <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-800 text-center">
+                    <div class="bg-slate-950/70 rounded-lg py-1 px-1.5">
+                        <div class="text-[10px] text-slate-400 uppercase">Gold</div>
+                        <div class="text-xs font-bold text-amber-400 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-coins text-[10px]"></i>
+                            <span id="hud-gold">0</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950/70 rounded-lg py-1 px-1.5">
+                        <div class="text-[10px] text-slate-400 uppercase">Potions</div>
+                        <div class="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-flask text-[10px]"></i>
+                            <span id="hud-potions">2</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950/70 rounded-lg py-1 px-1.5">
+                        <div class="text-[10px] text-slate-400 uppercase">Foes</div>
+                        <div class="text-xs font-bold text-rose-400 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-skull text-[10px]"></i>
+                            <span id="hud-enemies">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Event Log / Toast Banner -->
+            <div id="combat-log" class="bg-slate-900/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-slate-700/60 text-xs text-slate-200 shadow-lg transition-opacity duration-300">
+                <span class="text-amber-400 font-semibold">Quest:</span> Slay dungeon foes &amp; reach the Portal!
+            </div>
+        </div>
+
+        <!-- Top-Right Live 2D Minimap Radar -->
+        <div class="absolute top-3 right-3 z-20 flex flex-col items-end pointer-events-auto">
+            <div class="bg-slate-900/90 backdrop-blur-md p-2 rounded-xl border border-slate-700/80 shadow-2xl flex flex-col items-center">
+                <div class="w-full flex items-center justify-between text-[11px] text-slate-300 font-semibold mb-1 px-1">
+                    <span id="minimap-title" class="text-amber-400 truncate max-w-[110px]">Fantasy Kingdom</span>
+                    <span class="text-slate-400 text-[10px] cursor-pointer hover:text-white" onclick="toggleFullMapModal()" title="Expand Map">
+                        <i class="fa-solid fa-expand"></i>
+                    </span>
+                </div>
+                <canvas id="minimap-canvas" width="152" height="152" onclick="toggleFullMapModal()" class="rounded-lg border border-slate-700 bg-slate-950 cursor-pointer shadow-inner"></canvas>
+                <!-- Legend -->
+                <div class="w-full flex items-center justify-between text-[10px] text-slate-400 mt-1.5 px-1 gap-2">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>You</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>Foe</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>Loot</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-400 inline-block"></span>Exit</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile / Touch On-Screen D-Pad Overlays (Shown on touch/small screens) -->
+        <div class="sm:hidden absolute bottom-4 left-4 z-20 flex flex-col items-center gap-1 select-none">
+            <button onpointerdown="setTouchKey('KeyW', true)" onpointerup="setTouchKey('KeyW', false)" onpointerleave="setTouchKey('KeyW', false)" class="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-600 text-white flex items-center justify-center active:bg-amber-600">
+                <i class="fa-solid fa-chevron-up"></i>
+            </button>
+            <div class="flex gap-1">
+                <button onpointerdown="setTouchKey('KeyQ', true)" onpointerup="setTouchKey('KeyQ', false)" onpointerleave="setTouchKey('KeyQ', false)" class="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-600 text-white flex items-center justify-center active:bg-amber-600">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button onpointerdown="setTouchKey('KeyS', true)" onpointerup="setTouchKey('KeyS', false)" onpointerleave="setTouchKey('KeyS', false)" class="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-600 text-white flex items-center justify-center active:bg-amber-600">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <button onpointerdown="setTouchKey('KeyE_Turn', true)" onpointerup="setTouchKey('KeyE_Turn', false)" onpointerleave="setTouchKey('KeyE_Turn', false)" class="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-600 text-white flex items-center justify-center active:bg-amber-600">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full bg-slate-900/95 border-t border-slate-700/80 px-3 py-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 z-30">
+        <!-- Movement Controls Cluster -->
+        <div class="hidden sm:flex items-center gap-1 bg-slate-950/80 px-2.5 py-1 rounded-xl border border-slate-800">
+            <button onpointerdown="setTouchKey('KeyQ', true)" onpointerup="setTouchKey('KeyQ', false)" onpointerleave="setTouchKey('KeyQ', false)" class="game-btn px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium" title="Turn Left (Q or Left Arrow)">
+                <i class="fa-solid fa-rotate-left"></i> Turn L
+            </button>
+            <button onpointerdown="setTouchKey('KeyW', true)" onpointerup="setTouchKey('KeyW', false)" onpointerleave="setTouchKey('KeyW', false)" class="game-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold" title="Move Forward (W or Up Arrow)">
+                <i class="fa-solid fa-arrow-up"></i> Forward
+            </button>
+            <button onpointerdown="setTouchKey('KeyS', true)" onpointerup="setTouchKey('KeyS', false)" onpointerleave="setTouchKey('KeyS', false)" class="game-btn px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium" title="Move Backward (S or Down Arrow)">
+                <i class="fa-solid fa-arrow-down"></i> Back
+            </button>
+            <button onpointerdown="setTouchKey('KeyE_Turn', true)" onpointerup="setTouchKey('KeyE_Turn', false)" onpointerleave="setTouchKey('KeyE_Turn', false)" class="game-btn px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium" title="Turn Right (E or Right Arrow)">
+                <i class="fa-solid fa-rotate-right"></i> Turn R
+            </button>
+        </div>
+
+        <!-- Combat & Interaction Action Buttons -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button onclick="performSwordAttack()" class="game-btn px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-amber-400/50">
+                <i class="fa-solid fa-khanda"></i>
+                <span>Sword Slash <span class="hidden md:inline text-[11px] opacity-80">[Space]</span></span>
+            </button>
+
+            <button onclick="performMagicCast()" class="game-btn px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-cyan-400/50">
+                <i class="fa-solid fa-wand-sparkles"></i>
+                <span>Arcane Bolt <span class="hidden md:inline text-[11px] opacity-80">[F]</span></span>
+            </button>
+
+            <button onclick="useHealthPotion()" class="game-btn px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 border border-emerald-400/50">
+                <i class="fa-solid fa-flask"></i>
+                <span>Heal <span class="hidden md:inline text-[11px] opacity-80">[H]</span></span>
+            </button>
+
+            <button onclick="interactWithWorld()" class="game-btn px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 border border-purple-400/50">
+                <i class="fa-solid fa-hand-sparkles"></i>
+                <span>Interact <span class="hidden md:inline text-[11px] opacity-80">[E]</span></span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Full Map Modal -->
+    <div id="map-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-5 shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h2 class="font-fantasy text-xl font-bold text-amber-400">Atlas of the Three Realms</h2>
+                    <p class="text-xs text-slate-400">Click any realm below to teleport immediately, or explore the tactical grid map.</p>
+                </div>
+                <button onclick="toggleFullMapModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <div class="flex flex-col items-center bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <canvas id="large-map-canvas" width="260" height="260" class="rounded-lg border border-slate-700"></canvas>
+                </div>
+                <div class="flex flex-col gap-2.5">
+                    <div onclick="switchMap(0); toggleFullMapModal();" class="cursor-pointer p-3 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-amber-500/40 flex items-start gap-3 transition">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-chess-rook text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-amber-300">(1) Fantasy Kingdom Courtyard</div>
+                            <p class="text-xs text-slate-400 mt-0.5">Sunlit royal castle battlements, red carpets, golden torches, and Fallen Knights.</p>
+                        </div>
+                    </div>
+
+                    <div onclick="switchMap(1); toggleFullMapModal();" class="cursor-pointer p-3 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-stone-500/40 flex items-start gap-3 transition">
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-mountain text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-orange-300">(2) Subterranean Magma Cave</div>
+                            <p class="text-xs text-slate-400 mt-0.5">Jagged basalt caverns, bioluminescent fungi, stalagmites, and Magma Golems.</p>
+                        </div>
+                    </div>
+
+                    <div onclick="switchMap(2); toggleFullMapModal();" class="cursor-pointer p-3 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-cyan-500/40 flex items-start gap-3 transition">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-icicles text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-cyan-300">(3) Glacial Ice Cave</div>
+                            <p class="text-xs text-slate-400 mt-0.5">Crystalline frozen vaults, shimmering icicles, falling snow, and Frost Wraiths.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help & Controls Modal -->
+    <div id="help-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h2 class="font-fantasy text-xl font-bold text-amber-400">Adventurer's Guide &amp; Controls</h2>
+                <button onclick="toggleHelpModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs sm:text-sm text-slate-300">
+                <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div><span class="text-amber-400 font-bold">W / S / Up / Down:</span> Move Forward &amp; Back</div>
+                    <div><span class="text-amber-400 font-bold">A / D:</span> Strafe Left &amp; Right</div>
+                    <div><span class="text-amber-400 font-bold">Q / Left / Right:</span> Turn Camera</div>
+                    <div><span class="text-amber-400 font-bold">Mouse Drag:</span> Look Around 360°</div>
+                    <div><span class="text-amber-400 font-bold">Space / Click:</span> Sword Slash</div>
+                    <div><span class="text-amber-400 font-bold">F / Right-Click:</span> Cast Arcane Bolt</div>
+                    <div><span class="text-amber-400 font-bold">E:</span> Open Chest / Enter Portal</div>
+                    <div><span class="text-amber-400 font-bold">1, 2, 3:</span> Instant Map Switch</div>
+                </div>
+                <p class="text-slate-400 leading-relaxed">
+                    Explore all three custom 3D realms: the sunlit <strong class="text-amber-300">Fantasy Kingdom</strong>, the glowing <strong class="text-orange-300">Subterranean Cave</strong>, and the shimmering <strong class="text-cyan-300">Ice Cave</strong>. Defeat guardians, loot golden chests, and step into the swirling dimensional portal to advance!
+                </p>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="toggleHelpModal()" class="game-btn px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm">
+                    Resume Adventure
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-rose-400';
+            logEvent(soundEnabled ? "Audio effects enabled." : "Audio effects muted.");
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'slash') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(280, now);
+                    osc.frequency.exponentialRampToValueAtTime(75, now + 0.14);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'magic') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(980, now + 0.18);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'hit') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'chest') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(660, now + 0.08);
+                    osc.frequency.setValueAtTime(880, now + 0.16);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.32);
+                    osc.start(now);
+                    osc.stop(now + 0.32);
+                } else if (type === 'portal') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(660, now + 0.35);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.38);
+                    osc.start(now);
+                    osc.stop(now + 0.38);
+                }
+            } catch (e) {
+                // Ignore audio errors if blocked by browser autoplay policy
+            }
+        }
+
+        // Tile Legend:
+        // 1 = Wall / Rock / Ice Barrier
+        // 0 = Floor / Walkable Corridor
+        // 2 = Player Spawn
+        // 3 = Enemy Spawn
+        // 4 = Treasure Chest
+        // 5 = Decorative Pillar / Stalagmite / Ice Crystal Spire
+        // 6 = Exit Portal to Next Realm
+        // 7 = Water / Lava / Frozen hazard accent (walkable with glow)
+        const BIOMES = [
+            {
+                id: 0,
+                name: "Fantasy Kingdom Courtyard",
+                shortName: "Fantasy Kingdom",
+                subtitle: "Realm 1: Royal Fantasy Kingdom",
+                skyColor: 0x3b6998,
+                fogColor: 0x4b749f,
+                fogDensity: 0.028,
+                ambientColor: 0xdbeafe,
+                ambientIntensity: 0.78,
+                pointLightColor: 0xffaa33,
+                wallHeight: 4.5,
+                openSky: true,
+                enemyName: "Fallen Royal Guard",
+                grid: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,0,1,0,0,4,0,0,1,0,0,4,1],
+                    [1,0,5,0,0,0,5,0,5,0,0,0,5,0,1],
+                    [1,0,0,3,1,0,0,0,0,0,1,3,0,0,1],
+                    [1,1,0,1,1,1,0,7,0,1,1,1,0,1,1],
+                    [1,0,0,0,0,0,0,7,0,0,0,0,0,0,1],
+                    [1,0,5,0,3,0,5,0,5,0,3,0,5,0,1],
+                    [1,4,0,0,0,0,0,3,0,0,0,0,0,4,1],
+                    [1,0,5,0,0,0,5,0,5,0,0,0,5,0,1],
+                    [1,1,0,1,1,0,0,0,0,0,1,1,0,1,1],
+                    [1,0,0,0,1,0,5,0,5,0,1,0,0,0,1],
+                    [1,0,3,0,0,0,0,3,0,0,0,0,3,0,1],
+                    [1,0,5,0,1,0,5,0,5,0,1,0,5,0,1],
+                    [1,4,0,0,1,0,0,6,0,0,1,0,0,4,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 1,
+                name: "Subterranean Magma Cave",
+                shortName: "Subterranean Cave",
+                subtitle: "Realm 2: Subterranean Cavern",
+                skyColor: 0x160d08,
+                fogColor: 0x1c100b,
+                fogDensity: 0.055,
+                ambientColor: 0x7c4dff,
+                ambientIntensity: 0.45,
+                pointLightColor: 0xff5722,
+                wallHeight: 5.2,
+                openSky: false,
+                enemyName: "Magma Cavern Golem",
+                grid: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,1,4,0,0,1,0,0,4,1,0,4,1],
+                    [1,0,0,1,0,5,0,0,0,5,0,1,0,3,1],
+                    [1,0,3,0,0,0,3,1,3,0,0,0,0,0,1],
+                    [1,1,0,1,1,0,1,1,1,0,1,1,0,1,1],
+                    [1,4,0,0,0,0,7,7,7,0,0,0,0,0,1],
+                    [1,1,1,0,1,0,7,5,7,0,1,0,1,1,1],
+                    [1,0,0,0,3,0,0,0,0,0,3,0,0,4,1],
+                    [1,0,5,1,1,0,5,3,5,0,1,1,5,0,1],
+                    [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+                    [1,1,0,0,0,0,1,0,1,0,0,0,3,1,1],
+                    [1,4,0,3,1,0,0,0,0,0,1,0,0,0,1],
+                    [1,0,5,0,1,1,0,5,0,1,1,0,5,0,1],
+                    [1,0,0,0,4,1,0,6,0,1,4,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 2,
+                name: "Glacial Ice Cave",
+                shortName: "Glacial Ice Cave",
+                subtitle: "Realm 3: Frozen Abyss Ice Cave",
+                skyColor: 0x082032,
+                fogColor: 0x0c2d48,
+                fogDensity: 0.045,
+                ambientColor: 0x7dd3fc,
+                ambientIntensity: 0.68,
+                pointLightColor: 0x38bdf8,
+                wallHeight: 5.0,
+                openSky: false,
+                enemyName: "Frost Wraith Sentinel",
+                grid: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,0,1,4,0,0,0,4,1,0,0,4,1],
+                    [1,0,5,0,0,0,5,7,5,0,0,0,5,0,1],
+                    [1,0,0,3,1,0,7,7,7,0,1,3,0,0,1],
+                    [1,1,0,1,1,0,0,3,0,0,1,1,0,1,1],
+                    [1,4,0,0,0,0,5,0,5,0,0,0,0,4,1],
+                    [1,0,5,1,0,7,7,5,7,7,0,1,5,0,1],
+                    [1,0,3,1,0,7,3,0,3,7,0,1,3,0,1],
+                    [1,0,0,0,0,7,7,5,7,7,0,0,0,0,1],
+                    [1,1,0,1,1,0,0,0,0,0,1,1,0,1,1],
+                    [1,0,0,0,1,0,5,3,5,0,1,0,0,0,1],
+                    [1,0,3,0,0,0,0,0,0,0,0,0,3,0,1],
+                    [1,0,5,0,1,1,0,5,0,1,1,0,5,0,1],
+                    [1,4,0,0,1,4,0,6,0,4,1,0,0,4,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            }
+        ];
+
+        const TILE_SIZE = 4.0;
+        const proceduralTextures = {};
+
+        function createProceduralTextures() {
+            // Helper to create canvas texture
+            function makeTex(drawFn) {
+                const c = document.createElement('canvas');
+                c.width = 256;
+                c.height = 256;
+                const ctx = c.getContext('2d');
+                drawFn(ctx, 256, 256);
+                const tex = new THREE.CanvasTexture(c);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                return tex;
+            }
+
+            // (1) Fantasy Kingdom Castle Stone Wall
+            proceduralTextures.kingdomWall = makeTex((ctx, w, h) => {
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(0, 0, w, h);
+                const rows = 8;
+                const rowH = h / rows;
+                for (let r = 0; r < rows; r++) {
+                    const offset = (r % 2) * 32;
+                    for (let x = -32; x < w; x += 64) {
+                        ctx.fillStyle = (r + x) % 3 === 0 ? '#94a3b8' : '#cbd5e1';
+                        ctx.fillRect(x + offset + 2, r * rowH + 2, 60, rowH - 4);
+                        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                        ctx.fillRect(x + offset + 4, r * rowH + 4, 56, 4);
+                    }
+                }
+                // Royal banner stripe
+                ctx.fillStyle = '#991b1b';
+                ctx.fillRect(w / 2 - 22, 0, 44, h);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(w / 2 - 24, 0, 4, h);
+                ctx.fillRect(w / 2 + 20, 0, 4, h);
+            });
+
+            // (1) Fantasy Kingdom Floor
+            proceduralTextures.kingdomFloor = makeTex((ctx, w, h) => {
+                ctx.fillStyle = '#475569';
+                ctx.fillRect(0, 0, w, h);
+                for (let y = 0; y < h; y += 64) {
+                    for (let x = 0; x < w; x += 64) {
+                        ctx.fillStyle = ((x + y) / 64) % 2 === 0 ? '#64748b' : '#475569';
+                        ctx.fillRect(x + 2, y + 2, 60, 60);
+                        ctx.strokeStyle = '#334155';
+                        ctx.strokeRect(x + 2, y + 2, 60, 60);
+                    }
+                }
+            });
+
+            // (2) Cave Rock Wall
+            proceduralTextures.caveWall = makeTex((ctx, w, h) => {
+                ctx.fillStyle = '#292524';
+                ctx.fillRect(0, 0, w, h);
+                for (let i = 0; i < 180; i++) {
+                    const rx = Math.random() * w;
+                    const ry = Math.random() * h;
+                    const rr = 8 + Math.random() * 24;
+                    ctx.fillStyle = i % 3 === 0 ? '#44403c' : (i % 2 === 0 ? '#1c1917' : '#57534e');
+                    ctx.beginPath();
+                    ctx.arc(rx, ry, rr, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                // Glowing ore veins
+                for (let i = 0; i < 14; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#f97316' : '#a855f7';
+                    ctx.fillRect(Math.random() * w, Math.random() * h, 6, 6);
+                }
+            });
+
+            // (2) Cave Floor
+            proceduralTextures.caveFloor = makeTex((ctx, w, h) => {
+                ctx.fillStyle = '#1c1917';
+                ctx.fillRect(0, 0, w, h);
+                for (let i = 0; i < 140; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#292524' : '#44403c';
+                    ctx.fillRect(Math.random() * w, Math.random() * h, 10, 10);
+                }
+            });
+
+            // (3) Ice Cave Crystalline Wall
+            proceduralTextures.iceWall = makeTex((ctx, w, h) => {
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, '#0284c7');
+                grad.addColorStop(0.5, '#38bdf8');
+                grad.addColorStop(1, '#0369a1');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+                // Crystalline facets
+                ctx.strokeStyle = 'rgba(224, 242, 254, 0.55)';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 24; i++) {
+                    ctx.beginPath();
+                    const x = Math.random() * w;
+                    const y = Math.random() * h;
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + (Math.random() - 0.5) * 90, y + (Math.random() - 0.5) * 90);
+                    ctx.stroke();
+                }
+            });
+
+            // (3) Ice Cave Frozen Floor
+            proceduralTextures.iceFloor = makeTex((ctx, w, h) => {
+                ctx.fillStyle = '#0c4a6e';
+                ctx.fillRect(0, 0, w, h);
+                ctx.strokeStyle = '#7dd3fc';
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i < 18; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(Math.random() * w, Math.random() * h);
+                    ctx.lineTo(Math.random() * w, Math.random() * h);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        let scene, camera, renderer;
+        let weaponGroup, swordMesh;
+        let currentBiomeIndex = 0;
+        let currentGrid = [];
+
+        // Dynamic Level Entities
+        let levelGroup = null;
+        let enemies = [];
+        let chests = [];
+        let projectiles = [];
+        let particles = [];
+        let portalMesh = null;
+        let weatherSystem = null;
+        let ceilingLights = [];
+
+        // Player State
+        const player = {
+            x: 6,
+            z: 6,
+            y: 1.7,
+            yaw: 0,
+            pitch: 0,
+            hp: 100,
+            maxHp: 100,
+            mp: 100,
+            maxMp: 100,
+            gold: 0,
+            potions: 2,
+            attackCooldown: 0,
+            magicCooldown: 0,
+            bobPhase: 0
+        };
+
+        // Input State
+        const keys = {};
+        let isDraggingMouse = false;
+        let prevMouseX = 0;
+        let prevMouseY = 0;
+
+        function setTouchKey(code, state) {
+            keys[code] = state;
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const canvas = document.getElementById('game-canvas');
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(
+                70,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                120
+            );
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+
+            createProceduralTextures();
+            createFirstPersonWeapon();
+            scene.add(camera);
+
+            // Load Default Map (0: Fantasy Kingdom)
+            loadBiomeMap(0);
+
+            // Resize Listener
+            window.addEventListener('resize', onWindowResize);
+            setupInputListeners(canvas);
+        }
+
+        function createFirstPersonWeapon() {
+            weaponGroup = new THREE.Group();
+
+            // Sword Blade
+            const bladeGeo = new THREE.BoxGeometry(0.08, 0.85, 0.03);
+            const bladeMat = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                metalness: 0.85,
+                roughness: 0.2
+            });
+            swordMesh = new THREE.Mesh(bladeGeo, bladeMat);
+            swordMesh.position.set(0, 0.35, 0);
+
+            // Runic Glowing Core on Blade
+            const runeGeo = new THREE.BoxGeometry(0.03, 0.65, 0.035);
+            const runeMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+            const runeMesh = new THREE.Mesh(runeGeo, runeMat);
+            runeMesh.position.set(0, 0.35, 0);
+
+            // Crossguard
+            const guardGeo = new THREE.BoxGeometry(0.28, 0.05, 0.06);
+            const guardMat = new THREE.MeshStandardMaterial({
+                color: 0xf59e0b,
+                metalness: 0.7,
+                roughness: 0.3
+            });
+            const guardMesh = new THREE.Mesh(guardGeo, guardMat);
+            guardMesh.position.set(0, -0.08, 0);
+
+            // Hilt
+            const hiltGeo = new THREE.CylinderGeometry(0.03, 0.035, 0.22, 8);
+            const hiltMat = new THREE.MeshStandardMaterial({ color: 0x7f1d1d });
+            const hiltMesh = new THREE.Mesh(hiltGeo, hiltMat);
+            hiltMesh.position.set(0, -0.2, 0);
+
+            weaponGroup.add(swordMesh, runeMesh, guardMesh, hiltMesh);
+            weaponGroup.position.set(0.42, -0.35, -0.65);
+            weaponGroup.rotation.set(0.2, -0.25, 0.1);
+            camera.add(weaponGroup);
+
+            // Player Personal Torch Light
+            const playerLight = new THREE.PointLight(0xffedd5, 1.1, 18);
+            playerLight.position.set(0, 0.2, 0);
+            camera.add(playerLight);
+        }
+
+        function loadBiomeMap(biomeIdx) {
+            currentBiomeIndex = biomeIdx;
+            const biome = BIOMES[biomeIdx];
+
+            // Deep copy grid so chest openings don't mutate template permanently
+            currentGrid = biome.grid.map(row => [...row]);
+
+            // Clear old level
+            if (levelGroup) {
+                scene.remove(levelGroup);
+            }
+            levelGroup = new THREE.Group();
+            enemies = [];
+            chests = [];
+            projectiles = [];
+            particles = [];
+            ceilingLights = [];
+            portalMesh = null;
+            weatherSystem = null;
+
+            // Update Scene Sky & Fog
+            scene.background = new THREE.Color(biome.skyColor);
+            scene.fog = new THREE.FogExp2(biome.fogColor, biome.fogDensity);
+
+            // Ambient & Directional Light
+            const ambient = new THREE.AmbientLight(biome.ambientColor, biome.ambientIntensity);
+            levelGroup.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, biome.openSky ? 0.85 : 0.35);
+            dirLight.position.set(20, 40, 20);
+            levelGroup.add(dirLight);
+
+            // Choose Biome Materials
+            let wallMat, floorMat, accentColor;
+            if (biomeIdx === 0) {
+                // (1) Fantasy Kingdom
+                wallMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.kingdomWall,
+                    roughness: 0.7
+                });
+                floorMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.kingdomFloor,
+                    roughness: 0.8
+                });
+                accentColor = 0xdc2626;
+                createKingdomSkyCastleBackdrop(levelGroup, currentGrid.length);
+            } else if (biomeIdx === 1) {
+                // (2) Cave
+                wallMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.caveWall,
+                    roughness: 0.9,
+                    bumpScale: 0.2
+                });
+                floorMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.caveFloor,
+                    roughness: 0.95
+                });
+                accentColor = 0xf97316;
+            } else {
+                // (3) Ice Cave
+                wallMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.iceWall,
+                    roughness: 0.15,
+                    metalness: 0.35,
+                    transparent: true,
+                    opacity: 0.92
+                });
+                floorMat = new THREE.MeshStandardMaterial({
+                    map: proceduralTextures.iceFloor,
+                    roughness: 0.1,
+                    metalness: 0.5
+                });
+                accentColor = 0x38bdf8;
+            }
+
+            const rows = currentGrid.length;
+            const cols = currentGrid[0].length;
+            const wallGeo = new THREE.BoxGeometry(TILE_SIZE, biome.wallHeight, TILE_SIZE);
+            const floorGeo = new THREE.PlaneGeometry(cols * TILE_SIZE, rows * TILE_SIZE);
+
+            // Main Floor
+            proceduralTextures.kingdomFloor.repeat.set(cols, rows);
+            proceduralTextures.caveFloor.repeat.set(cols, rows);
+            proceduralTextures.iceFloor.repeat.set(cols, rows);
+
+            const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.set((cols * TILE_SIZE) / 2 - TILE_SIZE / 2, 0, (rows * TILE_SIZE) / 2 - TILE_SIZE / 2);
+            levelGroup.add(floorMesh);
+
+            // Roof for Cave (1) and Ice Cave (2)
+            if (!biome.openSky) {
+                const roofMesh = new THREE.Mesh(floorGeo, wallMat);
+                roofMesh.rotation.x = Math.PI / 2;
+                roofMesh.position.set((cols * TILE_SIZE) / 2 - TILE_SIZE / 2, biome.wallHeight, (rows * TILE_SIZE) / 2 - TILE_SIZE / 2);
+                levelGroup.add(roofMesh);
+            }
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const tile = currentGrid[r][c];
+                    const wx = c * TILE_SIZE;
+                    const wz = r * TILE_SIZE;
+
+                    if (tile === 1) {
+                        // Wall Block
+                        const wall = new THREE.Mesh(wallGeo, wallMat);
+                        wall.position.set(wx, biome.wallHeight / 2, wz);
+                        levelGroup.add(wall);
+
+                        // Fantasy Kingdom Battlement Crests on top of walls
+                        if (biomeIdx === 0 && (r + c) % 2 === 0) {
+                            const merlonGeo = new THREE.BoxGeometry(1.4, 0.9, 1.4);
+                            const merlon = new THREE.Mesh(merlonGeo, wallMat);
+                            merlon.position.set(wx, biome.wallHeight + 0.45, wz);
+                            levelGroup.add(merlon);
+                        }
+                    } else {
+                        // Ceiling formations for Cave & Ice Cave
+                        if (biomeIdx === 1 && (r * cols + c) % 3 === 0) {
+                            // Cave Stalactite hanging from roof
+                            const stalGeo = new THREE.ConeGeometry(0.55, 1.9, 6);
+                            const stalMat = new THREE.MeshStandardMaterial({ color: 0x44403c, roughness: 0.9 });
+                            const stal = new THREE.Mesh(stalGeo, stalMat);
+                            stal.rotation.x = Math.PI;
+                            stal.position.set(wx, biome.wallHeight - 0.85, wz);
+                            levelGroup.add(stal);
+                        } else if (biomeIdx === 2 && (r * cols + c) % 2 === 0) {
+                            // Ice Cave Hanging Icicles
+                            const icicleGeo = new THREE.ConeGeometry(0.35, 1.8, 6);
+                            const icicleMat = new THREE.MeshStandardMaterial({
+                                color: 0xbae6fd,
+                                roughness: 0.1,
+                                metalness: 0.4,
+                                transparent: true,
+                                opacity: 0.85
+                            });
+                            const icicle = new THREE.Mesh(icicleGeo, icicleMat);
+                            icicle.rotation.x = Math.PI;
+                            icicle.position.set(wx, biome.wallHeight - 0.8, wz);
+                            levelGroup.add(icicle);
+                        }
+
+                        // Special Tile Entities
+                        if (tile === 2) {
+                            // Player Spawn
+                            player.x = wx;
+                            player.z = wz;
+                            player.yaw = Math.PI;
+                            player.pitch = 0;
+                        } else if (tile === 3) {
+                            // Enemy Spawn
+                            spawnEnemy(wx, wz, biomeIdx);
+                        } else if (tile === 4) {
+                            // Treasure Chest
+                            spawnChest(wx, wz, r, c);
+                        } else if (tile === 5) {
+                            // Decorative Biome Pillar / Stalagmite / Ice Crystal
+                            spawnBiomePillar(wx, wz, biomeIdx, biome.wallHeight);
+                        } else if (tile === 6) {
+                            // Dimensional Portal to Next Map
+                            spawnPortal(wx, wz, biomeIdx);
+                        } else if (tile === 7) {
+                            // Biome Floor Feature (Red Royal Carpet / Glowing Lava Pool / Frozen Mirror Ice)
+                            const patchGeo = new THREE.PlaneGeometry(TILE_SIZE * 0.92, TILE_SIZE * 0.92);
+                            const patchMat = new THREE.MeshBasicMaterial({
+                                color: accentColor,
+                                transparent: true,
+                                opacity: biomeIdx === 0 ? 0.85 : 0.65
+                            });
+                            const patch = new THREE.Mesh(patchGeo, patchMat);
+                            patch.rotation.x = -Math.PI / 2;
+                            patch.position.set(wx, 0.03, wz);
+                            levelGroup.add(patch);
+                        }
+                    }
+                }
+            }
+
+            // Ambient Particles (Floating Pollin/Embers/Snowflakes)
+            createBiomeParticles(biomeIdx, cols * TILE_SIZE, rows * TILE_SIZE);
+
+            scene.add(levelGroup);
+            updateBiomeUI(biomeIdx);
+            updateHUD();
+        }
+
+        function createKingdomSkyCastleBackdrop(group, gridSize) {
+            const center = (gridSize * TILE_SIZE) / 2;
+            // Distant Grand Royal Towers outside the courtyard
+            const towerPositions = [
+                [-12, -12],
+                [gridSize * TILE_SIZE + 8, -12],
+                [-12, gridSize * TILE_SIZE + 8],
+                [gridSize * TILE_SIZE + 8, gridSize * TILE_SIZE + 8]
+            ];
+
+            const towerGeo = new THREE.CylinderGeometry(3.8, 4.4, 22, 12);
+            const towerMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.6 });
+            const roofGeo = new THREE.ConeGeometry(5.2, 8, 12);
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.4 });
+
+            towerPositions.forEach(([tx, tz]) => {
+                const tower = new THREE.Mesh(towerGeo, towerMat);
+                tower.position.set(tx, 11, tz);
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.set(tx, 26, tz);
+                group.add(tower, roof);
+            });
+
+            // Golden Sun Orb in the sky
+            const sunGeo = new THREE.SphereGeometry(5, 16, 16);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+            const sun = new THREE.Mesh(sunGeo, sunMat);
+            sun.position.set(center + 28, 38, -25);
+            group.add(sun);
+        }
+
+        function spawnBiomePillar(wx, wz, biomeIdx, wallHeight) {
+            if (biomeIdx === 0) {
+                // Marble Castle Column + Torch
+                const colGeo = new THREE.CylinderGeometry(0.55, 0.65, wallHeight, 12);
+                const colMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4 });
+                const col = new THREE.Mesh(colGeo, colMat);
+                col.position.set(wx, wallHeight / 2, wz);
+
+                const flameGeo = new THREE.SphereGeometry(0.25, 8, 8);
+                const flameMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+                const flame = new THREE.Mesh(flameGeo, flameMat);
+                flame.position.set(wx, 2.4, wz + 0.65);
+
+                levelGroup.add(col, flame);
+            } else if (biomeIdx === 1) {
+                // Cave Stalagmite + Glowing Bioluminescent Fungi
+                const rockGeo = new THREE.ConeGeometry(0.85, 3.4, 7);
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 0.9 });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.position.set(wx, 1.7, wz);
+
+                const capGeo = new THREE.SphereGeometry(0.4, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+                const capMat = new THREE.MeshBasicMaterial({ color: 0xc084fc });
+                const cap = new THREE.Mesh(capGeo, capMat);
+                cap.position.set(wx + 0.5, 0.6, wz + 0.4);
+
+                levelGroup.add(rock, cap);
+            } else {
+                // Ice Cave Glowing Crystal Spire
+                const crystalGeo = new THREE.OctahedronGeometry(0.95, 0);
+                const crystalMat = new THREE.MeshStandardMaterial({
+                    color: 0x38bdf8,
+                    emissive: 0x0284c7,
+                    emissiveIntensity: 0.5,
+                    roughness: 0.1,
+                    metalness: 0.7,
+                    transparent: true,
+                    opacity: 0.88
+                });
+                const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+                crystal.scale.set(0.8, 2.4, 0.8);
+                crystal.position.set(wx, 1.9, wz);
+                levelGroup.add(crystal);
+            }
+        }
+
+        function createBiomeParticles(biomeIdx, width, depth) {
+            const count = 220;
+            const geo = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i += 3) {
+                positions[i] = Math.random() * width;
+                positions[i + 1] = Math.random() * 6;
+                positions[i + 2] = Math.random() * depth;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const color = biomeIdx === 0 ? 0xfef08a : (biomeIdx === 1 ? 0xf97316 : 0xe0f2fe);
+            const mat = new THREE.PointsMaterial({
+                color: color,
+                size: biomeIdx === 2 ? 0.22 : 0.16,
+                transparent: true,
+                opacity: 0.8
+            });
+            weatherSystem = new THREE.Points(geo, mat);
+            levelGroup.add(weatherSystem);
+        }
+
+        function spawnChest(wx, wz, gridR, gridC) {
+            const chestGroup = new THREE.Group();
+            const baseGeo = new THREE.BoxGeometry(1.1, 0.65, 0.75);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.6 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0.325;
+
+            const trimGeo = new THREE.BoxGeometry(1.14, 0.18, 0.79);
+            const trimMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.8, roughness: 0.2 });
+            const trim = new THREE.Mesh(trimGeo, trimMat);
+            trim.position.y = 0.58;
+
+            chestGroup.add(base, trim);
+            chestGroup.position.set(wx, 0, wz);
+            levelGroup.add(chestGroup);
+
+            chests.push({
+                mesh: chestGroup,
+                x: wx,
+                z: wz,
+                gridR,
+                gridC,
+                opened: false
+            });
+        }
+
+        function spawnPortal(wx, wz, biomeIdx) {
+            const portalGroup = new THREE.Group();
+
+            // Outer Runic Ring
+            const torusGeo = new THREE.TorusGeometry(1.35, 0.16, 12, 32);
+            const ringColor = biomeIdx === 0 ? 0xfbbf24 : (biomeIdx === 1 ? 0xf97316 : 0x38bdf8);
+            const torusMat = new THREE.MeshStandardMaterial({
+                color: ringColor,
+                emissive: ringColor,
+                emissiveIntensity: 0.6
+            });
+            const ring = new THREE.Mesh(torusGeo, torusMat);
+            ring.position.y = 1.8;
+
+            // Swirling Vortex Disc
+            const coreGeo = new THREE.CircleGeometry(1.25, 24);
+            const coreMat = new THREE.MeshBasicMaterial({
+                color: 0xa855f7,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.78
+            });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.position.y = 1.8;
+
+            portalGroup.add(ring, core);
+            portalGroup.position.set(wx, 0, wz);
+            levelGroup.add(portalGroup);
+
+            portalMesh = {
+                group: portalGroup,
+                ring: ring,
+                core: core,
+                x: wx,
+                z: wz
+            };
+        }
+
+        function spawnEnemy(wx, wz, biomeIdx) {
+            const enemyGroup = new THREE.Group();
+
+            let bodyColor, eyeColor, headGeo;
+            if (biomeIdx === 0) {
+                // Fallen Royal Knight
+                bodyColor = 0x991b1b;
+                eyeColor = 0xfef08a;
+                headGeo = new THREE.BoxGeometry(0.65, 0.65, 0.65);
+            } else if (biomeIdx === 1) {
+                // Magma Cavern Golem
+                bodyColor = 0xea580c;
+                eyeColor = 0xfde047;
+                headGeo = new THREE.DodecahedronGeometry(0.5);
+            } else {
+                // Frost Wraith Sentinel
+                bodyColor = 0x0284c7;
+                eyeColor = 0xe0f2fe;
+                headGeo = new THREE.OctahedronGeometry(0.5);
+            }
+
+            // Torso
+            const torsoGeo = new THREE.CylinderGeometry(0.45, 0.6, 1.35, 8);
+            const torsoMat = new THREE.MeshStandardMaterial({
+                color: bodyColor,
+                roughness: 0.4,
+                metalness: 0.5
+            });
+            const torso = new THREE.Mesh(torsoGeo, torsoMat);
+            torso.position.y = 0.9;
+
+            // Head
+            const headMat = new THREE.MeshStandardMaterial({
+                color: biomeIdx === 2 ? 0xbae6fd : 0x475569,
+                roughness: 0.3,
+                metalness: 0.6
+            });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.85;
+
+            // Glowing Eyes
+            const eyeGeo = new THREE.BoxGeometry(0.36, 0.1, 0.1);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: eyeColor });
+            const eyes = new THREE.Mesh(eyeGeo, eyeMat);
+            eyes.position.set(0, 1.88, 0.32);
+
+            // Floating Health Bar Plane above Enemy
+            const hpBgGeo = new THREE.PlaneGeometry(1.1, 0.14);
+            const hpBgMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, side: THREE.DoubleSide });
+            const hpBg = new THREE.Mesh(hpBgGeo, hpBgMat);
+            hpBg.position.y = 2.45;
+
+            const hpFgGeo = new THREE.PlaneGeometry(1.04, 0.1);
+            const hpFgMat = new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide });
+            const hpFg = new THREE.Mesh(hpFgGeo, hpFgMat);
+            hpFg.position.set(0, 2.45, 0.01);
+
+            enemyGroup.add(torso, head, eyes, hpBg, hpFg);
+            enemyGroup.position.set(wx, 0, wz);
+            levelGroup.add(enemyGroup);
+
+            enemies.push({
+                mesh: enemyGroup,
+                hpBar: hpFg,
+                x: wx,
+                z: wz,
+                hp: 60 + biomeIdx * 15,
+                maxHp: 60 + biomeIdx * 15,
+                attackTimer: 0,
+                alive: true,
+                seed: Math.random() * 10
+            });
+        }
+
+        function switchMap(biomeIdx) {
+            if (biomeIdx < 0 || biomeIdx >= BIOMES.length) return;
+            playSound('portal');
+            triggerScreenFlash('bg-sky-400');
+            loadBiomeMap(biomeIdx);
+            logEvent(`Entered ${BIOMES[biomeIdx].name}!`);
+        }
+
+        function updateBiomeUI(biomeIdx) {
+            const biome = BIOMES[biomeIdx];
+            document.getElementById('biome-subtitle').textContent = biome.subtitle;
+            document.getElementById('minimap-title').textContent = biome.shortName;
+
+            const dot = document.getElementById('biome-indicator-dot');
+            dot.className = 'w-2 h-2 rounded-full animate-pulse ' +
+                (biomeIdx === 0 ? 'bg-amber-400' : (biomeIdx === 1 ? 'bg-orange-500' : 'bg-cyan-400'));
+
+            // Highlight Active Map Button
+            for (let i = 0; i < 3; i++) {
+                const btn = document.getElementById(`btn-map-${i}`);
+                if (i === biomeIdx) {
+                    btn.classList.add('realm-active', 'ring-2', 'ring-amber-400');
+                } else {
+                    btn.classList.remove('realm-active', 'ring-2', 'ring-amber-400');
+                }
+            }
+        }
+
+        function performSwordAttack() {
+            if (player.attackCooldown > 0) return;
+            player.attackCooldown = 0.35;
+            playSound('slash');
+
+            // Animate crosshair
+            const ch = document.getElementById('crosshair');
+            ch.style.transform = 'scale(1.5)';
+            setTimeout(() => ch.style.transform = 'scale(1)', 120);
+
+            // Check enemy hit in front of player
+            const forwardX = -Math.sin(player.yaw);
+            const forwardZ = -Math.cos(player.yaw);
+            let hitAny = false;
+
+            enemies.forEach(en => {
+                if (!en.alive) return;
+                const dx = en.x - player.x;
+                const dz = en.z - player.z;
+                const dist = Math.hypot(dx, dz);
+                if (dist < 4.6) {
+                    const dot = (dx * forwardX + dz * forwardZ) / (dist || 1);
+                    if (dot > 0.35) {
+                        damageEnemy(en, 30);
+                        hitAny = true;
+                    }
+                }
+            });
+
+            if (!hitAny) {
+                // Also allow breaking/opening adjacent chest with sword swing
+                interactWithWorld(true);
+            }
+        }
+
+        function performMagicCast() {
+            if (player.magicCooldown > 0) return;
+            if (player.mp < 15) {
+                logEvent("Not enough Arcane energy! Wait for recharge.");
+                return;
+            }
+            player.mp = Math.max(0, player.mp - 15);
+            player.magicCooldown = 0.45;
+            playSound('magic');
+            updateHUD();
+
+            const orbGeo = new THREE.SphereGeometry(0.24, 10, 10);
+            const orbColor = currentBiomeIndex === 2 ? 0x38bdf8 : 0xfbbf24;
+            const orbMat = new THREE.MeshBasicMaterial({ color: orbColor });
+            const orb = new THREE.Mesh(orbGeo, orbMat);
+
+            const dirX = -Math.sin(player.yaw);
+            const dirZ = -Math.cos(player.yaw);
+
+            orb.position.set(player.x + dirX * 0.8, 1.45, player.z + dirZ * 0.8);
+            levelGroup.add(orb);
+
+            projectiles.push({
+                mesh: orb,
+                vx: dirX * 18,
+                vz: dirZ * 18,
+                life: 1.8
+            });
+        }
+
+        function damageEnemy(en, amount) {
+            en.hp -= amount;
+            playSound('hit');
+            spawnHitSparks(en.x, 1.4, en.z, 0xfbbf24);
+
+            // Scale HP bar
+            const ratio = Math.max(0, en.hp / en.maxHp);
+            en.hpBar.scale.x = ratio;
+
+            if (en.hp <= 0) {
+                en.alive = false;
+                levelGroup.remove(en.mesh);
+                const goldEarned = 20 + currentBiomeIndex * 10;
+                player.gold += goldEarned;
+                logEvent(`Defeated ${BIOMES[currentBiomeIndex].enemyName}! (+${goldEarned} Gold)`);
+            }
+            updateHUD();
+        }
+
+        function spawnHitSparks(x, y, z, colorHex) {
+            for (let i = 0; i < 10; i++) {
+                const pGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+                const pMat = new THREE.MeshBasicMaterial({ color: colorHex });
+                const p = new THREE.Mesh(pGeo, pMat);
+                p.position.set(x, y, z);
+                levelGroup.add(p);
+                particles.push({
+                    mesh: p,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: 2 + Math.random() * 4,
+                    vz: (Math.random() - 0.5) * 6,
+                    life: 0.45
+                });
+            }
+        }
+
+        function useHealthPotion() {
+            if (player.potions <= 0) {
+                logEvent("No Health Potions remaining! Find chests to loot more.");
+                return;
+            }
+            if (player.hp >= player.maxHp) {
+                logEvent("Health is already full!");
+                return;
+            }
+            player.potions--;
+            player.hp = Math.min(player.maxHp, player.hp + 45);
+            playSound('chest');
+            triggerScreenFlash('bg-emerald-500');
+            logEvent("Drank Health Potion (+45 HP)!");
+            updateHUD();
+        }
+
+        function interactWithWorld(silentIfNone = false) {
+            // Check chests
+            for (const ch of chests) {
+                if (!ch.opened && Math.hypot(ch.x - player.x, ch.z - player.z) < 3.6) {
+                    ch.opened = true;
+                    currentGrid[ch.gridR][ch.gridC] = 0;
+                    ch.mesh.scale.set(1, 0.5, 1);
+                    playSound('chest');
+                    spawnHitSparks(ch.x, 0.8, ch.z, 0xfde047);
+                    player.gold += 35;
+                    player.potions += 1;
+                    logEvent("Opened Treasure Chest! Found 35 Gold & +1 Potion!");
+                    updateHUD();
+                    return;
+                }
+            }
+
+            // Check Portal
+            if (portalMesh && Math.hypot(portalMesh.x - player.x, portalMesh.z - player.z) < 3.8) {
+                const nextRealm = (currentBiomeIndex + 1) % BIOMES.length;
+                switchMap(nextRealm);
+                return;
+            }
+
+            if (!silentIfNone) {
+                logEvent("Move closer to a Golden Chest or Portal to interact.");
+            }
+        }
+
+        function isWallAt(wx, wz) {
+            const radius = 0.75;
+            const checkPoints = [
+                [wx - radius, wz - radius],
+                [wx + radius, wz - radius],
+                [wx - radius, wz + radius],
+                [wx + radius, wz + radius]
+            ];
+
+            for (const [px, pz] of checkPoints) {
+                const c = Math.round(px / TILE_SIZE);
+                const r = Math.round(pz / TILE_SIZE);
+                if (r < 0 || r >= currentGrid.length || c < 0 || c >= currentGrid[0].length) {
+                    return true;
+                }
+                const tile = currentGrid[r][c];
+                if (tile === 1 || tile === 5) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateGame(dt) {
+            // Regenerate Arcane energy
+            if (player.mp < player.maxMp) {
+                player.mp = Math.min(player.maxMp, player.mp + dt * 7);
+                updateHUD();
+            }
+
+            // Cooldowns & Weapon Swing Animation
+            if (player.attackCooldown > 0) {
+                player.attackCooldown = Math.max(0, player.attackCooldown - dt);
+                const swingAngle = Math.sin((0.35 - player.attackCooldown) / 0.35 * Math.PI);
+                weaponGroup.rotation.x = 0.2 - swingAngle * 1.15;
+                weaponGroup.position.z = -0.65 - swingAngle * 0.25;
+            } else {
+                weaponGroup.rotation.x = 0.2;
+                weaponGroup.position.z = -0.65;
+            }
+
+            if (player.magicCooldown > 0) {
+                player.magicCooldown = Math.max(0, player.magicCooldown - dt);
+            }
+
+            // Turning
+            const turnSpeed = 2.3;
+            if (keys['KeyQ'] || keys['ArrowLeft']) player.yaw += turnSpeed * dt;
+            if (keys['KeyE_Turn'] || keys['ArrowRight']) player.yaw -= turnSpeed * dt;
+
+            // Movement Vector
+            const moveSpeed = 7.5;
+            let moveForward = 0;
+            let moveStrafe = 0;
+
+            if (keys['KeyW'] || keys['ArrowUp']) moveForward += 1;
+            if (keys['KeyS'] || keys['ArrowDown']) moveForward -= 1;
+            if (keys['KeyA']) moveStrafe -= 1;
+            if (keys['KeyD']) moveStrafe += 1;
+
+            if (moveForward !== 0 || moveStrafe !== 0) {
+                const len = Math.hypot(moveForward, moveStrafe);
+                moveForward /= len;
+                moveStrafe /= len;
+
+                const forwardX = -Math.sin(player.yaw);
+                const forwardZ = -Math.cos(player.yaw);
+                const rightX = Math.cos(player.yaw);
+                const rightZ = -Math.sin(player.yaw);
+
+                const dx = (forwardX * moveForward + rightX * moveStrafe) * moveSpeed * dt;
+                const dz = (forwardZ * moveForward + rightZ * moveStrafe) * moveSpeed * dt;
+
+                if (!isWallAt(player.x + dx, player.z)) {
+                    player.x += dx;
+                }
+                if (!isWallAt(player.x, player.z + dz)) {
+                    player.z += dz;
+                }
+
+                // Head & Weapon Bobbing
+                player.bobPhase += dt * 11;
+                weaponGroup.position.y = -0.35 + Math.sin(player.bobPhase) * 0.03;
+            }
+
+            // Update Camera Transform
+            camera.position.set(player.x, player.y + Math.sin(player.bobPhase) * 0.04, player.z);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = player.yaw;
+            camera.rotation.x = player.pitch;
+
+            // Check Proximity Prompt for Chests or Portal
+            let nearInteractive = false;
+            for (const ch of chests) {
+                if (!ch.opened && Math.hypot(ch.x - player.x, ch.z - player.z) < 3.4) {
+                    nearInteractive = true;
+                }
+            }
+            if (portalMesh) {
+                portalMesh.ring.rotation.z += dt * 1.5;
+                portalMesh.core.rotation.z -= dt * 2.2;
+                const pDist = Math.hypot(portalMesh.x - player.x, portalMesh.z - player.z);
+                if (pDist < 3.5) nearInteractive = true;
+                if (pDist < 1.35) {
+                    // Auto-teleport when stepping directly into the portal center
+                    switchMap((currentBiomeIndex + 1) % BIOMES.length);
+                    return;
+                }
+            }
+            const promptEl = document.getElementById('interaction-prompt');
+            promptEl.classList.toggle('hidden', !nearInteractive);
+
+            // Update Projectiles
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                proj.life -= dt;
+                const nx = proj.mesh.position.x + proj.vx * dt;
+                const nz = proj.mesh.position.z + proj.vz * dt;
+
+                let hit = false;
+                if (isWallAt(nx, nz) || proj.life <= 0) {
+                    hit = true;
+                } else {
+                    for (const en of enemies) {
+                        if (en.alive && Math.hypot(en.x - nx, en.z - nz) < 1.2) {
+                            damageEnemy(en, 35);
+                            hit = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (hit) {
+                    spawnHitSparks(proj.mesh.position.x, 1.3, proj.mesh.position.z, 0x38bdf8);
+                    levelGroup.remove(proj.mesh);
+                    projectiles.splice(i, 1);
+                } else {
+                    proj.mesh.position.x = nx;
+                    proj.mesh.position.z = nz;
+                }
+            }
+
+            // Update Sparks
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= dt;
+                p.mesh.position.x += p.vx * dt;
+                p.mesh.position.y += p.vy * dt;
+                p.mesh.position.z += p.vz * dt;
+                p.vy -= 9.8 * dt;
+                if (p.life <= 0) {
+                    levelGroup.remove(p.mesh);
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update Ambient Biome Particles
+            if (weatherSystem) {
+                const pos = weatherSystem.geometry.attributes.position;
+                for (let i = 1; i < pos.array.length; i += 3) {
+                    pos.array[i] -= dt * (currentBiomeIndex === 2 ? 1.4 : 0.4);
+                    if (pos.array[i] < 0) pos.array[i] = 5.5;
+                }
+                pos.needsUpdate = true;
+            }
+
+            // Update Enemy AI
+            const timeNow = performance.now() * 0.003;
+            enemies.forEach(en => {
+                if (!en.alive) return;
+                en.mesh.position.y = Math.sin(timeNow + en.seed) * 0.12;
+                en.mesh.lookAt(player.x, 0, player.z);
+
+                const dx = player.x - en.x;
+                const dz = player.z - en.z;
+                const dist = Math.hypot(dx, dz);
+
+                if (dist < 13 && dist > 1.8) {
+                    const stepX = (dx / dist) * 2.5 * dt;
+                    const stepZ = (dz / dist) * 2.5 * dt;
+                    if (!isWallAt(en.x + stepX, en.z)) en.x += stepX;
+                    if (!isWallAt(en.x, en.z + stepZ)) en.z += stepZ;
+                    en.mesh.position.x = en.x;
+                    en.mesh.position.z = en.z;
+                } else if (dist <= 2.1) {
+                    en.attackTimer += dt;
+                    if (en.attackTimer >= 1.15) {
+                        en.attackTimer = 0;
+                        player.hp = Math.max(0, player.hp - 12);
+                        playSound('hit');
+                        triggerScreenFlash('bg-red-600');
+                        updateHUD();
+                        if (player.hp <= 0) {
+                            player.hp = player.maxHp;
+                            player.potions = Math.max(1, player.potions);
+                            loadBiomeMap(currentBiomeIndex);
+                            logEvent("You fell in battle! Respawned at realm entrance.");
+                        }
+                    }
+                }
+            });
+        }
+
+        function render2DMap(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !currentGrid.length) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const rows = currentGrid.length;
+            const cols = currentGrid[0].length;
+            const cellW = w / cols;
+            const cellH = h / rows;
+
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, w, h);
+
+            // Choose wall & floor colors matching current biome
+            let wallColor = '#64748b';
+            let floorColor = '#1e293b';
+            if (currentBiomeIndex === 0) {
+                wallColor = '#94a3b8';
+                floorColor = '#334155';
+            } else if (currentBiomeIndex === 1) {
+                wallColor = '#57534e';
+                floorColor = '#1c1917';
+            } else {
+                wallColor = '#38bdf8';
+                floorColor = '#0c4a6e';
+            }
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const tile = currentGrid[r][c];
+                    const x = c * cellW;
+                    const y = r * cellH;
+
+                    if (tile === 1) {
+                        ctx.fillStyle = wallColor;
+                        ctx.fillRect(x, y, cellW - 0.5, cellH - 0.5);
+                    } else {
+                        ctx.fillStyle = floorColor;
+                        ctx.fillRect(x, y, cellW, cellH);
+
+                        if (tile === 5) {
+                            ctx.fillStyle = '#64748b';
+                            ctx.fillRect(x + cellW * 0.25, y + cellH * 0.25, cellW * 0.5, cellH * 0.5);
+                        } else if (tile === 6) {
+                            // Portal Exit
+                            ctx.fillStyle = '#c084fc';
+                            ctx.beginPath();
+                            ctx.arc(x + cellW / 2, y + cellH / 2, cellW * 0.42, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            // Draw Unopened Chests
+            chests.forEach(ch => {
+                if (!ch.opened) {
+                    const cx = (ch.x / TILE_SIZE + 0.5) * cellW;
+                    const cy = (ch.z / TILE_SIZE + 0.5) * cellH;
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillRect(cx - cellW * 0.28, cy - cellH * 0.28, cellW * 0.56, cellH * 0.56);
+                }
+            });
+
+            // Draw Enemies
+            enemies.forEach(en => {
+                if (en.alive) {
+                    const ex = (en.x / TILE_SIZE + 0.5) * cellW;
+                    const ey = (en.z / TILE_SIZE + 0.5) * cellH;
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, cellW * 0.34, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // Draw Player + Facing Cone
+            const px = (player.x / TILE_SIZE + 0.5) * cellW;
+            const py = (player.z / TILE_SIZE + 0.5) * cellH;
+            const dirX = -Math.sin(player.yaw);
+            const dirZ = -Math.cos(player.yaw);
+
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.75)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + dirX * cellW * 1.3, py + dirZ * cellH * 1.3);
+            ctx.stroke();
+
+            ctx.fillStyle = '#34d399';
+            ctx.beginPath();
+            ctx.arc(px, py, cellW * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-hp-text').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+            document.getElementById('hud-hp-bar').style.width = `${(player.hp / player.maxHp) * 100}%`;
+
+            document.getElementById('hud-mp-text').textContent = `${Math.floor(player.mp)} / ${player.maxMp}`;
+            document.getElementById('hud-mp-bar').style.width = `${(player.mp / player.maxMp) * 100}%`;
+
+            document.getElementById('hud-gold').textContent = player.gold;
+            document.getElementById('hud-potions').textContent = player.potions;
+
+            const aliveCount = enemies.filter(e => e.alive).length;
+            document.getElementById('hud-enemies').textContent = aliveCount;
+        }
+
+        function logEvent(msg) {
+            const el = document.getElementById('combat-log');
+            el.innerHTML = `<span class="text-amber-400 font-semibold">Log:</span> ${msg}`;
+        }
+
+        function triggerScreenFlash(colorClass) {
+            const flash = document.getElementById('screen-flash');
+            flash.className = `damage-flash absolute inset-0 ${colorClass} opacity-35 z-10`;
+            setTimeout(() => {
+                flash.classList.remove('opacity-35');
+                flash.classList.add('opacity-0');
+            }, 160);
+        }
+
+        function toggleFullMapModal() {
+            const modal = document.getElementById('map-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+            if (!modal.classList.contains('hidden')) {
+                render2DMap('large-map-canvas');
+            }
+        }
+
+        function toggleHelpModal() {
+            const modal = document.getElementById('help-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function setupInputListeners(canvas) {
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    performSwordAttack();
+                } else if (e.code === 'KeyF') {
+                    performMagicCast();
+                } else if (e.code === 'KeyH') {
+                    useHealthPotion();
+                } else if (e.code === 'KeyE') {
+                    interactWithWorld();
+                } else if (e.code === 'KeyM') {
+                    toggleFullMapModal();
+                } else if (e.code === 'Digit1') {
+                    switchMap(0);
+                } else if (e.code === 'Digit2') {
+                    switchMap(1);
+                } else if (e.code === 'Digit3') {
+                    switchMap(2);
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            // Mouse Look & Click Attack
+            canvas.addEventListener('mousedown', (e) => {
+                isDraggingMouse = true;
+                prevMouseX = e.clientX;
+                prevMouseY = e.clientY;
+                if (e.button === 2) {
+                    performMagicCast();
+                }
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingMouse) return;
+                const dx = e.clientX - prevMouseX;
+                const dy = e.clientY - prevMouseY;
+                prevMouseX = e.clientX;
+                prevMouseY = e.clientY;
+
+                player.yaw -= dx * 0.0055;
+                player.pitch = Math.max(-0.55, Math.min(0.55, player.pitch - dy * 0.004));
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDraggingMouse = false;
+            });
+
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            // Touch Look on Canvas
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDraggingMouse = true;
+                    prevMouseX = e.touches[0].clientX;
+                    prevMouseY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!isDraggingMouse || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - prevMouseX;
+                const dy = e.touches[0].clientY - prevMouseY;
+                prevMouseX = e.touches[0].clientX;
+                prevMouseY = e.touches[0].clientY;
+                player.yaw -= dx * 0.006;
+                player.pitch = Math.max(-0.5, Math.min(0.5, player.pitch - dy * 0.004));
+            }, { passive: true });
+
+            canvas.addEventListener('touchend', () => {
+                isDraggingMouse = false;
+            });
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            if (!container || !renderer || !camera) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        let lastFrameTime = performance.now();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = performance.now();
+            const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+            lastFrameTime = now;
+
+            updateGame(dt);
+            renderer.render(scene, camera);
+            render2DMap('minimap-canvas');
+        }
+
+        window.onload = function () {
+            initThreeJS();
+            animate();
+        };
+    </script>
+</body>
+</html>

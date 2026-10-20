@@ -1,0 +1,24 @@
+{
+  "name": "profile-management-atelier",
+  "version": "1.0.0",
+  "description": "High-conversion Profile Management & User Settings application using React, Vite, Tailwind CSS, Node.js, and PostgreSQL/Supabase architecture",
+  "private": true,
+  "scripts": {
+    "dev": "node start-dev.js",
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server start",
+    "install:all": "npm --prefix client install && npm --prefix server install",
+    "build": "npm --prefix client run build"
+  },
+  "keywords": [
+    "react",
+    "vite",
+    "tailwind",
+    "profile-management",
+    "avatar-studio",
+    "canvas-crop",
+    "identity-management"
+  ],
+  "author": "",
+  "license": "MIT"
+}

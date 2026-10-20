@@ -11,21 +11,64 @@ class SoundEngine {
   /** Desired output level, retained so it survives lazy context creation. */
   private masterVolume: number = 0.7;
 
+  private hasUserInteracted: boolean = false;
+
   constructor() {
-    // Lazy initialized on first user interaction
+    this.setupGestureUnlock();
   }
 
-  private init() {
+  private setupGestureUnlock() {
+    if (typeof window === 'undefined') return;
+    const unlockHandler = () => {
+      this.unlock();
+    };
+    ['pointerdown', 'keydown', 'touchstart', 'click'].forEach((event) => {
+      window.addEventListener(event, unlockHandler, { capture: true });
+    });
+  }
+
+  public isUnlocked(): boolean {
+    if (this.hasUserInteracted) return true;
+    if (
+      typeof navigator !== 'undefined' &&
+      (navigator as unknown as { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive
+    ) {
+      this.hasUserInteracted = true;
+      return true;
+    }
+    return false;
+  }
+
+  public unlock() {
+    this.hasUserInteracted = true;
+    this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
+  private init(): boolean {
+    if (this.isMuted) return false;
+    // Do not initialize or resume AudioContext before a user gesture to respect browser autoplay policies
+    if (!this.isUnlocked()) return false;
+
     if (!this.ctx) {
-      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.ctx = new AudioCtxClass();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(this.masterVolume, this.ctx.currentTime);
-      this.masterGain.connect(this.ctx.destination);
+      const AudioCtxClass =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtxClass) return false;
+      try {
+        this.ctx = new AudioCtxClass();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this.masterVolume, this.ctx.currentTime);
+        this.masterGain.connect(this.ctx.destination);
+      } catch {
+        return false;
+      }
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
     }
+    return true;
   }
 
   /**
@@ -435,7 +478,7 @@ class SoundEngine {
     osc.stop(t + 0.05);
 
     // Speak announcement if speech synthesis is available
-    if ('speechSynthesis' in window) {
+    if ('speechSynthesis' in window && this.isUnlocked()) {
       try {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(message);

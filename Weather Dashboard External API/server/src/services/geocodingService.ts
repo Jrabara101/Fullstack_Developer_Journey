@@ -20,7 +20,7 @@ export class GeocodingService {
       if (!res.ok) {
         throw new Error(`Geocoding HTTP ${res.status}`);
       }
-      const data = await res.json();
+      const data: any = await res.json();
       if (!data.results || !Array.isArray(data.results)) {
         return [];
       }
@@ -60,7 +60,7 @@ export class GeocodingService {
         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
       );
       if (res.ok) {
-        const data = await res.json();
+        const data: any = await res.json();
         const name = data.locality || data.city || data.principalSubdivision || 'Detected Microclimate';
         const location: WeatherLocation = {
           id: `loc-${lat.toFixed(2)}-${lon.toFixed(2)}`,

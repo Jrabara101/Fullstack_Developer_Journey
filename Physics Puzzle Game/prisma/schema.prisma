@@ -1,0 +1,41 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Level {
+  id               String   @id
+  title            String
+  author           String
+  chapter          String?
+  description      String?
+  seed             String?
+  dimensions       String
+  emitter          String
+  goal             String
+  staticBodies     String
+  allowedInventory String
+  parItems         Int
+  isDaily          Boolean  @default(false)
+  dailyDate        String?
+  createdAt        DateTime @default(now())
+}
+
+model VerifiedSolution {
+  id                 String   @id @default(cuid())
+  levelId            String
+  playerHandle       String
+  gadgetsUsed        Int
+  elapsedMs          Int
+  bounces            Int
+  maxVelocity        Int
+  kineticEnergyScore Int
+  stars              Int
+  emojiCard          String
+  placements         String
+  createdAt          DateTime @default(now())
+}

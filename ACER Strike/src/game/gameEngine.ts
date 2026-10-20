@@ -166,7 +166,7 @@ export class GameEngine {
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     // 2. Initialize Subsystems
     this.mapBuilder = new MapBuilder(this.scene);
@@ -217,7 +217,7 @@ export class GameEngine {
     this.initBots();
 
     // 5. Start Round 1
-    this.startNewRound();
+    this.startNewRound({ silent: true });
   }
 
   private initBots() {
@@ -240,12 +240,12 @@ export class GameEngine {
     this.playerRig = new CharacterRig(team, true);
     this.scene.add(this.playerRig.root);
     this.playerRig.setWeapon(this.activeWeapon.id);
-    this.startNewRound();
+    this.startNewRound({ silent: true });
   }
 
-  public startNewRound() {
+  public startNewRound(options: { silent?: boolean } = {}) {
     this.roundState = 'FREEZE_TIME';
-    this.roundTimeRemaining = 15; // 15-second freeze-time / buy period
+    this.roundTimeRemaining = 4; // Quick 4-second freeze-time / buy period
     this.bombPlanted = false;
     this.bombTimer = 45;
     this.bombPlantProgress = 0;
@@ -272,11 +272,22 @@ export class GameEngine {
     // Spawn point based on team
     const spawns = this.playerTeam === 'CT' ? this.mapBuilder.ctSpawns : this.mapBuilder.tSpawns;
     const spawnPos = spawns[0].clone();
+    const floorY = this.mapBuilder.getFloorHeightAt(spawnPos.x, spawnPos.z, spawnPos.y);
+    spawnPos.y = floorY;
     this.playerPos.copy(spawnPos);
     this.playerVel.set(0, 0, 0);
-    this.playerYaw = this.playerTeam === 'CT' ? 0 : Math.PI;
+    this.isGrounded = true;
+    // CT at Z=-28 faces South (+Z, towards Bombsite A => yaw = Math.PI).
+    // T at Z=+28 faces North (-Z, towards Bombsite A => yaw = 0).
+    this.playerYaw = this.playerTeam === 'CT' ? Math.PI : 0;
     this.playerPitch = 0;
-    this.playerRig.reset(spawnPos, this.playerYaw);
+
+    // Point character straight along camera point of view
+    const initialCamEuler = new THREE.Euler(this.playerPitch, this.playerYaw, 0, 'YXZ');
+    const initialCamQuat = new THREE.Quaternion().setFromEuler(initialCamEuler);
+    const initialCamForward = new THREE.Vector3(0, 0, -1).applyQuaternion(initialCamQuat);
+    const initialFacingYaw = Math.atan2(initialCamForward.x, initialCamForward.z);
+    this.playerRig.reset(spawnPos, initialFacingYaw);
 
     // Assign C4 to player if T team, or to a T bot
     if (this.playerTeam === 'T') {
@@ -295,17 +306,21 @@ export class GameEngine {
     this.bots.forEach((bot) => {
       const isBombCarrier = this.playerTeam !== 'T' && bot.team === 'T' && tIndex === 0;
       if (bot.team === 'T') {
-        const sp = tSpawns[tIndex % tSpawns.length];
+        const sp = tSpawns[tIndex % tSpawns.length].clone();
+        sp.y = this.mapBuilder.getFloorHeightAt(sp.x, sp.z, sp.y);
         bot.initRound(sp, this.mapBuilder, isBombCarrier);
         tIndex++;
       } else {
-        const sp = ctSpawns[ctIndex % ctSpawns.length];
+        const sp = ctSpawns[ctIndex % ctSpawns.length].clone();
+        sp.y = this.mapBuilder.getFloorHeightAt(sp.x, sp.z, sp.y);
         bot.initRound(sp, this.mapBuilder, false);
         ctIndex++;
       }
     });
 
-    soundEngine.playRadio('Prepare to fight.');
+    if (!options.silent) {
+      soundEngine.playRadio('Prepare to fight.');
+    }
   }
 
   // --- WEAPON & INVENTORY MANAGEMENT ---
@@ -1059,7 +1074,18 @@ export class GameEngine {
     // 5. Update Player Rig
     const speedRatio = this.playerVel.length() / 5.2;
     this.playerRig.root.position.copy(this.playerPos);
-    this.playerRig.root.rotation.y = this.playerYaw;
+
+    // Calculate camera forward vector on horizontal plane (Point of View)
+    const camEuler = new THREE.Euler(this.playerPitch, this.playerYaw, 0, 'YXZ');
+    const camQuat = new THREE.Quaternion().setFromEuler(camEuler);
+    const camForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camQuat);
+    const forwardHoriz = new THREE.Vector3(camForward.x, 0, camForward.z).normalize();
+
+    // The character faces straight in the direction of its point of view!
+    const facingYaw = Math.atan2(forwardHoriz.x, forwardHoriz.z);
+    this.playerRig.root.rotation.y = facingYaw;
+    this.playerRig.bodyFacingYaw = facingYaw;
+
     this.playerRig.updateAnimation(
       delta,
       this.movementState,
@@ -1161,18 +1187,28 @@ export class GameEngine {
     walk: boolean;
   }) {
     if (this.roundState === 'FREEZE_TIME') {
-      this.playerVel.set(0, 0, 0);
-      this.movementState = 'IDLE';
-      return;
+      const wantsToMove = input.moveForward || input.moveBackward || input.moveLeft || input.moveRight || input.jump;
+      if (wantsToMove) {
+        // Player pushed movement: immediately start the round so they aren't stuck waiting!
+        this.roundState = 'IN_PROGRESS';
+        this.roundTimeRemaining = 105;
+        soundEngine.playRadio('Go go go!');
+      } else {
+        this.playerVel.set(0, 0, 0);
+        this.movementState = 'IDLE';
+        return;
+      }
     }
 
     this.isCrouching = input.crouch;
     this.isWalking = input.walk;
 
-    // Movement Direction based on Player Yaw
+    // Movement Direction based on Camera Point of View
     const wishDir = new THREE.Vector3();
-    const forward = new THREE.Vector3(Math.sin(this.playerYaw), 0, Math.cos(this.playerYaw));
-    const right = new THREE.Vector3(forward.z, 0, -forward.x);
+    const camEuler = new THREE.Euler(0, this.playerYaw, 0, 'YXZ');
+    const camQuat = new THREE.Quaternion().setFromEuler(camEuler);
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camQuat);
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camQuat);
 
     if (input.moveForward) wishDir.add(forward);
     if (input.moveBackward) wishDir.sub(forward);
@@ -1233,11 +1269,16 @@ export class GameEngine {
     // Apply Velocity to Position with Collision Resolution
     const nextPos = this.playerPos.clone().addScaledVector(this.playerVel, delta);
 
-    // Floor collision
-    if (nextPos.y <= 0) {
-      nextPos.y = 0;
+    // Floor collision & Ground contact
+    const floorY = this.mapBuilder.getFloorHeightAt(nextPos.x, nextPos.z, nextPos.y);
+    if (nextPos.y <= floorY) {
+      nextPos.y = floorY;
       this.playerVel.y = 0;
       this.isGrounded = true;
+    } else {
+      if (this.isGrounded && nextPos.y - floorY > 0.15) {
+        this.isGrounded = false;
+      }
     }
 
     // Map AABB Box Collisions

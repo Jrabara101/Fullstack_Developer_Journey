@@ -1,0 +1,81 @@
+{
+  "profiles": {
+    "usr_7f8a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c": {
+      "id": "usr_7f8a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+      "username": "alexvance",
+      "display_name": "Alex Vance",
+      "headline": "Staff Systems Architect & Product Craftsman",
+      "bio": "Building resilient distributed web systems, spatial interfaces, and zero-anxiety identity primitives. Obsessed with sub-millisecond tactile UI interactions.",
+      "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=512&q=80",
+      "banner_url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80",
+      "avatar_alt_text": "Alex wearing modern architectural studio attire in soft warm daylight",
+      "website_url": "https://alexvance.design",
+      "email": "alex.vance@atelier.systems",
+      "phone": "+1 (555) 382-9014",
+      "social_links": {
+        "github": "alexvance",
+        "x": "alexvance_dev",
+        "linkedin": "alex-vance-arch",
+        "mastodon": "@alex@indieweb.social"
+      },
+      "visibility_settings": {
+        "email": "private",
+        "phone": "private",
+        "real_name": "public",
+        "activity_status": "team",
+        "social_links": "public"
+      },
+      "locale_preferences": {
+        "timezone": "America/New_York",
+        "time_format": "24h",
+        "week_start": "monday",
+        "number_separator": "comma",
+        "language": "en"
+      },
+      "theme_preference": "dark",
+      "density_preference": "cozy",
+      "quiet_hours": {
+        "enabled": true,
+        "start": "22:00",
+        "end": "07:30"
+      },
+      "discoverable_by_search": true,
+      "account_status": "active",
+      "created_at": "2024-03-15T10:00:00.000Z",
+      "updated_at": "2026-10-12T00:52:33.931Z"
+    }
+  },
+  "otherUsernames": [
+    "admin",
+    "root",
+    "support",
+    "linear",
+    "raycast",
+    "johndoe",
+    "sarah"
+  ],
+  "account_deletions": [],
+  "audit_logs": [
+    {
+      "id": "log_init_001",
+      "user_id": "usr_7f8a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+      "action": "account_created",
+      "details": {
+        "method": "sso_google"
+      },
+      "ip_address": "192.168.1.42",
+      "created_at": "2024-03-15T10:00:00.000Z"
+    },
+    {
+      "id": "log_init_002",
+      "user_id": "usr_7f8a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+      "action": "avatar_updated",
+      "details": {
+        "format": "webp",
+        "size_bytes": 48200
+      },
+      "ip_address": "192.168.1.42",
+      "created_at": "2026-09-01T14:22:00.000Z"
+    }
+  ]
+}

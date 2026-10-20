@@ -44,7 +44,7 @@ locationsRouter.post('/', (req: Request, res: Response) => {
 
 // PATCH update location
 locationsRouter.patch('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const updated = dbService.updateLocation(id, req.body);
   if (!updated) {
     return res.status(404).json({ error: 'Location not found' });
@@ -54,7 +54,7 @@ locationsRouter.patch('/:id', (req: Request, res: Response) => {
 
 // DELETE location
 locationsRouter.delete('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const success = dbService.deleteLocation(id);
   res.json({ success });
 });

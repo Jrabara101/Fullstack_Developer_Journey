@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#111317;}body{overscroll-behavior:none;color:#e2e2e8;font-family:'Inter',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-background": "#e2e2e8", "tertiary-fixed-dim": "#65dcab", "surface-bright": "#37393e", "text-muted": "#6B7280", "secondary": "#e6bcc5", "on-tertiary-fixed": "#002115", "burst-glow": "#FF6482", "on-secondary-container": "#d4abb4", "on-error-container": "#ffdad6", "tertiary-fixed": "#82f9c6", "outline": "#ad8888", "surface-container-high": "#282a2e", "primary": "#ffb3b5", "on-surface": "#e2e2e8", "secondary-fixed-dim": "#e6bcc5", "surface": "#111317", "on-primary": "#680019", "inverse-on-surface": "#2f3035", "text-primary": "#F3F4F6", "error": "#ffb4ab", "on-primary-fixed": "#40000c", "error-container": "#93000a", "primary-fixed-dim": "#ffb3b5", "tertiary-container": "#1fa478", "on-tertiary-container": "#003121", "inverse-surface": "#e2e2e8", "inverse-primary": "#be0036", "on-secondary-fixed": "#2c141b", "on-secondary-fixed-variant": "#5d3e46", "on-tertiary-fixed-variant": "#005139", "surface-container": "#1e2024", "surface-container-lowest": "#0c0e12", "on-primary-container": "#5b0015", "tertiary": "#65dcab", "secondary-fixed": "#ffd9e1", "card-border": "#262A34", "surface-container-low": "#1a1c20", "on-secondary": "#442830", "background": "#111317", "surface-dim": "#111317", "primary-fixed": "#ffdada", "secondary-container": "#5d3e46", "outline-variant": "#5d3f40", "surface-tint": "#ffb3b5", "primary-container": "#ff5167", "surface-container-highest": "#333539", "surface-variant": "#333539", "on-tertiary": "#003826", "card-surface": "#161920", "icon-unliked": "#E5E7EB", "on-surface-variant": "#e6bcbd", "on-primary-fixed-variant": "#920027", "text-secondary": "#9CA3AF", "on-error": "#690005" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.625rem", "space-xl": "1.5rem", "margin": "0.75rem", "space-lg": "1rem", "space-xs": "0.375rem", "space-md": "0.75rem", "gutter": "0.75rem" }, "fontFamily": { "headline-sm": ["Inter"], "label-sm": ["Inter"], "body-md": ["Inter"], "body-semibold": ["Inter"], "headline-md": ["Inter"], "label-md": ["Inter"] }, "fontSize": { "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-semibold": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["13px", { "lineHeight": "18px", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary-container text-[24px]">bolt</span><span class="font-headline-md text-headline-md text-text-primary tracking-tight">Kinetic</span></div><div class="flex items-center gap-space-xs"><button aria-label="Activity and Messages" class="w-11 h-11 flex items-center justify-center text-icon-unliked hover:text-text-primary transition-colors"><span class="material-symbols-outlined text-[24px]">chat_bubble</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-14 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full text-on-surface select-none pb-4">
+<!-- Interactive State Selector Bar -->
+<!-- Horizontal Stories Carousel -->
+<div class="w-full overflow-x-auto no-scrollbar py-2.5 pl-margin">
+<div class="flex items-center gap-3 pr-margin">
+<!-- Your Story (+ Add) -->
+<div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+<div class="relative w-14 h-14 rounded-full bg-surface-container flex items-center justify-center p-0.5 group-active:scale-95 transition-transform">
+<div class="w-full h-full rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-text-secondary text-[24px]">person</span>
+</div>
+<div class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[12px] font-bold">add</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary">Your story</span>
+</div>
+<!-- Elena Rostova (Active Story - Glowing ring) -->
+<div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+<div class="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-primary-container via-primary to-burst-glow shadow-[0_0_12px_rgba(255,81,103,0.35)] group-active:scale-95 transition-transform">
+<div class="w-full h-full rounded-full bg-surface p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="A portrait of Elena Rostova, a young woman with warm natural lighting, minimalist high-fashion aesthetic, dark cinematic background, editorial social profile style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtCWfLKnx1njmj2lHv2_ilmtcGEyC-d648Amkl0llRLVQj426-2zGFMx1wM1PVJlS4PALk-0kqO1x-YZNaAoyt_g9mv7tVYwCbrtm7clFoohqmGWKjRbvSnIeSv1E0gH0B3t9wq5znPWQp6gIs4gHITTh0vA_X29IV6oJd9wsej1opvzYtMgpUszO7SRfFs6WcnqTo9YgHCcjJDZxg3GmlctE7WuQ0W7Z36SXJX7I"/>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-text-primary font-medium truncate w-14 text-center">elena.rost...</span>
+</div>
+<!-- Marcus V -->
+<div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+<div class="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-primary-container via-secondary to-burst-glow group-active:scale-95 transition-transform">
+<div class="w-full h-full rounded-full bg-surface p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="A close portrait of a photographer Marcus with warm studio rim lighting, neutral dark clothing, modern Scandinavian street photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuJjliev6Noll6WSZkEBLa7dEnL5LP2I7bjJB6mqYFGAgBkjmHwxtNMq40qRQnbbRrkRW8CAe7M1Uu7rXg4Fd5RfEbTh--u4_1VB_6DcMkAAZmheUsW2v5FcTPT1uCDNNS0hbXL17R5zp7h0A7hQxY9kwyHXJr4hY5gLyI83gDvdOXUFsCFTVNJYyhuLr6w18yoXvznuse2sYIDwU3CyrM4fchzsfyOvGyG3yM4tk"/>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary truncate w-14 text-center">marcus.v</span>
+</div>
+<!-- Studio Koto -->
+<div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+<div class="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-primary-container to-secondary group-active:scale-95 transition-transform">
+<div class="w-full h-full rounded-full bg-surface p-0.5">
+<div class="w-full h-full rounded-full bg-surface-container flex items-center justify-center font-headline-sm text-headline-sm text-primary">
+              K
+            </div>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary truncate w-14 text-center">studio.koto</span>
+</div>
+<!-- Kai Design -->
+<div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+<div class="w-14 h-14 rounded-full p-[2px] bg-surface-container-high group-active:scale-95 transition-transform">
+<div class="w-full h-full rounded-full bg-surface p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Portrait avatar of an industrial designer with glasses, high contrast shadows, neon magenta and soft cyan background reflections, Tokyo studio aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvfrNPPAb1-W17jpyokyuWXWdXSYFFUOBtBWWjgFyt7Vq870IlVYTRQPUUgG31sOjcsES2WKXDJu6lxXjy2ZNQgszYFzJ1b8Plnicj_cJKWlOIm63MqcexIn8S5bCXU40zvA4r92alpOY4YL68kYBAte7UcDXtwODjhHGrBc4u68Jqbiqy5WDjGc_sNaOzAtO3RFIrzz0aWRwDWMoQDhVHwcDTTDT2eDxVYedB_HM"/>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted truncate w-14 text-center">kai.design</span>
+</div>
+</div>
+</div>
+<!-- Subtle Top Context Proof Strip -->
+<div class="px-margin mt-1 mb-2">
+<div class="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-surface-container-low/40">
+<span class="material-symbols-outlined text-text-secondary text-[15px]">history</span>
+<p class="font-label-sm text-label-sm text-text-secondary truncate">
+        Liked by <span class="text-text-primary font-medium">@marcus.v</span> and 412 others <span class="opacity-50">•</span> 2h ago
+      </p>
+</div>
+</div>
+<!-- Primary Featured Feed Card -->
+<section class="mx-margin rounded-2xl bg-card-surface shadow-xl overflow-hidden flex flex-col relative transition-all duration-300">
+<!-- Post Header (56px standard) -->
+<div class="h-14 px-3 flex items-center justify-between">
+<div class="flex items-center gap-2.5 min-w-0">
+<!-- Avatar with Active Gradient Ring -->
+<div class="w-9 h-9 rounded-full p-[1.5px] bg-gradient-to-tr from-primary-container to-burst-glow flex-shrink-0 cursor-pointer">
+<div class="w-full h-full rounded-full bg-surface p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Close up face profile of Elena Rostova, warm moody ambient greenhouse light, natural skin tones, deep black background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqDUZdpCkVCsPSatRLslty2QFZ0lGmWWKsz4HNWSEQ5yLJYAuwx-iCaIWL1GFohBI6coxnl0Clzq1tVWp-jwvZT9a0oq1GUweeLKz6d25soqUolJBbbPEcyz-CZMezjLz1ianW0NF0yC-_UX4VVJCcPXnjl9yF0AJj5FKq-hWvVjFd6cjg2oM-MBpHLPikNdMhj2347G4Hen_7T-IuFh58ywIeIXLaPE7nPtfQL6E"/>
+</div>
+</div>
+<!-- Author + Location Meta -->
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-body-semibold text-body-semibold text-text-primary truncate">elena.rostova</span>
+<span class="material-symbols-outlined text-primary-container text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary truncate">Kyoto Botanical Conservatory • 14m</span>
+</div>
+</div>
+<!-- Overflow Action -->
+<button aria-label="Post options" class="w-11 h-11 flex items-center justify-center text-icon-unliked hover:text-text-primary transition-colors rounded-full active:bg-surface-container-high/40">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</div>
+<!-- Media Canvas Target (4:5 Ratio) with Double-Tap Kinetic Feedback -->
+<div class="relative w-full aspect-[4/5] bg-surface-container-lowest overflow-hidden cursor-pointer select-none" id="media-viewport" onclick="handleFeedImageTap(event)">
+<!-- Target Kyoto Greenhouse Image -->
+<img class="w-full h-full object-cover transition-transform duration-300 ease-out will-change-transform rounded-xl" data-alt="Majestic towering cathedral-like botanical conservatory with steep A-frame timber and black steel architecture. Dense lush green tree ferns, palms, and subtropical flora fill the humid interior. A lone female traveler walks down a wet wooden boardwalk path enveloped in subtle ethereal morning mist, soft diffused skylight through glass panes." id="primary-photo" src="https://lh3.googleusercontent.com/aida/AEtjO1XcmvCENU84kmoqRlXlNk74-9upCB8tixCyWGkIlghiaQ00yFqvm4cuVyK7vMqTsRRwDOlqUy4SiQYQUgaULsJyGvbFv8LXgoDScq8zMOgVU3S0Mhjl1EjRgQgjIT1uc7rJphdyYwZOwRNzjwkmftKgpFTcPmPtv_G3pubDD7XyJhXe7EfrPBF_k4-f5m6qXXe7SOz42_wNiOz__EkGfzUiYYXPm0LKTLqUGvQy-EM4xlb91qc70nisxkU"/>
+<!-- Ambient Edge Shadow Gradients for contrast -->
+<div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+<!-- Kinetic Double-Tap Burst Overlay (Centrally/Tap Positioned) -->
+<!-- In-Photo Settled Liked Badge (Floating bottom-left pill) -->
+<!-- Location Tag Floating Badge (Top Right) -->
+<div class="absolute top-3 right-3 z-10">
+<div class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/70 backdrop-blur-md">
+<span class="material-symbols-outlined text-text-secondary text-[13px]">location_on</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Kyoto, JP</span>
+</div>
+</div>
+<!-- Double Tap Hint Scrim Overlay (Shown on hover/initial state) -->
+</div>
+<!-- Engagement & Micro-Interaction Action Row -->
+<div class="px-3 pt-3 pb-1 flex items-center justify-between">
+<!-- Left Action Cluster -->
+<div class="flex items-center gap-3">
+<!-- Liked / Unliked Pill Button -->
+<button aria-label="Like Post" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 shadow-[0_2px_12px_rgba(255,45,85,0.25)]" id="like-pill" onclick="toggleLikeState()" style="background-color: rgba(255, 45, 85, 0.16); border: 1px solid #FF2D55;"><span class="material-symbols-outlined text-[20px] transition-transform duration-200" id="like-icon" style="font-variation-settings: 'FILL' 1; color: #FF2D55;">favorite</span><span class="font-body-semibold text-body-semibold tabular-nums tracking-tight font-bold" id="like-counter" style="color: #FF2D55;">1,285</span></button>
+<!-- Comments Action -->
+<button aria-label="Comments" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-text-secondary hover:text-text-primary active:bg-surface-container-high transition-colors min-h-[44px]">
+<span class="material-symbols-outlined text-icon-unliked text-[22px]">mode_comment</span>
+<span class="font-body-semibold text-body-semibold text-text-secondary tabular-nums">42</span>
+</button>
+<!-- Share Action -->
+<button aria-label="Share Post" class="w-11 h-11 flex items-center justify-center text-icon-unliked hover:text-text-primary active:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined text-[22px]">send</span>
+</button>
+</div>
+<!-- Right Action Ribbon -->
+<div class="flex items-center">
+<button aria-label="Save to Bookmarks" class="w-11 h-11 flex items-center justify-center text-icon-unliked hover:text-text-primary active:scale-90 transition-all rounded-full" id="bookmark-btn" onclick="toggleBookmark()">
+<span class="material-symbols-outlined text-[22px]" id="bookmark-icon">bookmark</span>
+</button>
+</div>
+</div>
+<!-- Caption & Comment Thread Metadata -->
+<div class="px-3 pb-3.5 pt-1 flex flex-col gap-1.5">
+<!-- Truncated Editorial Caption -->
+<p class="font-body-md text-body-md text-text-primary leading-snug">
+<span class="font-body-semibold text-body-semibold mr-1.5 text-text-primary">elena.rostova</span>Morning mist settling over the Victorian glasshouse ferns before the gates open... <button class="text-text-muted hover:text-text-secondary transition-colors font-medium">more</button>
+</p>
+<!-- View all comments snippet -->
+<button class="self-start font-label-sm text-label-sm text-text-muted hover:text-text-secondary transition-colors mt-0.5">
+        View all 42 comments
+      </button>
+<!-- Micro Timestamp -->
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider text-[11px]">14 minutes ago</span>
+<span class="w-1 h-1 rounded-full bg-text-muted opacity-40"></span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim">Trending in Architecture</span>
+</div>
+</div>
+</section>
+<!-- Context Bleed Preview: Next Post in Stream -->
+<section class="mx-margin mt-2.5 rounded-t-2xl bg-card-surface/90 shadow-md overflow-hidden flex flex-col opacity-90 transition-opacity">
+<!-- Next Post Header -->
+<div class="h-14 px-3 flex items-center justify-between">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-full bg-surface-container p-0.5 flex-shrink-0">
+<div class="w-full h-full rounded-full bg-surface-container-high flex items-center justify-center font-headline-sm text-headline-sm text-primary">
+            K
+          </div>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-body-semibold text-body-semibold text-text-primary truncate">studio.koto</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-secondary truncate">Tokyo, Japan • 38m</span>
+</div>
+</div>
+<button aria-label="Post options" class="w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+</div>
+<!-- Peek top preview slice of image -->
+<div class="w-full h-20 bg-surface-container-low overflow-hidden relative">
+<img class="w-full h-44 object-cover -translate-y-2" data-alt="Modern Japanese concrete minimalist architecture with cast shadows and warm timber screen partitions in Shibuya Tokyo, twilight ambient lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuopt5SkTgzVZUZd5KK49LB_-az3TMr0-1WpYZdlWXjPZQRemUw7jBC6qbxt_SjTa70cUQsv4yDNIm3eBxsAcRluQJdsBubne0SHSoXb_dXrYQ3ExpDsyQNgOlC7MZtB5_c2EnhbW2u44_Mwi1QBZlRV7lckux6m9PDOFwO9RNkiT83epYFboTYKAxBlxMrV_qaaV7Fugkhx5HDh1NFtGbATnbFJ04-HToQ_HiAAY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+</div>
+</section>
+</div>
+<script>
+  let isLiked = true;
+  let lastTapTime = 0;
+  let burstTimeout = null;
+
+  function updateUIState() {
+    const likePill = document.getElementById('like-pill');
+    const likeIcon = document.getElementById('like-icon');
+    const likeCounter = document.getElementById('like-counter');
+    const photoLikedBadge = document.getElementById('photo-liked-badge');
+
+    if (isLiked) {
+      // Liked State
+      likePill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 bg-on-primary-container/40 text-primary-container shadow-[0_2px_12px_rgba(255,81,103,0.25)]";
+      likeIcon.style.fontVariationSettings = "'FILL' 1";
+      likeIcon.classList.add('text-primary-container');
+      likeCounter.textContent = "1,285";
+      likeCounter.className = "font-body-semibold text-body-semibold tabular-nums tracking-tight text-primary-container";
+
+      photoLikedBadge.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+      photoLikedBadge.classList.add('opacity-100', 'translate-y-0');
+    } else {
+      // Resting Unliked State
+      likePill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 active:scale-95 bg-surface-container-high/60 text-text-secondary hover:text-text-primary";
+      likeIcon.style.fontVariationSettings = "'FILL' 0";
+      likeIcon.classList.remove('text-primary-container');
+      likeCounter.textContent = "1,284";
+      likeCounter.className = "font-body-semibold text-body-semibold tabular-nums tracking-tight text-text-secondary";
+
+      photoLikedBadge.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+      photoLikedBadge.classList.remove('opacity-100', 'translate-y-0');
+    }
+  }
+
+  function triggerBurstAnimation() {
+    const burstContainer = document.getElementById('kinetic-burst-container');
+    const heartIcon = document.getElementById('burst-heart-icon');
+    const photo = document.getElementById('primary-photo');
+
+    // Tactile press bounce on the photo canvas
+    photo.style.transform = "scale(0.985)";
+    setTimeout(() => {
+      photo.style.transform = "scale(1)";
+    }, 180);
+
+    // Show burst container
+    burstContainer.classList.remove('opacity-0');
+    burstContainer.classList.add('opacity-100');
+
+    // Pop scale heart icon
+    heartIcon.style.transform = "scale(1.25)";
+    setTimeout(() => {
+      heartIcon.style.transform = "scale(1)";
+    }, 160);
+
+    clearTimeout(burstTimeout);
+    burstTimeout = setTimeout(() => {
+      burstContainer.classList.remove('opacity-100');
+      burstContainer.classList.add('opacity-0');
+    }, 850);
+  }
+
+  function handleFeedImageTap(e) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+
+    if (tapLength < 320 && tapLength > 0) {
+      // Double Tap detected!
+      isLiked = true;
+      updateUIState();
+      triggerBurstAnimation();
+      updateTogglePill('liked');
+    } else {
+      // Single tap feedback indicator
+      const photo = document.getElementById('primary-photo');
+      photo.style.transform = "scale(0.995)";
+      setTimeout(() => {
+        photo.style.transform = "scale(1)";
+      }, 120);
+    }
+    lastTapTime = currentTime;
+  }
+
+  function toggleLikeState() {
+    isLiked = !isLiked;
+    updateUIState();
+    if (isLiked) {
+      triggerBurstAnimation();
+      updateTogglePill('liked');
+    } else {
+      updateTogglePill('resting');
+    }
+  }
+
+  function setBurstMode(mode) {
+    updateTogglePill(mode);
+    if (mode === 'resting') {
+      isLiked = false;
+      updateUIState();
+      const burstContainer = document.getElementById('kinetic-burst-container');
+      burstContainer.classList.add('opacity-0');
+      burstContainer.classList.remove('opacity-100');
+    } else if (mode === 'burst') {
+      isLiked = true;
+      updateUIState();
+      triggerBurstAnimation();
+    } else if (mode === 'liked') {
+      isLiked = true;
+      updateUIState();
+    }
+  }
+
+  function updateTogglePill(activeMode) {
+    const btnResting = document.getElementById('state-resting-btn');
+    const btnBurst = document.getElementById('state-burst-btn');
+    const btnLiked = document.getElementById('state-liked-btn');
+
+    [btnResting, btnBurst, btnLiked].forEach(btn => {
+      btn.className = "px-2.5 py-0.5 rounded-full font-label-sm text-label-sm text-text-secondary transition-all hover:text-text-primary";
+    });
+
+    const activeBtn = activeMode === 'resting' ? btnResting : (activeMode === 'burst' ? btnBurst : btnLiked);
+    activeBtn.className = "px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary font-semibold shadow-sm transition-all";
+  }
+
+  function toggleBookmark() {
+    const icon = document.getElementById('bookmark-icon');
+    const btn = document.getElementById('bookmark-btn');
+    const isFilled = icon.style.fontVariationSettings.includes("'FILL' 1");
+    if (isFilled) {
+      icon.style.fontVariationSettings = "'FILL' 0";
+      icon.classList.remove('text-primary');
+    } else {
+      icon.style.fontVariationSettings = "'FILL' 1";
+      icon.classList.add('text-primary');
+      btn.classList.add('scale-110');
+      setTimeout(() => btn.classList.remove('scale-110'), 200);
+    }
+  }
+
+  // Initialize
+  updateUIState();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.4)]" data-active-classes="text-primary-container"><div class="h-16 px-gutter flex items-center justify-around"><a aria-current="page" aria-label="Home" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] transition-colors text-primary-container" data-path="home-feed" href="#"><span class="material-symbols-outlined text-[26px]">home</span><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a aria-label="Discover" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-text-secondary hover:text-text-primary transition-colors" data-path="discover" href="#"><span class="material-symbols-outlined text-[26px]">search</span><span class="font-label-sm text-label-sm mt-0.5">Discover</span></a><a aria-label="Create" class="flex items-center justify-center min-w-[44px] min-h-[44px]" data-path="create-post" href="#"><div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-[0_4px_16px_rgba(255,81,103,0.35)] hover:scale-105 active:scale-95 transition-transform"><span class="material-symbols-outlined text-[24px]">add</span></div></a><a aria-label="Activity" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-text-secondary hover:text-text-primary transition-colors" data-path="activity" href="#"><span class="material-symbols-outlined text-[26px]">favorite</span><span class="font-label-sm text-label-sm mt-0.5">Activity</span></a><a aria-label="Profile" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-text-secondary hover:text-text-primary transition-colors" data-path="user-profile" href="#"><span class="material-symbols-outlined text-[26px]">person</span><span class="font-label-sm text-label-sm mt-0.5">Profile</span></a></div></nav>
+</body></html>

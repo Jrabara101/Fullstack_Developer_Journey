@@ -25,7 +25,7 @@ commuteRouter.post('/', (req: Request, res: Response) => {
 
 // DELETE commute route
 commuteRouter.delete('/:id', (req: Request, res: Response) => {
-  const success = commuteService.deleteRoute(req.params.id);
+  const success = commuteService.deleteRoute(req.params.id as string);
   res.json({ success });
 });
 

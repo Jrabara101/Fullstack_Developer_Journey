@@ -201,23 +201,23 @@ export class MapBuilder {
     this.createCrate(-24, 0.9, 8, 3.5, 1.8, 1.5, concreteMat);
     this.createCrate(-26, 1.0, -12, 2.2, 2.2, 2.2, greenCrateMat);
 
-    // 6. Spawn Locations
+    // 6. Spawn Locations (Floor height at Y = 0)
     // CT Spawn (North defense side)
     this.ctSpawns = [
-      new THREE.Vector3(0, 0.5, -28),
-      new THREE.Vector3(3, 0.5, -28),
-      new THREE.Vector3(-3, 0.5, -28),
-      new THREE.Vector3(6, 0.5, -30),
-      new THREE.Vector3(-6, 0.5, -30),
+      new THREE.Vector3(0, 0, -28),
+      new THREE.Vector3(3, 0, -28),
+      new THREE.Vector3(-3, 0, -28),
+      new THREE.Vector3(6, 0, -30),
+      new THREE.Vector3(-6, 0, -30),
     ];
 
     // T Spawn (South attack side)
     this.tSpawns = [
-      new THREE.Vector3(0, 0.5, 28),
-      new THREE.Vector3(3, 0.5, 28),
-      new THREE.Vector3(-3, 0.5, 28),
-      new THREE.Vector3(6, 0.5, 30),
-      new THREE.Vector3(-6, 0.5, 30),
+      new THREE.Vector3(0, 0, 28),
+      new THREE.Vector3(3, 0, 28),
+      new THREE.Vector3(-3, 0, 28),
+      new THREE.Vector3(6, 0, 30),
+      new THREE.Vector3(-6, 0, 30),
     ];
 
     // 7. Navigation Waypoints for Tactical Bot AI
@@ -309,5 +309,27 @@ export class MapBuilder {
   public isInsideBombSite(pos: THREE.Vector3): boolean {
     const distSq = pos.x * pos.x + pos.z * pos.z;
     return distSq <= this.bombSiteA.radius * this.bombSiteA.radius && pos.y < 3.0;
+  }
+
+  /**
+   * Returns the exact floor / platform height at the given (x, z) coordinates.
+   * Checks floor colliders (Bombsite A platform, Catwalk, ramps) and defaults to ground level (Y = 0).
+   */
+  public getFloorHeightAt(x: number, z: number, currentY: number = 0): number {
+    let highestFloor = 0; // Ground floor is at Y = 0
+
+    for (const collider of this.colliders) {
+      if (collider.type !== 'FLOOR') continue;
+      const box = collider.box;
+      if (x >= box.min.x - 0.2 && x <= box.max.x + 0.2 && z >= box.min.z - 0.2 && z <= box.max.z + 0.2) {
+        const topY = box.max.y;
+        if (currentY >= topY - 0.7) {
+          if (topY > highestFloor) {
+            highestFloor = topY;
+          }
+        }
+      }
+    }
+    return highestFloor;
   }
 }

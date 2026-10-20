@@ -127,8 +127,8 @@ export class WeatherService {
       throw new Error(`Open-Meteo HTTP ${weatherRes.status}`);
     }
 
-    const weatherData = await weatherRes.json();
-    const aqiData = aqiRes && aqiRes.ok ? await aqiRes.json() : null;
+    const weatherData: any = await weatherRes.json();
+    const aqiData: any = aqiRes && aqiRes.ok ? await aqiRes.json() : null;
 
     const currentRaw = weatherData.current;
     const hourlyRaw = weatherData.hourly;

@@ -1,0 +1,11 @@
+{
+  "name": "fantasy-battle-arena",
+  "version": "1.0.0",
+  "description": "Fantasy Battle Arena - Soulslike Top-Down Browser Combat with Adaptive Enemy AI",
+  "scripts": {
+    "dev:server": "npm --prefix server run start",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build"
+  }
+}
