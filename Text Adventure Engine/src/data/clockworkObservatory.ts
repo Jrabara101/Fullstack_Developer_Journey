@@ -1,0 +1,281 @@
+import { StoryCartridge } from '../types/engine';
+
+export const CLOCKWORK_OBSERVATORY: StoryCartridge = {
+  id: 'clockwork_observatory',
+  title: 'The Clockwork Observatory',
+  author: 'Master Horologist Alden Vance',
+  version: '1.2.0',
+  synopsis: 'Perched high atop the mist-shrouded spires of Mount Astrea, the centuries-old observatory hums with forgotten celestial clockwork. Its temporal core is failing, warping time itself. You must align the planetary orrery, breach the Chronos Vault, and prevent a temporal collapse.',
+  startingRoomId: 'vestibule',
+  initialFlags: {
+    astrolabe_aligned: false,
+    orrery_spinning: false,
+    vault_unlocked: false,
+    prism_placed: false,
+    core_stabilized: false,
+  },
+  initialVariables: {
+    chronos_ticks: 0,
+    calibrated_dials: 0,
+  },
+  entities: {
+    brass_astrolabe: {
+      id: 'brass_astrolabe',
+      name: 'Grand Astrolabe',
+      aliases: ['astrolabe', 'dais', 'bronze dais'],
+      description: 'A three-tiered brass sphere engraved with zodiacal coordinates and celestial houses. The inner ring has fallen out of true.',
+      isTakeable: false,
+      isUsable: true,
+      onInspectText: 'The gilded rings feature intricate star charts. You notice a dial currently set to the sign of the Serpent. Perhaps turning it toward the Phoenix will realign the celestial focus.',
+      onUseText: 'You turn the heavy outer ring. With a resonant metallic click, the dial snaps into alignment with the constellation of the Phoenix! In the north corridor, you hear the distant awakening of gears.',
+      setFlagsOnUse: ['astrolabe_aligned'],
+    },
+    brass_cog: {
+      id: 'brass_cog',
+      name: 'Toothed Brass Cog',
+      aliases: ['cog', 'brass gear', 'gear'],
+      description: 'A heavy, masterfully milled brass gear with twelve beveled teeth. Its center borehole has a keyed hex socket.',
+      isTakeable: true,
+      isUsable: true,
+      combineWithEntityId: 'star_spindle',
+      onInspectText: 'Heavily weighted and perfectly balanced. On its rim is stamped: "CHRONOS - RATIO 1:12". It looks designed to mate with a central drive spindle.',
+      onUseText: 'You test the teeth of the brass cog. It needs to be fitted onto a drive mechanism or spindle.',
+    },
+    star_spindle: {
+      id: 'star_spindle',
+      name: 'Star Spindle',
+      aliases: ['spindle', 'axle', 'star axle'],
+      description: 'A fluted bronze axle rod inscribed with microscopic stellar constellations. Both ends feature locking spring-pins.',
+      isTakeable: true,
+      isUsable: true,
+      combineWithEntityId: 'brass_cog',
+      onInspectText: 'A high-precision drive spindle. When combined with a keyed brass cog, it forms a complete Chronos Drive Key.',
+      onUseText: 'Holding the spindle to the light, tiny pinprick holes cast faint star-dots across your hands.',
+    },
+    chronometer_key: {
+      id: 'chronometer_key',
+      name: 'Assembled Chronos Key',
+      aliases: ['chronos key', 'key', 'drive key', 'chronometer'],
+      description: 'A calibrated mechanical apparatus fusing the star spindle and toothed brass cog. Its spring-pins click rhythmically in unison with the ambient hum.',
+      isTakeable: true,
+      isUsable: true,
+      onInspectText: 'The assembled key matches the dual-cylinder lock plate on the Chronos Vault door exactly.',
+      onUseText: 'You insert the Chronos Key into the twin-cylinder lock plate. Spring-pins depress with a satisfying mechanical clatter!',
+      unlocksExitDirection: 'east',
+    },
+    celestial_prism: {
+      id: 'celestial_prism',
+      name: 'Aether Prism',
+      aliases: ['prism', 'crystal', 'aether crystal', 'glass'],
+      description: 'A hand-ground hexagonal prism carved from iridescent aether-quartz. It refracts ambient light into shimmering ribbons of violet and gold.',
+      isTakeable: true,
+      isUsable: true,
+      onInspectText: 'Peering through the prism reveals faint hidden electromagnetic conduits running through the stone walls toward the zenith balcony.',
+      onUseText: 'You hold the prism up. It splits the dim twilight into a brilliant fan of prismatic spectrum.',
+    },
+    great_telescope: {
+      id: 'great_telescope',
+      name: 'Great Brass Telescope',
+      aliases: ['telescope', 'brass telescope', 'lens'],
+      description: 'A massive steampunk refractor telescope mounted on counterbalanced gimbals, aimed out through the domed roof toward the infinite night sky.',
+      isTakeable: false,
+      isUsable: true,
+      onInspectText: 'The primary eyepiece has an empty brass slot labeled: "INSERT PRISM TO FILTER AETHER SPECTRUM".',
+      onUseText: 'You peer into the brass telescope. Without a focusing prism, the sea of stars is just an overwhelming wash of ultraviolet flare.',
+    },
+    aether_regulator: {
+      id: 'aether_regulator',
+      name: 'Temporal Core Regulator',
+      aliases: ['regulator', 'core', 'lever', 'console'],
+      description: 'A heavy copper console with pressure gauges, mercury tubes, and three interlocking brass valves controlling the aether flow.',
+      isTakeable: false,
+      isUsable: true,
+      onInspectText: 'The central pressure needle is trembling inside the red peril zone! The temporal valves require precise sequencing to stabilize.',
+      onUseText: 'You firmly depress the primary release valve. Steam whistles furiously as the aether resonance settles into a calm harmonic hum!',
+      setFlagsOnUse: ['core_stabilized'],
+    },
+  },
+  rooms: {
+    vestibule: {
+      id: 'vestibule',
+      title: 'Grand Vestibule',
+      biomeMood: 'sanctuary',
+      descriptionMarkup: '[dropcap]Y[/dropcap]ou stand beneath the soaring ribbed vaulting of the observatory foyer. Tall lancet windows look out over moonlit mountain peaks, while cold alpine wind sighs through bronze ventilator grates.\n\nIn the center of the mosaic floor rests the [[Grand Astrolabe|id:brass_astrolabe|actions:inspect,use]], its polished rings reflecting cold starlight.\n\n{if flag:astrolabe_aligned}[glow]A gentle luminescence pulses through copper conduits along the walls, indicating the primary observatory systems are active.[/glow]{else}The machinery stands dormant in chilling silence, awaiting alignment.{/if}\n\nA wide archway opens to the **north** toward the great clockwork chambers, while a spiraling stone stair leads **up** toward the archives.',
+      editorPosition: { x: 120, y: 260 },
+      entityIds: ['brass_astrolabe'],
+      exits: [
+        {
+          direction: 'north',
+          targetRoomId: 'orrery_chamber',
+          conduitLabel: 'Archway of Gears',
+        },
+        {
+          direction: 'up',
+          targetRoomId: 'stellar_archives',
+          conduitLabel: 'Spiraling Stair',
+        },
+      ],
+      choices: [
+        {
+          id: 'inspect_fresco',
+          label: 'Study the celestial ceiling fresco',
+          responseMarkup: 'You crane your neck back. Painted upon the dome is the mythic battle between Chronos and the Void Seraph. In gold leaf, an inscription reads: *"Only when spindle and cog merge as one shall time unbar its gate."*',
+        },
+        {
+          id: 'listen_wind',
+          label: 'Listen closely to the mountain wind',
+          responseMarkup: 'Beyond the whistling wind, you discern a rhythmic, syncopated ticking echoing from the north—the colossal heartbeat of the clockwork orrery.',
+        },
+      ],
+    },
+    orrery_chamber: {
+      id: 'orrery_chamber',
+      title: 'The Great Orrery Chamber',
+      biomeMood: 'arcane',
+      descriptionMarkup: 'Colossal interlocking brass rings and clockwork orbs fill this cavernous two-story chamber. Miniature metal moons and silver planets orbit an incandescent central sun on counter-weighted gimbals.\n\nResting upon a velvet-lined maintenance pedestal is a [[Toothed Brass Cog|id:brass_cog|actions:inspect,take]].\n\nTo the **south** lies the vestibule. To the **east**, a reinforced bulkhead labeled "CHRONOS VAULT" looms between heavy stone buttresses. Overhead, an iron catwalk leads **up** to the zenith balcony.',
+      editorPosition: { x: 440, y: 160 },
+      entityIds: ['brass_cog'],
+      exits: [
+        {
+          direction: 'south',
+          targetRoomId: 'vestibule',
+          conduitLabel: 'Return South',
+        },
+        {
+          direction: 'east',
+          targetRoomId: 'chronos_vault',
+          isLocked: true,
+          lockDescription: 'The heavy vault door is locked. A dual-cylinder keyhole requires the Assembled Chronos Key.',
+          unlockCondition: {
+            requiredItems: ['chronometer_key'],
+          },
+          conduitLabel: 'Vault Bulkhead (Locked)',
+        },
+        {
+          direction: 'up',
+          targetRoomId: 'zenith_aperture',
+          conduitLabel: 'Catwalk Ascends',
+        },
+      ],
+      choices: [
+        {
+          id: 'spin_planet',
+          label: 'Gently nudge the miniature bronze Saturn',
+          responseMarkup: 'You push the ringed globe. It spins with a quiet whir, sending an iridescent cascade of silver dust across the bronze orbital track.',
+        },
+      ],
+    },
+    stellar_archives: {
+      id: 'stellar_archives',
+      title: 'Stellar Archives & Scriptoria',
+      biomeMood: 'sanctuary',
+      descriptionMarkup: 'Floor-to-ceiling mahogany bookshelves curve along the circular stone walls, laden with leather-bound star charts, astronomical logs, and brass astrometry calipers.\n\nOn a reading lectern illuminated by a brass banker lamp, a velvet case holds the [[Aether Prism|id:celestial_prism|actions:inspect,take]]. In an open drawer beneath rests a slender [[Star Spindle|id:star_spindle|actions:inspect,take]].\n\nThe spiral stairs wind **down** back to the vestibule.',
+      editorPosition: { x: 120, y: 520 },
+      entityIds: ['celestial_prism', 'star_spindle'],
+      exits: [
+        {
+          direction: 'down',
+          targetRoomId: 'vestibule',
+          conduitLabel: 'Spiraling Descent',
+        },
+      ],
+      choices: [
+        {
+          id: 'read_astronomer_journal',
+          label: 'Read Vance\'s open astronomical journal',
+          responseMarkup: 'The yellowed parchment is inked in spidery handwriting:\n\n*"Entry 492: The core frequency continues to fluctuate. To forge the vault key, one must mate the toothed brass cog with the star spindle. The dual keyholes will not yield to force."*',
+        },
+      ],
+    },
+    chronos_vault: {
+      id: 'chronos_vault',
+      title: 'Chronos Vault',
+      biomeMood: 'crypt',
+      descriptionMarkup: '[dropcap]H[/dropcap]eavy cold air washes over you as you step into the reinforced sanctuary. Massive pendulum weights slowly swing inside oil-dampened glass cylinders, ticking with earth-shaking finality.\n\nIn the center, ancient steel cables descend through a shaft leading **down** to the pulsating **Aether Core Chamber**.\n\nA heavy reinforced door leads **west** back to the Orrery.',
+      editorPosition: { x: 740, y: 160 },
+      entityIds: [],
+      exits: [
+        {
+          direction: 'west',
+          targetRoomId: 'orrery_chamber',
+          conduitLabel: 'Back to Orrery',
+        },
+        {
+          direction: 'down',
+          targetRoomId: 'aether_core',
+          conduitLabel: 'Shaft Descent',
+        },
+      ],
+      choices: [
+        {
+          id: 'inspect_vault_pendulum',
+          label: 'Examine the nine-foot obsidian pendulum',
+          responseMarkup: 'Carved into the obsidian face are tally marks counting elapsed millennia. Each slow swing creates a subtle warp in the surrounding air currents.',
+        },
+      ],
+    },
+    zenith_aperture: {
+      id: 'zenith_aperture',
+      title: 'Zenith Aperture Balcony',
+      biomeMood: 'twilight',
+      descriptionMarkup: 'You step out onto the open observation deck. A bitter cold mountain wind whips around you, billowing your cloak under an ocean of diamond stars and the swirling aurora borealis.\n\nMounted in the center of the balcony is the [[Great Brass Telescope|id:great_telescope|actions:inspect,use]].\n\n{if flag:prism_placed}[gold]The aether prism slot shines with focused solar-starlight, projecting a luminous star-path onto the clouds![/gold]{else}The telescope mount awaits a focusing crystal.{/if}\n\nA narrow iron stair leads **down** back to the Orrery.',
+      editorPosition: { x: 440, y: 520 },
+      entityIds: ['great_telescope'],
+      exits: [
+        {
+          direction: 'down',
+          targetRoomId: 'orrery_chamber',
+          conduitLabel: 'Stair Down to Orrery',
+        },
+      ],
+      choices: [
+        {
+          id: 'slot_prism_choice',
+          label: 'Mount the Aether Prism into the telescope slot',
+          condition: {
+            requiredItems: ['celestial_prism'],
+            forbiddenFlags: ['prism_placed'],
+          },
+          setFlags: ['prism_placed'],
+          responseMarkup: 'You slide the hexagonal prism into the brass cradle. It locks in place with a sharp click! A beam of intense celestial light focuses through the ocular lens, piercing the darkness like a golden needle!',
+        },
+        {
+          id: 'gaze_aurora',
+          label: 'Gaze into the swirling northern lights',
+          responseMarkup: 'Curtains of emerald and violet luminescence ripple across the jagged peaks of Mount Astrea. The beauty of this forgotten vantage point is breathtaking.',
+        },
+      ],
+    },
+    aether_core: {
+      id: 'aether_core',
+      title: 'The Aether Core Chamber',
+      biomeMood: 'peril',
+      descriptionMarkup: '[shake]A deafening, subterranean roar reverberates through your boots.[/shake] Suspended within an inverted copper cage is a spherical orb of incandescent violet aether, crackling with violent electrical arcs.\n\nCracks in the temporal manifold are venting [ember]hot amber sparks[/ember] into the chamber.\n\nMounted on the edge of the catwalk is the [[Temporal Core Regulator|id:aether_regulator|actions:inspect,use]].\n\nAn iron ladder leads **up** back to the Chronos Vault.',
+      editorPosition: { x: 740, y: 520 },
+      entityIds: ['aether_regulator'],
+      exits: [
+        {
+          direction: 'up',
+          targetRoomId: 'chronos_vault',
+          conduitLabel: 'Ascend to Vault',
+        },
+      ],
+      choices: [
+        {
+          id: 'stabilize_core_choice',
+          label: 'Engage Core Regulator to stabilize the temporal manifold',
+          condition: {
+            forbiddenFlags: ['core_stabilized'],
+          },
+          setFlags: ['core_stabilized'],
+          responseMarkup: '[gold]✦ TEMPORAL CRISIS AVERTED ✦[/gold]\n\nYou throw your full weight against the triple-valved regulator. Coolant cascades across the incandescent orb with a deafening hiss! The violet arcs recede into a calm, rhythmic pulse. The observatory settles into tranquil equilibrium. You have saved Mount Astrea and mastered the Clockwork Observatory!',
+        },
+        {
+          id: 'commune_aether',
+          label: 'Reach out your mind toward the pulsing aether',
+          responseMarkup: '[ghost]Whispers of past and future eras flood your consciousness in an instant: forgotten kings building the spire, astronomers charting dying stars, and a tranquil future restored.[/ghost]',
+        },
+      ],
+    },
+  },
+};

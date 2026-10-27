@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-canvas: #ffffff;
+    --color-surface: #f8fafc;
+    --color-surface-elevated: #ffffff;
+    --color-border: #e2e8f0;
+    --color-text-primary: #0f172a;
+    --color-text-muted: #64748b;
+  }
+
+  .dark {
+    --color-canvas: #0a0b0e;
+    --color-surface: #111318;
+    --color-surface-elevated: #171a21;
+    --color-border: #222630;
+    --color-text-primary: #f8fafc;
+    --color-text-muted: #8b95a5;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-text-primary);
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Tabular figures for all financial & metric numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Auto-enrichment shimmer animation */
+@keyframes enrichShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.enrichment-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(99, 102, 241, 0.05) 25%,
+    rgba(99, 102, 241, 0.25) 50%,
+    rgba(99, 102, 241, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: enrichShimmer 1.2s infinite ease-in-out;
+}
+
+/* Micro-flash on save */
+@keyframes flashGreen {
+  0% {
+    background-color: rgba(16, 185, 129, 0.25);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-saved {
+  animation: flashGreen 0.7s ease-out forwards;
+}
+
+/* Amber pulse for rotting deals */
+@keyframes amberPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3), 0 0 12px 1px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.7), 0 0 20px 3px rgba(245, 158, 11, 0.35);
+  }
+}
+
+.deal-rot-pulse {
+  animation: amberPulse 2s infinite ease-in-out;
+}
