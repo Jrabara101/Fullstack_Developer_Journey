@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1600, initial-scale=1.0">
+  <title>Aerie — One layout, every sky</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0B0C10;
+      color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      width: 1600px;
+      height: 1200px;
+      overflow: hidden;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Sky Canvases */
+    .sky-clear-noon {
+      background: linear-gradient(180deg, #1E5AA8 0%, #3075BF 55%, #4F8FD0 100%);
+    }
+    .sky-golden-hour {
+      background: linear-gradient(180deg, #1F2A44 0%, #7A3A16 52%, #D9782D 100%);
+    }
+    .sky-overcast {
+      background: linear-gradient(180deg, #323A48 0%, #546072 55%, #7C8798 100%);
+    }
+    .sky-night {
+      background: linear-gradient(180deg, #0B1222 0%, #131E33 50%, #1E293B 100%);
+    }
+
+    /* Glass Surfaces */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.20);
+    }
+    .glass-raised {
+      background: rgba(255, 255, 255, 0.20);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .glass-pill-active {
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+    }
+
+    /* Glows */
+    .sun-glow {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.35);
+    }
+    .moon-glow {
+      box-shadow: 0 0 16px rgba(224, 231, 255, 0.25);
+    }
+
+    /* Subtle Card Under-Tint for Golden/Clear high-key base */
+    .undertint {
+      background: rgba(10, 12, 20, 0.18);
+    }
+  </style>
+</head>
+<body class="relative w-[1600px] h-[1200px] select-none">
+
+  <!-- Header Section -->
+  <header class="absolute left-[96px] top-[88px] z-10">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-semibold uppercase tracking-wider text-white/80">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        Aerie Atmospheric System
+      </div>
+      <span class="text-xs tracking-wider uppercase text-white/40 font-medium">· Dynamic Palette Engine</span>
+    </div>
+    <h1 class="text-[40px] leading-[48px] font-semibold text-white tracking-[-0.02em]">One layout, every sky</h1>
+    <p class="text-[20px] leading-[28px] text-white/70 font-normal mt-2 tracking-[-0.01em]">The UI takes on the sky over the place you searched.</p>
+  </header>
+
+  <!-- Spec / Grid Metadata Top Right -->
+  <div class="absolute right-[96px] top-[96px] flex items-center gap-6 text-right">
+    <div>
+      <div class="text-[12px] uppercase tracking-[0.08em] font-semibold text-white/40">Viewport Profile</div>
+      <div class="text-[15px] font-medium text-white/80 tabular mt-0.5">320 × 640 · Radius 32px</div>
+    </div>
+    <div class="h-8 w-[1px] bg-white/15"></div>
+    <div>
+      <div class="text-[12px] uppercase tracking-[0.08em] font-semibold text-white/40">Atmospheric Curvature</div>
+      <div class="text-[15px] font-medium text-amber-300 tabular mt-0.5">WCAG AAA Calibrated</div>
+    </div>
+  </div>
+
+  <!-- Four Mobile Crops Container (Grid row) -->
+  <!-- 1600px width: 96px margin left/right leaves 1408px. 4 cards * 320px = 1280px. Remaining = 128px / 3 gaps = 42.66px gap. Let's use 40px gap, centered cleanly. -->
+  <main class="absolute left-[96px] top-[260px] flex gap-[42px] items-start">
+
+    <!-- ==================== CROP 1: CLEAR NOON ==================== -->
+    <div class="flex flex-col items-center">
+      <!-- Phone Mockup Container (320 × 640, radius 32) -->
+      <div class="w-[320px] h-[640px] rounded-[32px] overflow-hidden sky-clear-noon relative shadow-[0_24px_50px_rgba(0,0,0,0.55)] border border-white/20 flex flex-col justify-between p-[18px]">
+        
+        <!-- Status Bar -->
+        <div class="w-full flex items-center justify-between text-white text-[13px] font-semibold pt-1 px-1">
+          <span class="tabular">12:15</span>
+          <div class="flex items-center gap-1.5 opacity-90">
+            <!-- Cellular -->
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.27 19.64 10.58 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.5-.47 2.89-1.28 4.03L6.97 5.28C8.11 4.47 9.5 4 12 4z"/></svg>
+            <!-- Wifi -->
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.46 9.8 3.86L12 18.52 2.2 11.36C4.79 8.96 8.22 7.5 12 7.5z"/></svg>
+            <!-- Battery -->
+            <div class="w-5 h-2.5 rounded-[3px] border border-white/80 p-0.5 flex items-center">
+              <div class="w-3 h-full bg-white rounded-[1.5px]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upper App Chrome -->
+        <div class="mt-3 flex flex-col gap-2.5">
+          <!-- Search Pill -->
+          <div class="w-full h-[38px] rounded-full glass-raised px-3.5 flex items-center justify-between text-white/80 text-[13px]">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16.65 11a5.65 5.65 0 11-11.3 0 5.65 5.65 0 0111.3 0z"/></svg>
+              <span class="text-white/90 font-medium truncate">Kyoto, Japan</span>
+            </div>
+            <!-- Compass Locate Button -->
+            <svg class="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 9.5l-5 2 2 5 3-7z"/></svg>
+          </div>
+
+          <!-- Places Pills Row -->
+          <div class="flex items-center gap-1.5 overflow-hidden text-[11px] font-medium">
+            <div class="px-2.5 py-1 rounded-full glass-pill glass-pill-active flex items-center gap-1 text-white whitespace-nowrap">
+              <svg class="w-3 h-3 text-amber-300" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
+              <span>Kyoto 22°</span>
+            </div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Osaka 23°</div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Tokyo 21°</div>
+          </div>
+        </div>
+
+        <!-- Center Atmospheric Hero Section (Directly on Sky) -->
+        <div class="my-auto pt-1 pb-2">
+          <!-- Location & Pip -->
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
+            <span>KYOTO · NOON</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-300"></span>
+          </div>
+
+          <!-- Hero Temp + Condition Icon -->
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[72px] leading-[72px] font-light text-white tracking-[-0.04em] tabular">
+              22°
+            </div>
+            <!-- High Sun Graphic -->
+            <div class="w-12 h-12 rounded-full bg-amber-300/30 border border-amber-200/50 flex items-center justify-center sun-glow mr-1 mb-1">
+              <svg class="w-7 h-7 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m14.14-14.14l-1.41 1.41"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Sub Metric Row -->
+          <div class="text-[13px] text-white/80 font-medium tabular mt-0.5">
+            Feels 22° · H 24° · L 15°
+          </div>
+
+          <!-- Human Summary (20px) -->
+          <div class="text-[18px] leading-[24px] font-medium text-white mt-2.5 tracking-[-0.01em]">
+            Bright and breezy midday.
+          </div>
+        </div>
+
+        <!-- Lower Section: Wear Banner + Mini Metric Glass Strip -->
+        <div class="flex flex-col gap-2 mb-1">
+          <!-- Wear Banner -->
+          <div class="w-full glass-card rounded-[18px] p-3 text-white flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-amber-400/25 border border-amber-300/40 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m14.14-14.14l-1.41 1.41"/></svg>
+            </div>
+            <div class="text-[12px] leading-[16px] text-white/90">
+              <span class="font-medium text-white">High UV 7 · Sunglasses recommended.</span>
+              <span class="text-white/70 block text-[11px]">Dry westerly breeze at 14 km/h.</span>
+            </div>
+          </div>
+
+          <!-- Hourly Glimpse Mini Card -->
+          <div class="w-full glass-card rounded-[18px] px-3 py-2 flex items-center justify-between text-[11px] text-white/80 tabular">
+            <span class="font-medium">1 PM: 23° · ☀️</span>
+            <span class="font-medium">2 PM: 24° · ☀️</span>
+            <span class="font-medium">3 PM: 23° · ⛅</span>
+            <span class="text-emerald-300 font-semibold">Peak Warmth</span>
+          </div>
+        </div>
+
+        <!-- iOS Home Indicator -->
+        <div class="w-24 h-1 bg-white/40 rounded-full mx-auto mb-0.5"></div>
+      </div>
+
+      <!-- Label Below -->
+      <div class="mt-4 text-[16px] uppercase tracking-[0.08em] font-semibold text-white/70 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+        CLEAR NOON
+      </div>
+      <div class="text-[13px] text-white/40 font-medium mt-0.5">#1E5AA8 → #4F8FD0</div>
+    </div>
+
+
+    <!-- ==================== CROP 2: GOLDEN HOUR ==================== -->
+    <div class="flex flex-col items-center">
+      <!-- Phone Mockup Container (320 × 640, radius 32) -->
+      <div class="w-[320px] h-[640px] rounded-[32px] overflow-hidden sky-golden-hour relative shadow-[0_24px_50px_rgba(0,0,0,0.55)] border border-white/20 flex flex-col justify-between p-[18px]">
+        
+        <!-- Status Bar -->
+        <div class="w-full flex items-center justify-between text-white text-[13px] font-semibold pt-1 px-1">
+          <span class="tabular">4:40</span>
+          <div class="flex items-center gap-1.5 opacity-90">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.27 19.64 10.58 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.5-.47 2.89-1.28 4.03L6.97 5.28C8.11 4.47 9.5 4 12 4z"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.46 9.8 3.86L12 18.52 2.2 11.36C4.79 8.96 8.22 7.5 12 7.5z"/></svg>
+            <div class="w-5 h-2.5 rounded-[3px] border border-white/80 p-0.5 flex items-center">
+              <div class="w-3 h-full bg-white rounded-[1.5px]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upper App Chrome -->
+        <div class="mt-3 flex flex-col gap-2.5">
+          <!-- Search Pill -->
+          <div class="w-full h-[38px] rounded-full glass-raised px-3.5 flex items-center justify-between text-white/80 text-[13px]">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16.65 11a5.65 5.65 0 11-11.3 0 5.65 5.65 0 0111.3 0z"/></svg>
+              <span class="text-white/90 font-medium truncate">Kyoto, Japan</span>
+            </div>
+            <svg class="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 9.5l-5 2 2 5 3-7z"/></svg>
+          </div>
+
+          <!-- Places Pills Row -->
+          <div class="flex items-center gap-1.5 overflow-hidden text-[11px] font-medium">
+            <div class="px-2.5 py-1 rounded-full glass-pill glass-pill-active flex items-center gap-1 text-white whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Home · Kyoto 21°</span>
+            </div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Parents' 22°</div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Cabin 9°</div>
+          </div>
+        </div>
+
+        <!-- Center Atmospheric Hero Section (Directly on Sky) -->
+        <div class="my-auto pt-1 pb-2">
+          <!-- Location & Pip -->
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
+            <span>KYOTO · NOW</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          </div>
+
+          <!-- Hero Temp + Condition Icon -->
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[72px] leading-[72px] font-light text-white tracking-[-0.04em] tabular">
+              21°
+            </div>
+            <!-- Setting Dusk Sun Graphic -->
+            <div class="w-12 h-12 rounded-full bg-amber-500/30 border border-amber-300/40 flex items-center justify-center sun-glow mr-1 mb-1">
+              <svg class="w-7 h-7 text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 18a6 6 0 006-6H6a6 6 0 006 6z"/>
+                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 4v3M4.93 7.93l2.12 2.12M19.07 7.93l-2.12 2.12M2 20h20"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Sub Metric Row -->
+          <div class="text-[13px] text-white/80 font-medium tabular mt-0.5">
+            Feels 20° · H 22° · L 14°
+          </div>
+
+          <!-- Human Summary (20px) -->
+          <div class="text-[18px] leading-[24px] font-medium text-white mt-2.5 tracking-[-0.01em]">
+            Golden light now, showers after seven.
+          </div>
+        </div>
+
+        <!-- Lower Section: Wear Banner + Mini Horizon Glass Strip -->
+        <div class="flex flex-col gap-2 mb-1">
+          <!-- Wear Banner -->
+          <div class="w-full glass-card rounded-[18px] p-3 text-white flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-amber-500/25 border border-amber-400/40 flex items-center justify-center shrink-0">
+              <!-- Glasses / umbrella duotone icon -->
+              <svg class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-3 3m3-3l3 3M4 12a8 8 0 0116 0"/></svg>
+            </div>
+            <div class="text-[12px] leading-[16px] text-white/90">
+              <span class="font-medium text-white">Sunglasses now, umbrella by seven.</span>
+              <span class="text-white/70 block text-[11px]">Bring a light jacket for the walk home.</span>
+            </div>
+          </div>
+
+          <!-- Mini Arc Milestone Pill -->
+          <div class="w-full glass-card rounded-[18px] px-3 py-2 flex items-center justify-between text-[11px] text-white/80 tabular">
+            <span class="font-medium">Sunset: 5:12 PM · 🌅</span>
+            <span class="text-amber-300 font-semibold">42m Golden Hour Left</span>
+            <span class="text-sky-300">Rain ~7 PM</span>
+          </div>
+        </div>
+
+        <!-- iOS Home Indicator -->
+        <div class="w-24 h-1 bg-white/40 rounded-full mx-auto mb-0.5"></div>
+      </div>
+
+      <!-- Label Below -->
+      <div class="mt-4 text-[16px] uppercase tracking-[0.08em] font-semibold text-white/70 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        GOLDEN HOUR
+      </div>
+      <div class="text-[13px] text-white/40 font-medium mt-0.5">#1F2A44 → #7A3A16 → #D9782D</div>
+    </div>
+
+
+    <!-- ==================== CROP 3: OVERCAST ==================== -->
+    <div class="flex flex-col items-center">
+      <!-- Phone Mockup Container (320 × 640, radius 32) -->
+      <div class="w-[320px] h-[640px] rounded-[32px] overflow-hidden sky-overcast relative shadow-[0_24px_50px_rgba(0,0,0,0.55)] border border-white/20 flex flex-col justify-between p-[18px]">
+        
+        <!-- Status Bar -->
+        <div class="w-full flex items-center justify-between text-white text-[13px] font-semibold pt-1 px-1">
+          <span class="tabular">11:08</span>
+          <div class="flex items-center gap-1.5 opacity-90">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.27 19.64 10.58 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.5-.47 2.89-1.28 4.03L6.97 5.28C8.11 4.47 9.5 4 12 4z"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.46 9.8 3.86L12 18.52 2.2 11.36C4.79 8.96 8.22 7.5 12 7.5z"/></svg>
+            <div class="w-5 h-2.5 rounded-[3px] border border-white/80 p-0.5 flex items-center">
+              <div class="w-3 h-full bg-white rounded-[1.5px]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upper App Chrome -->
+        <div class="mt-3 flex flex-col gap-2.5">
+          <!-- Search Pill -->
+          <div class="w-full h-[38px] rounded-full glass-raised px-3.5 flex items-center justify-between text-white/80 text-[13px]">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16.65 11a5.65 5.65 0 11-11.3 0 5.65 5.65 0 0111.3 0z"/></svg>
+              <span class="text-white/90 font-medium truncate">Hakuba, Nagano</span>
+            </div>
+            <svg class="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 9.5l-5 2 2 5 3-7z"/></svg>
+          </div>
+
+          <!-- Places Pills Row -->
+          <div class="flex items-center gap-1.5 overflow-hidden text-[11px] font-medium">
+            <div class="px-2.5 py-1 rounded-full glass-pill glass-pill-active flex items-center gap-1 text-white whitespace-nowrap">
+              <svg class="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              <span>Cabin · Hakuba 9°</span>
+            </div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Kyoto 21°</div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Nagano 11°</div>
+          </div>
+        </div>
+
+        <!-- Center Atmospheric Hero Section (Directly on Sky) -->
+        <div class="my-auto pt-1 pb-2">
+          <!-- Location & Pip -->
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
+            <span>HAKUBA · MID-MORNING</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          </div>
+
+          <!-- Hero Temp + Condition Icon -->
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[72px] leading-[72px] font-light text-white tracking-[-0.04em] tabular">
+              9°
+            </div>
+            <!-- Cloud Icon -->
+            <div class="w-12 h-12 rounded-full bg-slate-400/25 border border-slate-300/40 flex items-center justify-center mr-1 mb-1">
+              <svg class="w-7 h-7 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Sub Metric Row -->
+          <div class="text-[13px] text-white/80 font-medium tabular mt-0.5">
+            Feels 6° · H 11° · L 3°
+          </div>
+
+          <!-- Human Summary (20px) -->
+          <div class="text-[18px] leading-[24px] font-medium text-white mt-2.5 tracking-[-0.01em]">
+            Gray and still, feels colder.
+          </div>
+        </div>
+
+        <!-- Lower Section: Wear Banner + Mini Horizon Glass Strip -->
+        <div class="flex flex-col gap-2 mb-1">
+          <!-- Wear Banner -->
+          <div class="w-full glass-card rounded-[18px] p-3 text-white flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-slate-300/20 border border-slate-200/30 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <div class="text-[12px] leading-[16px] text-white/90">
+              <span class="font-medium text-white">Heavy wool layer + windbreaker.</span>
+              <span class="text-white/70 block text-[11px]">Valley mist dampening humidity to 78%.</span>
+            </div>
+          </div>
+
+          <!-- Diagnostic Row -->
+          <div class="w-full glass-card rounded-[18px] px-3 py-2 flex items-center justify-between text-[11px] text-white/80 tabular">
+            <span class="font-medium">Cloud Base: 900m</span>
+            <span class="font-medium">Dew Point: 5°</span>
+            <span class="text-slate-300 font-semibold">Visibility: 8 km</span>
+          </div>
+        </div>
+
+        <!-- iOS Home Indicator -->
+        <div class="w-24 h-1 bg-white/40 rounded-full mx-auto mb-0.5"></div>
+      </div>
+
+      <!-- Label Below -->
+      <div class="mt-4 text-[16px] uppercase tracking-[0.08em] font-semibold text-white/70 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        OVERCAST
+      </div>
+      <div class="text-[13px] text-white/40 font-medium mt-0.5">#3D4656 → #7C8798</div>
+    </div>
+
+
+    <!-- ==================== CROP 4: NIGHT ==================== -->
+    <div class="flex flex-col items-center">
+      <!-- Phone Mockup Container (320 × 640, radius 32) -->
+      <div class="w-[320px] h-[640px] rounded-[32px] overflow-hidden sky-night relative shadow-[0_24px_50px_rgba(0,0,0,0.55)] border border-white/20 flex flex-col justify-between p-[18px]">
+        
+        <!-- Subtle Star Specks in Sky -->
+        <div class="absolute inset-0 pointer-events-none opacity-40">
+          <div class="absolute w-1 h-1 bg-white rounded-full top-8 left-16"></div>
+          <div class="absolute w-1 h-1 bg-white rounded-full top-24 right-20 opacity-70"></div>
+          <div class="absolute w-1.5 h-1.5 bg-amber-100 rounded-full top-36 left-48"></div>
+          <div class="absolute w-1 h-1 bg-white rounded-full top-52 right-8 opacity-60"></div>
+          <div class="absolute w-1 h-1 bg-white rounded-full top-64 left-10 opacity-80"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="w-full flex items-center justify-between text-white text-[13px] font-semibold pt-1 px-1 relative z-10">
+          <span class="tabular">23:45</span>
+          <div class="flex items-center gap-1.5 opacity-90">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.27 19.64 10.58 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.5-.47 2.89-1.28 4.03L6.97 5.28C8.11 4.47 9.5 4 12 4z"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.46 9.8 3.86L12 18.52 2.2 11.36C4.79 8.96 8.22 7.5 12 7.5z"/></svg>
+            <div class="w-5 h-2.5 rounded-[3px] border border-white/80 p-0.5 flex items-center">
+              <div class="w-3 h-full bg-white rounded-[1.5px]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upper App Chrome -->
+        <div class="mt-3 flex flex-col gap-2.5 relative z-10">
+          <!-- Search Pill -->
+          <div class="w-full h-[38px] rounded-full glass-raised px-3.5 flex items-center justify-between text-white/80 text-[13px]">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16.65 11a5.65 5.65 0 11-11.3 0 5.65 5.65 0 0111.3 0z"/></svg>
+              <span class="text-white/90 font-medium truncate">Kyoto, Japan</span>
+            </div>
+            <svg class="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 9.5l-5 2 2 5 3-7z"/></svg>
+          </div>
+
+          <!-- Places Pills Row -->
+          <div class="flex items-center gap-1.5 overflow-hidden text-[11px] font-medium">
+            <div class="px-2.5 py-1 rounded-full glass-pill glass-pill-active flex items-center gap-1 text-white whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-300"></span>
+              <span>Home · Kyoto 13°</span>
+            </div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Osaka 15°</div>
+            <div class="px-2.5 py-1 rounded-full glass-pill text-white/75 whitespace-nowrap">Hakuba 4°</div>
+          </div>
+        </div>
+
+        <!-- Center Atmospheric Hero Section (Directly on Sky) -->
+        <div class="my-auto pt-1 pb-2 relative z-10">
+          <!-- Location & Pip -->
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
+            <span>KYOTO · NIGHT</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-300"></span>
+          </div>
+
+          <!-- Hero Temp + Condition Icon -->
+          <div class="flex items-baseline justify-between mt-1">
+            <div class="text-[72px] leading-[72px] font-light text-white tracking-[-0.04em] tabular">
+              13°
+            </div>
+            <!-- Crescent Moon & Star Graphic -->
+            <div class="w-12 h-12 rounded-full bg-indigo-400/25 border border-indigo-200/40 flex items-center justify-center moon-glow mr-1 mb-1">
+              <svg class="w-6 h-6 text-indigo-100" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Sub Metric Row -->
+          <div class="text-[13px] text-white/80 font-medium tabular mt-0.5">
+            Feels 12° · H 22° · L 11°
+          </div>
+
+          <!-- Human Summary (20px) -->
+          <div class="text-[18px] leading-[24px] font-medium text-white mt-2.5 tracking-[-0.01em]">
+            Clear, cool, stars after midnight.
+          </div>
+        </div>
+
+        <!-- Lower Section: Wear Banner + Stargazing Diagnostic Glass Strip -->
+        <div class="flex flex-col gap-2 mb-1 relative z-10">
+          <!-- Wear Banner -->
+          <div class="w-full glass-card rounded-[18px] p-3 text-white flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-300/30 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            </div>
+            <div class="text-[12px] leading-[16px] text-white/90">
+              <span class="font-medium text-white">Jacket recommended outdoors.</span>
+              <span class="text-white/70 block text-[11px]">Calm northerly drift · Moonset at 1:44 AM.</span>
+            </div>
+          </div>
+
+          <!-- Stargazing Pill -->
+          <div class="w-full glass-card rounded-[18px] px-3 py-2 flex items-center justify-between text-[11px] text-white/80 tabular">
+            <span class="text-indigo-200 font-semibold">✨ Stargazing: Excellent</span>
+            <span class="font-medium">Dew: 8°</span>
+            <span class="text-emerald-300 font-semibold">Low Cloud: 0%</span>
+          </div>
+        </div>
+
+        <!-- iOS Home Indicator -->
+        <div class="w-24 h-1 bg-white/40 rounded-full mx-auto mb-0.5 relative z-10"></div>
+      </div>
+
+      <!-- Label Below -->
+      <div class="mt-4 text-[16px] uppercase tracking-[0.08em] font-semibold text-white/70 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+        NIGHT
+      </div>
+      <div class="text-[13px] text-white/40 font-medium mt-0.5">#0B1222 → #1E293B</div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Brand & Design System Footer -->
+  <footer class="absolute left-[96px] bottom-[48px] right-[96px] flex items-center justify-between border-t border-white/10 pt-4 text-white/40 text-[13px]">
+    <div class="flex items-center gap-4">
+      <span class="font-semibold text-white/70 tracking-wide uppercase text-xs">Aerie Design System</span>
+      <span class="w-1 h-1 rounded-full bg-white/20"></span>
+      <span>Inter Typography System · Tabular Numerals</span>
+      <span class="w-1 h-1 rounded-full bg-white/20"></span>
+      <span>Adaptive Frosted Glass Materials (`backdrop-filter: blur(20px)`)</span>
+    </div>
+    <div class="tabular">
+      Canvas Specification: 1600 × 1200 · Background #0B0C10
+    </div>
+  </footer>
+
+</body>
+</html>

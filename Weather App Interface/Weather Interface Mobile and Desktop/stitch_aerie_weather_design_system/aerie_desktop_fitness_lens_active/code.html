@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"tertiary":"#f9bd22","inverse-primary":"#964900","background":"#0c1323","on-tertiary-container":"#382800","primary":"#ffb787","on-secondary-fixed":"#001e2c","surface-variant":"#2e3446","on-error-container":"#ffdad6","on-primary-fixed":"#311300","outline-variant":"#554338","outline":"#a38c7f","surface-bright":"#32394b","tertiary-fixed-dim":"#f9bd22","on-primary":"#502400","surface-container-low":"#141b2c","surface":"#0c1323","on-secondary-fixed-variant":"#004c69","error":"#ffb4ab","on-surface-variant":"#dbc1b3","primary-fixed-dim":"#ffb787","on-tertiary":"#402d00","error-container":"#93000a","surface-dim":"#0c1323","surface-container-highest":"#2e3446","on-tertiary-fixed-variant":"#5c4300","surface-container":"#191f30","surface-container-high":"#232a3b","on-primary-fixed-variant":"#723600","on-secondary":"#00354a","on-error":"#690005","on-surface":"#dce2f9","on-tertiary-fixed":"#261a00","secondary-container":"#00a6e0","surface-container-lowest":"#070e1e","inverse-surface":"#dce2f9","tertiary-container":"#b98a00","primary-fixed":"#ffdcc7","on-primary-container":"#471f00","inverse-on-surface":"#293041","secondary-fixed":"#c4e7ff","on-background":"#dce2f9","surface-tint":"#ffb787","secondary":"#7bd0ff","secondary-fixed-dim":"#7bd0ff","tertiary-fixed":"#ffdf9f","primary-container":"#d9782d","on-secondary-container":"#00374d"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"0.25rem","gutter-md":"1.5rem","margin":"1rem","space-lg":"1.5rem","margin-lg":"3.5rem","space-md":"1rem","gutter":"1rem","space-xl":"2.5rem","gutter-lg":"2rem","margin-md":"2rem","space-sm":"0.5rem"},"fontFamily":{"body-sm":["Inter"],"headline-md":["Inter"],"headline-hero-mobile":["Inter"],"headline-lg":["Inter"],"day-label":["Inter"],"metric-value":["Inter"],"section-label":["Inter"],"headline-hero":["Inter"],"human-summary":["Inter"],"body-md":["Inter"]},"fontSize":{"body-sm":["13px",{"lineHeight":"18px","letterSpacing":"0em","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-hero-mobile":["72px",{"lineHeight":"76px","letterSpacing":"-0.04em","fontWeight":"300"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"400"}],"day-label":["16px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"600"}],"metric-value":["15px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"500"}],"section-label":["12px",{"lineHeight":"16px","letterSpacing":"0.08em","fontWeight":"600"}],"headline-hero":["104px",{"lineHeight":"104px","letterSpacing":"-0.04em","fontWeight":"300"}],"human-summary":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"500"}],"body-md":["15px",{"lineHeight":"22px","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="min-h-screen bg-gradient-to-b from-[#1F2A44] via-[#7A3A16] to-[#D9782D] font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/40 backdrop-blur-2xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 max-w-[1280px] mx-auto px-margin-lg flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-xl"><a class="flex items-center gap-space-sm group" data-path="overview" href="#"><span class="font-headline-md text-headline-md tracking-tight font-medium text-primary">Aerie</span><span class="px-space-xs py-0.5 rounded-full bg-surface-variant/40 text-on-surface-variant font-section-label text-section-label uppercase tracking-widest">Atmosphere</span></a><div class="hidden md:flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm"><span class="material-symbols-outlined text-[18px] text-tertiary">near_me</span><span class="font-medium text-on-surface">Reykjavík, IS</span><span class="text-outline text-body-sm">•</span><span class="font-metric-value text-metric-value text-on-surface-variant">64.1466° N, 21.9426° W</span></div></div><nav class="hidden lg:flex items-center gap-space-xs p-1 rounded-full bg-surface-container-lowest/30 backdrop-blur-xl" data-active-classes="bg-surface-variant/60 text-on-surface font-semibold rounded-full"><a aria-current="page" class="px-space-md py-1.5 transition-colors bg-surface-variant/60 text-on-surface font-semibold rounded-full" data-path="overview" href="#">Overview</a><a class="px-space-md py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="radar" href="#">Radar &amp; Satellite</a><a class="px-space-md py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="historical-archive" href="#">Atmospheric Log</a><a class="px-space-md py-1.5 rounded-full font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="observatory" href="#">Observatory</a></nav><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-variant/30 backdrop-blur-md text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">schedule</span><span class="font-metric-value text-metric-value tabular-nums text-on-surface">18:42 GMT</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 max-w-[1280px] mx-auto px-margin-lg"><div class="flex flex-col w-full text-on-surface select-none pb-space-xl" style="font-variant-numeric: tabular-nums;">
+<!-- Inner Content Width Constrained to 1200px centered -->
+<div class="w-full max-w-[1200px] mx-auto flex flex-col gap-space-lg">
+<!-- 1. TOP ROW: SEARCH PILL & ACTIVITY LENS SEGMENTED CONTROL -->
+<section class="w-full flex flex-col md:flex-row items-center justify-between gap-space-md pt-2">
+<!-- Search Pill (560px max width on desktop) -->
+<div class="relative w-full max-w-[560px] h-12 rounded-full bg-white/10 dark:bg-surface-container-low/50 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.22)] flex items-center px-4 gap-3 border border-white/20 transition-all duration-200 focus-within:bg-white/20 focus-within:shadow-[0_0_0_2px_rgba(255,255,255,0.35)]">
+<span class="material-symbols-outlined text-[20px] text-primary shrink-0">search</span>
+<input class="w-full bg-transparent border-none outline-none font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/70 tracking-normal" placeholder="Search a city, zip, or landmark" type="text"/>
+<div class="flex items-center gap-2 shrink-0">
+<button class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-on-surface text-[12px] font-section-label transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px] text-tertiary">near_me</span>
+<span class="hidden sm:inline">Locate me</span>
+</button>
+<kbd class="px-2 py-0.5 rounded-md bg-surface-container-highest/60 text-on-surface-variant text-[11px] font-metric-value tracking-wider uppercase font-medium">⌘K</kbd>
+</div>
+</div>
+<!-- Activity Lens Segmented Control (40px tall, full pill) -->
+<div class="h-10 p-1 rounded-full bg-white/10 dark:bg-surface-container-low/50 backdrop-blur-xl border border-white/15 flex items-center gap-1 shadow-md shrink-0"><button class="h-full px-4 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" type="button">All</button><button class="h-full px-4 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" type="button">Commute</button><button class="h-full px-4 rounded-full bg-white/25 text-on-surface font-body-sm text-body-sm font-medium shadow-[0_0_12px_rgba(255,255,255,0.25)] transition-all" type="button">Fitness</button><button class="h-full px-4 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" type="button">Home</button></div>
+</section>
+<!-- SAVED PLACE PILLS (36px tall horizontal row) -->
+<section class="w-full flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none [mask-image:linear-gradient(to_right,white_85%,transparent)]">
+<!-- Active Pill -->
+<button class="h-9 px-3.5 rounded-full bg-white/20 dark:bg-surface-container-high/70 backdrop-blur-xl border border-white/30 text-on-surface font-body-sm text-body-sm flex items-center gap-2 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.18)]" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="material-symbols-outlined text-[17px] text-tertiary">wb_sunny</span>
+<span class="font-medium text-white">Home · Kyoto</span>
+<span class="font-metric-value text-metric-value font-semibold">21°</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-white/10 dark:bg-surface-container-low/40 backdrop-blur-lg border border-white/15 hover:bg-white/15 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-secondary">partly_cloudy_day</span>
+<span>Parents' House · Osaka</span>
+<span class="font-metric-value text-metric-value">22°</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-white/10 dark:bg-surface-container-low/40 backdrop-blur-lg border border-white/15 hover:bg-white/15 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-secondary">air</span>
+<span>Weekend Cabin · Hakuba</span>
+<span class="font-metric-value text-metric-value">9°</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-white/10 dark:bg-surface-container-low/40 backdrop-blur-lg border border-white/15 hover:bg-white/15 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-tertiary">sunny</span>
+<span>Manila</span>
+<span class="font-metric-value text-metric-value">31°</span>
+</button>
+<button class="h-9 px-3 rounded-full bg-white/5 hover:bg-white/15 border border-dashed border-white/20 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 shrink-0 transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add</span>
+</button>
+</section>
+<!-- 2. TWO-COLUMN MAIN GRID: 488px Left & 688px Right (Gap 24px) -->
+<div class="w-full grid grid-cols-1 lg:grid-cols-[488px_1fr] gap-6 items-start">
+<!-- ================= LEFT COLUMN (488px wide column stack) ================= -->
+<div class="flex flex-col gap-5 w-full">
+<!-- CURRENT HERO CARD -->
+<article class="rounded-[24px] p-7 bg-white/12 dark:bg-[#0c1323]/55 backdrop-blur-[20px] border border-white/20 shadow-[0_12px_36px_0_rgba(0,0,0,0.25)] flex flex-col gap-5 relative overflow-hidden">
+<!-- Ambient internal refraction flare -->
+<div class="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-tertiary/20 blur-3xl pointer-events-none"></div>
+<!-- Section Label -->
+<div class="flex items-center justify-between">
+<span class="font-section-label text-section-label uppercase tracking-[0.08em] text-on-surface-variant/80 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+              Kyoto · Now 4:40 PM
+            </span>
+<span class="text-[12px] font-metric-value px-2 py-0.5 rounded-full bg-white/10 text-on-surface-variant">Live station #KY-01</span>
+</div>
+<!-- Hero Temp Display -->
+<div class="flex items-baseline gap-5">
+<span class="font-headline-hero text-headline-hero font-light tracking-[-0.04em] text-white leading-none">21°</span>
+<div class="flex flex-col gap-0.5 text-on-surface-variant">
+<span class="font-metric-value text-metric-value font-medium text-white/90">Feels 20°</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant/90">H 22° · L 14°</span>
+</div>
+</div>
+<!-- Editorial Human Summary -->
+<p class="font-human-summary text-human-summary font-medium text-white leading-snug">
+            Golden light now, showers after seven.
+          </p>
+<!-- Context Tag Pill -->
+<div class="self-start inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/15 border border-tertiary/30 text-tertiary-fixed font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-tertiary">wb_twilight</span>
+<span>3° above normal for late October</span>
+</div>
+<!-- Alert Row (Coral / red glass banner) -->
+<div class="w-full rounded-xl p-3 bg-[#34D399]/15 border-l-[3px] border-l-[#34D399] border border-[#34D399]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 backdrop-blur-md"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-[#34D399]">water_drop</span><span class="font-body-sm text-body-sm text-white font-medium">Dew point 11° · crisp, not muggy</span></div><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-[#34D399]">eco</span><span class="font-body-sm text-body-sm text-white font-medium">Air quality 32 · comfortable</span></div></div>
+</article>
+<!-- WHAT TO WEAR & BRING CARD -->
+<article class="rounded-[20px] p-5 bg-white/12 dark:bg-[#0c1323]/50 backdrop-blur-[20px] border border-white/18 shadow-[0_8px_30px_0_rgba(0,0,0,0.2)] flex flex-col gap-3">
+<div class="flex items-center gap-2.5 text-on-surface-variant">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[20px]">checkroom</span>
+<span class="material-symbols-outlined text-[20px]">umbrella</span>
+</div>
+<h2 class="font-section-label text-section-label uppercase tracking-wider text-on-surface font-semibold">What to wear &amp; bring</h2>
+</div>
+<p class="font-body-md text-body-md text-white/90 leading-relaxed">
+            Sunglasses for now, umbrella by seven. Bring a light jacket for the walk home, as it feels 4° cooler in the shade.
+          </p>
+</article>
+<!-- BEST WINDOW BADGE CARD (Emerald 4px accent) -->
+<article class="rounded-[20px] p-5 bg-white/12 dark:bg-[#0c1323]/50 backdrop-blur-[20px] border-l-4 border-l-[#34D399] border border-white/18 shadow-[0_8px_30px_0_rgba(0,0,0,0.2)] flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-[#34D399]">sprint</span>
+<span class="font-section-label text-section-label uppercase tracking-widest text-[#34D399] font-bold">Best time outside</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-[#34D399]/15 text-[#34D399] text-[11px] font-semibold">OPTIMAL</span>
+</div>
+<div class="font-headline-md text-headline-md font-semibold text-[#34D399]">Best run: Now – 5:40 PM · also Sat 9–11 AM</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span>Dry</span>
+<span class="text-outline">•</span>
+<span>Golden light</span>
+<span class="text-outline">•</span>
+<span>Wind 9 km/h</span>
+</div>
+</article>
+<!-- SKY WATCH CARD -->
+<article class="rounded-[20px] p-5 bg-white/12 dark:bg-[#0c1323]/50 backdrop-blur-[20px] border border-white/18 shadow-[0_8px_30px_0_rgba(0,0,0,0.2)] flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-tertiary">wb_twilight</span>
+<h2 class="font-section-label text-section-label uppercase tracking-wider text-on-surface font-semibold">Sky Watch</h2>
+</div>
+<span class="text-body-sm font-body-sm text-tertiary font-medium">42 mins left</span>
+</div>
+<div class="font-day-label text-day-label text-white font-medium -mt-1">
+            Golden hour 4:30–5:12 PM
+          </div>
+<!-- Sun-Arc Mini Chart SVG Visualization -->
+<div class="w-full relative py-2">
+<svg class="w-full h-24 overflow-visible" fill="none" viewbox="0 0 440 90" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="arcGlow" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#FBBF24" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#FBBF24" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient id="horizonGrad" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="rgba(255,255,255,0.08)"></stop>
+<stop offset="50%" stop-color="rgba(251,191,36,0.5)"></stop>
+<stop offset="100%" stop-color="rgba(255,255,255,0.08)"></stop>
+</lineargradient>
+</defs>
+<!-- Horizon Base Line -->
+<line stroke="url(#horizonGrad)" stroke-dasharray="3 3" stroke-width="1.5" x1="10" x2="430" y1="70" y2="70"></line>
+<text fill="rgba(220, 226, 249, 0.5)" font-family="Inter" font-size="11" x="14" y="85">Dawn 06:14</text>
+<text fill="rgba(220, 226, 249, 0.5)" font-family="Inter" font-size="11" x="360" y="85">Sunset 17:12</text>
+<!-- Arc Projection -->
+<path d="M 20 70 Q 220 -20 420 70" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"></path>
+<path d="M 20 70 Q 220 -20 420 70 L 420 70 L 20 70 Z" fill="url(#arcGlow)"></path>
+<!-- Active Traveled Sun Arc -->
+<path d="M 20 70 Q 185 -10 375 60" fill="none" stroke="#FBBF24" stroke-width="2.5"></path>
+<!-- Sun Position Indicator (42 mins before sunset) -->
+<circle cx="375" cy="60" fill="#FBBF24" fill-opacity="0.3" r="10"></circle>
+<circle cx="375" cy="60" fill="#FBBF24" r="5"></circle>
+<circle cx="375" cy="60" fill="#FFFFFF" r="1.5"></circle>
+</svg>
+</div>
+<!-- Key observations -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm font-body-sm pt-1 border-t border-white/10">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+<span class="text-on-surface-variant">Quality: <strong class="text-white font-medium">vivid (low cloud 10%)</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+<span class="text-on-surface-variant">Stargazing: <strong class="text-white font-medium">poor (rain)</strong></span>
+</div>
+</div>
+</article>
+<!-- STEP OUTSIDE CARD (vs. yesterday) -->
+<article class="rounded-[20px] p-5 bg-white/12 dark:bg-[#0c1323]/50 backdrop-blur-[20px] border border-white/18 shadow-[0_8px_30px_0_rgba(0,0,0,0.2)] flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-section-label text-section-label uppercase tracking-wider text-on-surface-variant">vs. Yesterday</span>
+<span class="material-symbols-outlined text-[18px] text-tertiary">trending_up</span>
+</div>
+<div class="font-body-md text-body-md font-semibold text-white">
+            Noticeably warmer (+4°) and drier
+          </div>
+<div class="flex flex-col gap-3 pt-1">
+<!-- Temp comparison bar -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Temperature (Peak)</span>
+<span class="text-white font-metric-value">Yesterday 17° <span class="text-primary font-bold">→ Today 21°</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute left-0 top-0 h-full w-[65%] bg-white/30 rounded-full"></div>
+<div class="absolute left-0 top-0 h-full w-[82%] bg-gradient-to-r from-primary to-tertiary rounded-full opacity-90"></div>
+</div>
+</div>
+<!-- Humidity comparison bar -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Relative Humidity</span>
+<span class="text-white font-metric-value">Yesterday 68% <span class="text-secondary font-bold">→ Today 49%</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute left-0 top-0 h-full w-[68%] bg-white/30 rounded-full"></div>
+<div class="absolute left-0 top-0 h-full w-[49%] bg-secondary rounded-full"></div>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- ================= RIGHT COLUMN (688px wide column stack) ================= -->
+<div class="flex flex-col gap-5 w-full">
+<!-- 24-HOUR TIMELINE CARD -->
+<article class="rounded-[24px] p-6 bg-white/12 dark:bg-[#0c1323]/55 backdrop-blur-[20px] border border-white/20 shadow-[0_12px_36px_0_rgba(0,0,0,0.25)] flex flex-col gap-5">
+<!-- Timeline Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">schedule</span>
+<h2 class="font-section-label text-section-label uppercase tracking-wider text-on-surface font-semibold">Next 24 Hours</h2>
+</div>
+<!-- View switch pills -->
+<div class="h-8 p-0.5 rounded-full bg-white/10 border border-white/15 flex items-center"><button class="h-full px-3 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" type="button">Summary</button><button class="h-full px-3 rounded-full text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" type="button">Precipitation</button><button class="h-full px-3 rounded-full bg-white/25 text-white font-body-sm text-body-sm font-medium shadow-sm" type="button">Wind &amp; UV</button></div>
+</div>
+<!-- Timeline Track Container -->
+<div class="relative w-full overflow-x-auto pb-4 scrollbar-none [mask-image:linear-gradient(to_right,white_90%,transparent)]">
+<!-- Continuous SVG Bezier Temperature Curve Across All Columns -->
+<div class="relative w-[760px] h-[260px]">
+<!-- Background temperature curve SVG -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewbox="0 0 760 260">
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="tempArea" x1="0" x2="0" y1="120" y2="240">
+<stop offset="0%" stop-color="#FFB787" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#0c1323" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Area Fill -->
+<path d="M 32 152 C 64 154, 96 158, 140 168 C 180 178, 220 188, 280 200 C 340 212, 400 216, 460 220 C 520 224, 600 224, 728 224 L 728 250 L 32 250 Z" fill="url(#tempArea)"></path>
+<!-- Glow Stroke -->
+<path d="M 32 152 C 64 154, 96 158, 140 168 C 180 178, 220 188, 280 200 C 340 212, 400 216, 460 220 C 520 224, 600 224, 728 224" stroke="#FFB787" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Dots at data points -->
+<circle cx="32" cy="152" fill="#FFB787" r="4" stroke="#ffffff" stroke-width="1.5"></circle>
+<circle cx="96" cy="158" fill="#FFB787" r="3.5"></circle>
+<circle cx="172" cy="174" fill="#FBBF24" r="3.5"></circle>
+<circle cx="240" cy="190" fill="#7BD0FF" r="3.5"></circle>
+<circle cx="304" cy="200" fill="#7BD0FF" r="3.5"></circle>
+<circle cx="368" cy="208" fill="#7BD0FF" r="3.5"></circle>
+<circle cx="432" cy="214" fill="#7BD0FF" r="3.5"></circle>
+<circle cx="496" cy="218" fill="#7BD0FF" r="3.5"></circle>
+<circle cx="560" cy="221" fill="#DCE2F9" r="3.5"></circle>
+<circle cx="624" cy="224" fill="#DCE2F9" r="3.5"></circle>
+<circle cx="688" cy="224" fill="#DCE2F9" r="3.5"></circle>
+</svg>
+<!-- Columns flex overlay aligned with SVG curve data coordinates -->
+<div class="absolute inset-0 flex items-start gap-2"><div class="w-16 h-full p-2 rounded-2xl bg-white/20 dark:bg-surface-container-high/80 backdrop-blur-2xl border border-white/30 flex flex-col items-center justify-between shrink-0 shadow-lg"><span class="font-day-label text-[13px] font-bold text-white">Now</span><span class="w-6 h-6 rounded-full bg-[#34D399]/30 flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.6)] ring-1 ring-[#34D399]"><span class="material-symbols-outlined text-[15px] text-[#34D399]">sprint</span></span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-tertiary">UV 2</span><span class="text-[11px] font-metric-value text-white/90">9 km/h</span></div><span class="font-metric-value text-metric-value font-bold text-white">21°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant font-medium">5 PM</span><span class="w-6 h-6 rounded-full bg-[#34D399]/30 flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.6)] ring-1 ring-[#34D399]"><span class="material-symbols-outlined text-[15px] text-[#34D399]">sprint</span></span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-tertiary">UV 1</span><span class="text-[11px] font-metric-value text-white/90">11 km/h</span></div><span class="font-metric-value text-metric-value text-white">20°</span></div><div class="w-[88px] h-full p-2 rounded-xl bg-amber-500/10 border border-amber-400/25 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm font-semibold text-tertiary">5:12 PM</span><span class="px-1.5 py-0.5 rounded-full bg-amber-400/20 text-tertiary text-[10px] font-bold uppercase tracking-wider">Sunset</span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-tertiary">UV 0</span><span class="text-[11px] font-metric-value text-tertiary">12 km/h</span></div><span class="font-metric-value text-metric-value text-tertiary font-semibold">18°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">6 PM</span><div class="w-6 h-6"></div><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">14 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">16°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">7 PM</span><div class="w-6 h-6"></div><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">16 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">15°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">8 PM</span><span class="px-1.5 py-0.5 rounded-full bg-white/10 text-on-surface-variant text-[9px] font-medium">Not ideal</span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">18 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">14°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">9 PM</span><span class="px-1.5 py-0.5 rounded-full bg-white/10 text-on-surface-variant text-[9px] font-medium">Not ideal</span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">17 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">14°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">10 PM</span><span class="px-1.5 py-0.5 rounded-full bg-white/10 text-on-surface-variant text-[9px] font-medium">Not ideal</span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">15 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">13°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">11 PM</span><span class="px-1.5 py-0.5 rounded-full bg-white/10 text-on-surface-variant text-[9px] font-medium">Not ideal</span><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">14 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">13°</span></div><div class="w-16 h-full p-2 flex flex-col items-center justify-between shrink-0"><span class="font-body-sm text-body-sm text-on-surface-variant">12 AM</span><div class="w-6 h-6"></div><div class="flex flex-col items-center gap-0.5"><span class="text-[10px] font-semibold text-on-surface-variant/70">UV 0</span><span class="text-[11px] font-metric-value text-white/90">13 km/h</span></div><span class="font-metric-value text-metric-value text-white/90">13°</span></div></div>
+</div>
+</div>
+</article>
+<!-- 7-DAY FORECAST CARD -->
+<article class="rounded-[24px] p-6 bg-white/12 dark:bg-[#0c1323]/55 backdrop-blur-[20px] border border-white/20 shadow-[0_12px_36px_0_rgba(0,0,0,0.25)] flex flex-col gap-4">
+<!-- Forecast Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-tertiary">calendar_view_week</span>
+<h2 class="font-section-label text-section-label uppercase tracking-wider text-on-surface font-semibold">7-Day Forecast</h2>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Week range <strong class="text-white font-metric-value">9°–22°</strong></span>
+</div>
+<!-- Forecast Rows List -->
+<div class="flex flex-col gap-2 w-full">
+<!-- Day 1: Today -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<!-- Zone 1 (35%): Day label + summary -->
+<div class="w-[35%] flex flex-col">
+<span class="font-day-label text-day-label font-semibold text-white">Today</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Warm, then evening showers</span>
+</div>
+<!-- Zone 2 (15%): Weather icon + rain% -->
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-secondary">rainy</span>
+<span class="text-[12px] font-metric-value font-semibold text-[#38BDF8]">80%</span>
+</div>
+<!-- Zone 3 (40%): Temp range bar -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">14°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<!-- Relative range 9°-22° (span 13°). 14° to 22° is offset (14-9)/13=38%, width (22-14)/13=62% -->
+<div class="absolute top-0 bottom-0 left-[38%] w-[62%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FBBF24]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">22°</span>
+</div>
+<!-- Zone 4 (10%): Chevron -->
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+<!-- Day 2: Sat (EXPANDED STATE) -->
+<div class="rounded-xl bg-white/20 dark:bg-surface-container-high/70 border border-white/30 shadow-md flex flex-col overflow-hidden">
+<div class="h-[60px] px-4 flex items-center justify-between">
+<!-- Zone 1 (35%) -->
+<div class="w-[35%] flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-day-label text-day-label font-semibold text-white">Sat</span>
+<span class="px-2 py-0.5 rounded-full bg-white/15 text-[10px] font-medium text-white uppercase tracking-wider">Tomorrow</span>
+<span class="px-2 py-0.5 rounded-full bg-[#34D399]/20 text-[#34D399] text-[10px] font-medium">Great hike day</span></div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Crisp and breezy</span>
+</div>
+<!-- Zone 2 (15%) -->
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-primary">air</span>
+<span class="text-[12px] font-metric-value text-on-surface-variant/60">0%</span>
+</div>
+<!-- Zone 3 (40%): Temp range (11° to 17°) -> offset (11-9)/13=15%, width (17-11)/13=46% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">11°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-[15%] w-[46%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FFB787]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">17°</span>
+</div>
+<!-- Zone 4 (10%): Chevron down -->
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-white">expand_more</span>
+</div>
+</div>
+<!-- Saturday Expanded Drawer (+200px glass sub-panel) -->
+<div class="px-4 pb-4 pt-2 border-t border-white/15 flex flex-col gap-3.5 bg-black/10">
+<!-- 4 mini diagnostic tiles (2x2 grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+<!-- Tile 1: UV Peak -->
+<div class="p-3 rounded-lg bg-white/10 dark:bg-surface-container/60 border border-white/10 flex items-center gap-3">
+<span class="material-symbols-outlined text-[22px] text-tertiary">wb_sunny</span>
+<div class="flex flex-col">
+<span class="text-[11px] font-section-label uppercase tracking-wider text-on-surface-variant">UV Index</span>
+<span class="text-body-sm font-body-sm text-white font-medium">Peak 11 AM–1 PM · <strong class="text-tertiary font-bold">Mod 4</strong></span>
+</div>
+</div>
+<!-- Tile 2: Air Quality -->
+<div class="p-3 rounded-lg bg-white/10 dark:bg-surface-container/60 border border-white/10 flex items-center gap-3">
+<span class="material-symbols-outlined text-[22px] text-[#34D399]">eco</span>
+<div class="flex flex-col">
+<span class="text-[11px] font-section-label uppercase tracking-wider text-on-surface-variant">Air Quality</span>
+<span class="text-body-sm font-body-sm text-white font-medium">Comfortable · <strong class="text-[#34D399] font-bold">AQI 32</strong></span>
+</div>
+</div>
+<!-- Tile 3: Wind Chill -->
+<div class="p-3 rounded-lg bg-white/10 dark:bg-surface-container/60 border border-white/10 flex items-center gap-3">
+<span class="material-symbols-outlined text-[22px] text-secondary">air</span>
+<div class="flex flex-col">
+<span class="text-[11px] font-section-label uppercase tracking-wider text-on-surface-variant">Wind &amp; Gusts</span>
+<span class="text-body-sm font-body-sm text-white font-medium">Feels 2° colder in the gusts</span>
+</div>
+</div>
+<!-- Tile 4: Weekend Confidence with Circular SVG Gauge -->
+<div class="p-3 rounded-lg bg-white/10 dark:bg-surface-container/60 border border-white/10 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] font-section-label uppercase tracking-wider text-on-surface-variant">Forecast Model</span>
+<span class="text-body-sm font-body-sm text-white font-medium">Weekend confidence 82%</span>
+</div>
+<!-- Ring Gauge -->
+<div class="relative w-10 h-10 shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-white/15" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-[#34D399]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="82, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">82%</span>
+</div>
+</div>
+</div>
+<!-- Lifestyle Tags Row -->
+<div class="flex items-center gap-2 pt-0.5">
+<span class="px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] font-body-sm text-white flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-[#34D399]">local_laundry_service</span>
+                    Good laundry day
+                  </span>
+<span class="px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] font-body-sm text-white flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-tertiary">hiking</span>
+                    Great for a hike
+                  </span>
+<span class="px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-[12px] font-body-sm text-white/80 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-secondary">bike_scooter</span>
+                    Dry bike commute
+                  </span>
+</div>
+</div>
+</div>
+<!-- Day 3: Sun -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<div class="w-[35%] flex flex-col"><div class="flex items-center gap-2"><span class="font-day-label text-day-label font-semibold text-white">Sun</span><span class="px-2 py-0.5 rounded-full bg-[#34D399]/20 text-[#34D399] text-[10px] font-medium">Cold start, layer up</span></div><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Cold start, sunny afternoon</span></div>
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-tertiary">sunny</span>
+<span class="text-[12px] font-metric-value text-on-surface-variant/60">0%</span>
+</div>
+<!-- Range 9°–16°: offset (9-9)/13=0%, width (16-9)/13=53% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">9°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-0 w-[53%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FFB787]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">16°</span>
+</div>
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+<!-- Day 4: Mon -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<div class="w-[35%] flex flex-col">
+<span class="font-day-label text-day-label font-semibold text-white">Mon</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Calm, bright, still</span>
+</div>
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-tertiary">wb_sunny</span>
+<span class="text-[12px] font-metric-value text-on-surface-variant/60">10%</span>
+</div>
+<!-- Range 10°–18°: offset (10-9)/13=7%, width (18-10)/13=61% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">10°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-[7%] w-[61%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FBBF24]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">18°</span>
+</div>
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+<!-- Day 5: Tue -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<div class="w-[35%] flex flex-col">
+<span class="font-day-label text-day-label font-semibold text-white">Tue</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Mild under high clouds</span>
+</div>
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-secondary">partly_cloudy_day</span>
+<span class="text-[12px] font-metric-value text-on-surface-variant/60">15%</span>
+</div>
+<!-- Range 12°–19°: offset (12-9)/13=23%, width (19-12)/13=53% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">12°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-[23%] w-[53%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FBBF24]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">19°</span>
+</div>
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+<!-- Day 6: Wed -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<div class="w-[35%] flex flex-col">
+<span class="font-day-label text-day-label font-semibold text-white">Wed</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Soft gray drizzle</span>
+</div>
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-secondary">rainy</span>
+<span class="text-[12px] font-metric-value font-semibold text-[#38BDF8]">40%</span>
+</div>
+<!-- Range 13°–20°: offset (13-9)/13=30%, width (20-13)/13=53% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">13°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-[30%] w-[53%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FBBF24]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">20°</span>
+</div>
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+<!-- Day 7: Thu -->
+<div class="h-[60px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition-colors">
+<div class="w-[35%] flex flex-col">
+<span class="font-day-label text-day-label font-semibold text-white">Thu</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Clearing, gentle breeze</span>
+</div>
+<div class="w-[15%] flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-primary">air</span>
+<span class="text-[12px] font-metric-value text-on-surface-variant/60">10%</span>
+</div>
+<!-- Range 12°–19°: offset (12-9)/13=23%, width 53% -->
+<div class="w-[40%] flex items-center gap-3">
+<span class="font-metric-value text-metric-value text-on-surface-variant w-7 text-right">12°</span>
+<div class="flex-1 h-2 rounded-full bg-white/10 relative overflow-hidden">
+<div class="absolute top-0 bottom-0 left-[23%] w-[53%] rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FBBF24]"></div>
+</div>
+<span class="font-metric-value text-metric-value text-white font-semibold w-7">19°</span>
+</div>
+<div class="w-[10%] flex justify-end">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant/60">chevron_right</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</div>
+</div></main><footer class="w-full bg-surface-container-lowest/60 backdrop-blur-2xl py-space-xl mt-space-xl"><div class="max-w-[1280px] mx-auto px-margin-lg flex flex-col md:flex-row items-center justify-between gap-space-lg text-on-surface-variant font-body-sm text-body-sm"><div class="flex items-center gap-space-md"><span class="font-headline-md text-headline-md text-primary font-medium tracking-tight">Aerie</span><span class="text-outline">|</span><span>Editorial Meteorology &amp; Atmospheric Telemetry</span></div><div class="flex items-center gap-space-lg"><span class="tabular-nums">Station Ref: #AER-9924-REY</span><span class="text-outline">•</span><span class="text-on-surface-variant">© 2025 Aerie Meteorological Observatory</span></div></div></footer></body></html>

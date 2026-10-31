@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    overscroll-behavior: none;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  /* Modern clean scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+  
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Atmospheric Sky Canvases from Aerie Design System */
+.sky-golden-hour {
+  background: linear-gradient(180deg, #1F2A44 0%, #7A3A16 52%, #D9782D 100%);
+}
+
+.sky-clear-noon {
+  background: linear-gradient(180deg, #1E5AA8 0%, #3075BF 55%, #4F8FD0 100%);
+}
+
+.sky-overcast {
+  background: linear-gradient(180deg, #323A48 0%, #546072 55%, #7C8798 100%);
+}
+
+.sky-night {
+  background: linear-gradient(180deg, #0B1222 0%, #131E33 50%, #1E293B 100%);
+}
+
+.sky-dawn {
+  background: linear-gradient(180deg, #1a2238 0%, #462c4c 45%, #b86256 80%, #f4aa6b 100%);
+}
+
+.sky-storm {
+  background: linear-gradient(180deg, #111827 0%, #1f293d 50%, #374151 100%);
+}
+
+/* Glass Refraction Tokens */
+.glass-container {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.20);
+}
+
+.glass-raised {
+  background: rgba(255, 255, 255, 0.20);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.28);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-pill-active {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Glow effects */
+.sun-glow {
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.4);
+}
+
+.moon-glow {
+  box-shadow: 0 0 20px rgba(224, 231, 255, 0.3);
+}
+
+.emerald-glow {
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
+}
+
+/* Smooth Atmospheric transitions */
+.atmospheric-canvas {
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+

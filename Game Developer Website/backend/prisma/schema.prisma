@@ -1,0 +1,102 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Project {
+  id                  String             @id @default(uuid())
+  slug                String             @unique
+  title               String
+  tagline             String
+  releaseStatus       String // Shipped, In Development, Vertical Slice, Game Jam Winner
+  engine              String // Unity, Godot, Unreal, WebGL / TypeScript, Custom C++ / Rust
+  role                String
+  teamSize            Int                @default(1)
+  developmentDuration String
+  heroTrailerUrl      String
+  playableDemoUrl     String?
+  externalLinksJson   String // { steam, itch, github, pressKit }
+  pressKitJson        String // { bio, awards, quotes, specs, assets }
+  featuredOrder       Int                @default(0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  chapters            TrailerChapter[]
+  mechanics           MechanicBreakdown[]
+  devLogs             DevLogEntry[]
+  telemetrySessions   PlaytestSession[]
+  feedbackPins        FeedbackPin[]
+}
+
+model TrailerChapter {
+  id           String   @id @default(uuid())
+  projectId    String
+  title        String
+  timestampSec Float
+  description  String
+  orderIndex   Int      @default(0)
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model MechanicBreakdown {
+  id                    String   @id @default(uuid())
+  projectId             String
+  title                 String
+  summary               String
+  discipline            String // Gameplay Systems, Technical Art, AI & Pathfinding, Multiplayer Netcode, UI / UX Architecture
+  greyboxMediaUrl       String
+  polishedMediaUrl      String
+  interactiveParamsJson String // Array of { key, label, defaultValue, impactDescription }
+  codeSnippetJson       String? // { language, code, explanation }
+  telemetryStatsJson    String // { frameBudgetMs, drawCalls, memoryFootprintMb }
+  orderIndex            Int      @default(0)
+
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model DevLogEntry {
+  id                    String   @id @default(uuid())
+  slug                  String   @unique
+  projectId             String
+  versionTag            String // e.g. "v0.4.2 - Combat Overhaul"
+  title                 String
+  publishedAt           DateTime @default(now())
+  readingTimeMinutes    Int      @default(5)
+  tagsJson              String // Array of DisciplineTag
+  summary               String
+  contentMarkdown       String
+  benchmarksJson        String? // Array of { metric, before, after, improvementPercent }
+  interactiveWidgetType String? // "collision-tunneling" | "spring-camera" | "verlet-cloth"
+
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model PlaytestSession {
+  id               String   @id @default(uuid())
+  projectId        String
+  durationSeconds  Float
+  averageFps       Float
+  hardwareRenderer String
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model FeedbackPin {
+  id               String   @id @default(uuid())
+  projectId        String
+  targetType       String // 'trailer' | 'devlog'
+  timestampSec     Float?
+  devlogSectionId  String?
+  authorName       String
+  feedbackText     String
+  rating           Int      @default(5)
+  createdAt        DateTime @default(now())
+
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
