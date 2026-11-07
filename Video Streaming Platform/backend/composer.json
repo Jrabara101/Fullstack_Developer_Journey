@@ -1,0 +1,37 @@
+{
+  "name": "cinestream/media-api",
+  "type": "project",
+  "description": "High-Performance Cinema-Grade Video Streaming & Transcoding API (Laravel, FFmpeg, HLS, Redis)",
+  "keywords": ["laravel", "ffmpeg", "hls", "abr", "streaming", "redis", "video"],
+  "license": "MIT",
+  "require": {
+    "php": "^8.2|^8.3|^8.4",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

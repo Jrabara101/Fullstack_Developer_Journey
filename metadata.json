@@ -1,0 +1,6 @@
+{
+  "name": "V-Nexus Video Stream & QoE Infrastructure",
+  "description": "Enterprise video streaming, upload pipeline, adaptive bitrate player, infrastructure economics, and real-time QoE observability dashboard in Sophisticated Dark theme.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
