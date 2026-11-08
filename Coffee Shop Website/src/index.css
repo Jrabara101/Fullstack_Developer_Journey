@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canvas-oat: #FAF6F0;
+    --canvas-parchment: #F2EAE0;
+    --surface-ceramic: #FFFDF9;
+    --surface-roast: #1C1512;
+    --text-primary: #231915;
+    --text-secondary: #5C4940;
+    --accent-terracotta: #C86D44;
+  }
+
+  body {
+    background-color: #FAF6F0;
+    color: #231915;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Fraunces', Georgia, serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Tactile craft stamp dashed border */
+.border-craft-stamp {
+  border-style: dashed;
+  border-width: 1.5px;
+  border-color: rgba(44, 30, 24, 0.18);
+}
+
+.border-linen-hairline {
+  border: 1px solid rgba(44, 30, 24, 0.10);
+}
+
+/* Subtle paper grain texture */
+.paper-texture {
+  background-image: radial-gradient(rgba(44, 30, 24, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+/* Custom warm scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F2EAE0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CDBEB2;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8C7A70;
+}
+
+/* Gentle steam drift animation */
+@keyframes steamDrift {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-8px) scaleX(1.1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-16px) scaleX(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-steam {
+  animation: steamDrift 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Vinyl Spin */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}

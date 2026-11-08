@@ -1,0 +1,17 @@
+{
+  "name": "artist-flagship-platform",
+  "version": "2.6.0",
+  "description": "Atmospheric, Artist-Owned Digital Flagship & Direct-to-Fan Commerce Engine with Web Audio Stem Isolator",
+  "scripts": {
+    "start": "npm run start:backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start:backend": "npm --prefix backend start",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}
