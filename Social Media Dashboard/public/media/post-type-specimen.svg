@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#FAFAFA"/>
+  <rect x="52" y="52" width="696" height="896" fill="none" stroke="#0F172A" stroke-width="4"/>
+  <circle cx="400" cy="400" r="210" fill="#2563EB"/>
+  <circle cx="490" cy="490" r="145" fill="#EC4899" opacity="0.82"/>
+  <text x="90" y="170" font-family="sans-serif" font-weight="800" font-size="64" fill="#0F172A">AA 26</text>
+  <text x="90" y="830" font-family="monospace" font-size="24" fill="#0F172A">SWISS EDITORIAL • GRID 04</text>
+</svg>

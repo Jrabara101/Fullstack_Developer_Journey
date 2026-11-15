@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+  <defs>
+    <radialGradient id="studioSpot" cx="50%" cy="46%" r="58%">
+      <stop offset="0%" stop-color="#22252A" />
+      <stop offset="58%" stop-color="#111316" />
+      <stop offset="100%" stop-color="#08090B" />
+    </radialGradient>
+    <linearGradient id="bezelRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4A4E57" />
+      <stop offset="45%" stop-color="#1C1E22" />
+      <stop offset="100%" stop-color="#0C0D0F" />
+    </linearGradient>
+    <radialGradient id="ceramicDial" cx="46%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#1B1D21" />
+      <stop offset="100%" stop-color="#0D0E10" />
+    </radialGradient>
+    <linearGradient id="brassHand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E7BA68" />
+      <stop offset="100%" stop-color="#A87424" />
+    </linearGradient>
+    <linearGradient id="sapphireGlare" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.16" />
+      <stop offset="42%" stop-color="#FFFFFF" stop-opacity="0.02" />
+      <stop offset="43%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="100%" stop-color="#C88D32" stop-opacity="0.06" />
+    </linearGradient>
+    <filter id="caseShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="38" stdDeviation="40" flood-color="#000000" flood-opacity="0.72" />
+    </filter>
+  </defs>
+
+  <!-- Darkroom Backdrop -->
+  <rect width="1200" height="1200" fill="url(#studioSpot)" />
+
+  <!-- Subtle concentric architectural studio halo -->
+  <circle cx="600" cy="600" r="490" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1" />
+  <circle cx="600" cy="600" r="545" fill="none" stroke="rgba(200,141,50,0.05)" stroke-width="1" />
+
+  <!-- Watch Lugs & Crown -->
+  <g fill="#1D2025" stroke="#363A42" stroke-width="1.5">
+    <rect x="462" y="138" width="44" height="124" rx="6" />
+    <rect x="694" y="138" width="44" height="124" rx="6" />
+    <rect x="462" y="938" width="44" height="124" rx="6" />
+    <rect x="694" y="938" width="44" height="124" rx="6" />
+    <rect x="976" y="566" width="38" height="68" rx="6" fill="#C88D32" stroke="#855C1E" />
+  </g>
+
+  <!-- Case Bezel -->
+  <g filter="url(#caseShadow)">
+    <circle cx="600" cy="600" r="392" fill="url(#bezelRing)" stroke="#585C65" stroke-width="2" />
+    <circle cx="600" cy="600" r="364" fill="url(#ceramicDial)" stroke="#282B31" stroke-width="2" />
+  </g>
+
+  <!-- Minute Track & Precision Indices -->
+  <g transform="translate(600,600)">
+    <!-- 12 Major Bauhaus Baton Indices -->
+    <g stroke="#E8E4DA" stroke-linecap="butt">
+      <line x1="0" y1="-340" x2="0" y2="-298" stroke-width="4" />
+      <line x1="170" y1="-294.4" x2="149" y2="-258" stroke-width="2.5" />
+      <line x1="294.4" y1="-170" x2="258" y2="-149" stroke-width="2.5" />
+      <line x1="340" y1="0" x2="298" y2="0" stroke-width="4" />
+      <line x1="294.4" y1="170" x2="258" y2="149" stroke-width="2.5" />
+      <line x1="170" y1="294.4" x2="149" y2="258" stroke-width="2.5" />
+      <line x1="0" y1="340" x2="0" y2="298" stroke-width="4" />
+      <line x1="-170" y1="294.4" x2="-149" y2="258" stroke-width="2.5" />
+      <line x1="-294.4" y1="170" x2="-258" y2="149" stroke-width="2.5" />
+      <line x1="-340" y1="0" x2="-298" y2="0" stroke-width="4" />
+      <line x1="-294.4" y1="-170" x2="-258" y2="-149" stroke-width="2.5" />
+      <line x1="-170" y1="-294.4" x2="-149" y2="-258" stroke-width="2.5" />
+    </g>
+
+    <!-- Amber 5-minute numeral dots -->
+    <circle cx="0" cy="-348" r="4" fill="#C88D32" />
+    <circle cx="348" cy="0" r="4" fill="#C88D32" />
+    <circle cx="0" cy="348" r="4" fill="#C88D32" />
+    <circle cx="-348" cy="0" r="4" fill="#C88D32" />
+
+    <!-- Dial Brand & Spec Typography -->
+    <text x="0" y="-170" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="22" font-weight="600" letter-spacing="7" fill="#F4F4F2">CHRONOS</text>
+    <text x="0" y="-140" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="3.5" fill="#8C8982">GLASHÜTTE • CALIBRE KINETIC</text>
+
+    <!-- Kinetic Sub-Dial at 6 o'clock -->
+    <circle cx="0" cy="148" r="88" fill="#131518" stroke="#2D3037" stroke-width="1.5" />
+    <circle cx="0" cy="148" r="76" fill="none" stroke="rgba(200,141,50,0.35)" stroke-width="1" stroke-dasharray="3 9" />
+    <line x1="0" y1="68" x2="0" y2="82" stroke="#C88D32" stroke-width="2" />
+    <line x1="80" y1="148" x2="66" y2="148" stroke="#8C8982" stroke-width="1.5" />
+    <line x1="0" y1="228" x2="0" y2="214" stroke="#8C8982" stroke-width="1.5" />
+    <line x1="-80" y1="148" x2="-66" y2="148" stroke="#8C8982" stroke-width="1.5" />
+    <!-- Sub-dial hand -->
+    <line x1="0" y1="148" x2="46" y2="108" stroke="#C88D32" stroke-width="2.5" stroke-linecap="round" />
+    <circle cx="0" cy="148" r="5" fill="#C88D32" />
+
+    <!-- Kinetic Sweeping Arc Trail -->
+    <path d="M -215 -140 A 256 256 0 0 1 180 -182" fill="none" stroke="#C88D32" stroke-opacity="0.28" stroke-width="2" />
+
+    <!-- Primary Hour & Minute Hands (10:10 Bauhaus poise) -->
+    <g transform="rotate(-56)">
+      <rect x="-6" y="-200" width="12" height="222" rx="2" fill="#EAE6DD" />
+    </g>
+    <g transform="rotate(52)">
+      <rect x="-4" y="-290" width="8" height="320" rx="2" fill="#F4F4F2" />
+    </g>
+    <!-- Brass Kinetic Seconds Needle -->
+    <g transform="rotate(142)">
+      <line x1="0" y1="62" x2="0" y2="-312" stroke="url(#brassHand)" stroke-width="2.5" />
+      <circle cx="0" cy="-240" r="5" fill="#C88D32" />
+    </g>
+
+    <!-- Center Pinion -->
+    <circle cx="0" cy="0" r="14" fill="#C88D32" />
+    <circle cx="0" cy="0" r="5" fill="#0D0E10" />
+  </g>
+
+  <!-- Sapphire Crystal Refraction Overlay -->
+  <circle cx="600" cy="600" r="364" fill="url(#sapphireGlare)" />
+</svg>
+

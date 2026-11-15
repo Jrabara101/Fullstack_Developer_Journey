@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#27272A"/>
+      <stop offset="55%" stop-color="#52525B"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg)"/>
+  <circle cx="360" cy="540" r="240" fill="#FDE68A" opacity="0.22"/>
+  <circle cx="520" cy="360" r="140" fill="#FFFFFF" opacity="0.09"/>
+  <rect x="90" y="340" width="540" height="520" rx="36" fill="#000000" opacity="0.22" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="2"/>
+  
+  
+  <rect x="160" y="430" width="180" height="180" rx="20" fill="#FFFFFF" opacity="0.2"/><rect x="380" y="430" width="180" height="180" rx="20" fill="#FDE68A" opacity="0.5"/><rect x="160" y="640" width="400" height="120" rx="20" fill="#FFFFFF" opacity="0.15"/>
+  <text x="360" y="960" font-family="monospace" font-size="24" font-weight="700" fill="#FFFFFF" opacity="0.55" text-anchor="middle" letter-spacing="6">LIGHT & SHADOW</text>
+</svg>

@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <defs>
+    <linearGradient id="tablePlaster" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ECE9E0" />
+      <stop offset="100%" stop-color="#DDD9CE" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#1A1D19" flood-opacity="0.12" />
+    </filter>
+    <filter id="brassShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="6" dy="10" stdDeviation="8" flood-color="#1A1D19" flood-opacity="0.16" />
+    </filter>
+    <linearGradient id="brassScale" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C8A96B" />
+      <stop offset="50%" stop-color="#DFC48C" />
+      <stop offset="100%" stop-color="#B09052" />
+    </linearGradient>
+  </defs>
+
+  <!-- Studio Plaster Surface -->
+  <rect width="1600" height="900" fill="url(#tablePlaster)" />
+
+  <!-- Subtle architectural north window light shaft -->
+  <polygon points="0,0 740,0 1120,900 0,900" fill="#FFFFFF" opacity="0.22" />
+
+  <!-- Main Archival Poster Specimen Sheet (Center-Left) -->
+  <g filter="url(#cardShadow)">
+    <rect x="130" y="96" width="820" height="708" fill="#F8F6F0" stroke="#D7D2C6" stroke-width="1.5" />
+  </g>
+
+  <!-- Parametric Swiss Grid inside Poster -->
+  <g stroke="#5A6E58" stroke-opacity="0.24" stroke-width="1">
+    <line x1="186" y1="146" x2="186" y2="754" />
+    <line x1="324" y1="146" x2="324" y2="754" />
+    <line x1="462" y1="146" x2="462" y2="754" />
+    <line x1="600" y1="146" x2="600" y2="754" />
+    <line x1="738" y1="146" x2="738" y2="754" />
+    <line x1="894" y1="146" x2="894" y2="754" />
+
+    <line x1="186" y1="146" x2="894" y2="146" />
+    <line x1="186" y1="246" x2="894" y2="246" />
+    <line x1="186" y1="346" x2="894" y2="346" />
+    <line x1="186" y1="496" x2="894" y2="496" />
+    <line x1="186" y1="646" x2="894" y2="646" />
+    <line x1="186" y1="754" x2="894" y2="754" />
+  </g>
+
+  <!-- Poster Typography & Modular Blocks -->
+  <text x="186" y="134" font-family="JetBrains Mono, monospace" font-size="13" fill="#5A6E58" letter-spacing="2.5">FORMA ARCHITECTURAL PRESS • ROTTERDAM • SPEC 013</text>
+  <text x="894" y="134" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="13" fill="#5A6E58" letter-spacing="2">RATIO 1.618 / BASE 8</text>
+
+  <text x="186" y="226" font-family="Plus Jakarta Sans, sans-serif" font-weight="600" font-size="76" fill="#1A1D19" letter-spacing="-3">FORMA 04</text>
+
+  <!-- Sage Spatial Module Blocks -->
+  <rect x="186" y="266" width="276" height="230" fill="#5A6E58" />
+  <rect x="462" y="266" width="276" height="115" fill="#7D917A" />
+  <rect x="462" y="381" width="138" height="115" fill="#1A1D19" />
+  <rect x="600" y="381" width="138" height="115" fill="#DCE2D7" />
+  <circle cx="816" cy="381" r="78" fill="none" stroke="#1A1D19" stroke-width="2" />
+  <line x1="738" y1="381" x2="894" y2="381" stroke="#5A6E58" stroke-width="1.5" />
+  <line x1="816" y1="303" x2="816" y2="459" stroke="#5A6E58" stroke-width="1.5" />
+
+  <text x="206" y="476" font-family="JetBrains Mono, monospace" font-size="14" fill="#F2F0EA" letter-spacing="1.5">MODULAR COLUMN [A1:B3]</text>
+  <text x="186" y="544" font-family="Instrument Serif, Georgia, serif" font-size="38" fill="#1A1D19">Parametric Spatial Grid System</text>
+  <text x="186" y="582" font-family="Plus Jakarta Sans, sans-serif" font-size="16" fill="#5C5A55">Unified editorial proportions across architectural monographs, plinth signage &amp; digital catalogs.</text>
+
+  <!-- Specimen Type Scale Footer -->
+  <g font-family="JetBrains Mono, monospace" font-size="13" fill="#5A6E58">
+    <text x="186" y="688">01 / DISPLAY SERIF — CLAMP(2.5REM, 5VW, 4.5REM)</text>
+    <text x="186" y="714">02 / GROTESK UI — 15PX / LINE-HEIGHT 1.65</text>
+    <text x="186" y="740">03 / TABULAR SPEC — 12PX / TRACKING 0.08EM</text>
+  </g>
+
+  <!-- Secondary Matte Sage Swatch & Token Deck (Right side) -->
+  <g filter="url(#cardShadow)">
+    <rect x="1030" y="130" width="440" height="300" fill="#5A6E58" />
+    <text x="1064" y="182" font-family="JetBrains Mono, monospace" font-size="14" fill="#E4EAE0" letter-spacing="2">PRIMARY SURFACE / #5A6E58</text>
+    <text x="1064" y="212" font-family="JetBrains Mono, monospace" font-size="13" fill="#C7D4C3">OKLCH(0.51 0.04 142)</text>
+    <text x="1064" y="388" font-family="Instrument Serif, Georgia, serif" font-size="64" fill="#F2F0EA">Aa Bb Cc</text>
+  </g>
+
+  <g filter="url(#cardShadow)">
+    <rect x="1030" y="468" width="440" height="296" fill="#1A1D19" />
+    <text x="1064" y="520" font-family="JetBrains Mono, monospace" font-size="14" fill="#9AA696" letter-spacing="2">CARBON INK / #1A1D19</text>
+    <rect x="1064" y="556" width="84" height="84" fill="#F2F0EA" />
+    <rect x="1162" y="556" width="84" height="84" fill="#8EA28A" />
+    <rect x="1260" y="556" width="84" height="84" fill="#5A6E58" />
+    <rect x="1358" y="556" width="84" height="84" fill="#323B31" />
+    <text x="1064" y="716" font-family="JetBrains Mono, monospace" font-size="13" fill="#C7D4C3" letter-spacing="1.5">GRID RATIO 12 × 8 • BASELINE 8PX</text>
+  </g>
+
+  <!-- Brass Architectural Scale Ruler Resting Across Bottom-Right -->
+  <g transform="translate(880, 742) rotate(-7)" filter="url(#brassShadow)">
+    <rect x="0" y="0" width="560" height="44" rx="2" fill="url(#brassScale)" />
+    <g stroke="#4A3B1E" stroke-width="1.2">
+      <line x1="20" y1="0" x2="20" y2="18" />
+      <line x1="40" y1="0" x2="40" y2="11" />
+      <line x1="60" y1="0" x2="60" y2="18" />
+      <line x1="80" y1="0" x2="80" y2="11" />
+      <line x1="100" y1="0" x2="100" y2="22" />
+      <line x1="120" y1="0" x2="120" y2="11" />
+      <line x1="140" y1="0" x2="140" y2="18" />
+      <line x1="160" y1="0" x2="160" y2="11" />
+      <line x1="180" y1="0" x2="180" y2="18" />
+      <line x1="200" y1="0" x2="200" y2="22" />
+      <line x1="220" y1="0" x2="220" y2="11" />
+      <line x1="240" y1="0" x2="240" y2="18" />
+      <line x1="260" y1="0" x2="260" y2="11" />
+      <line x1="280" y1="0" x2="280" y2="18" />
+      <line x1="300" y1="0" x2="300" y2="22" />
+      <line x1="320" y1="0" x2="320" y2="11" />
+      <line x1="340" y1="0" x2="340" y2="18" />
+      <line x1="360" y1="0" x2="360" y2="11" />
+      <line x1="380" y1="0" x2="380" y2="18" />
+      <line x1="400" y1="0" x2="400" y2="22" />
+      <line x1="420" y1="0" x2="420" y2="11" />
+      <line x1="440" y1="0" x2="440" y2="18" />
+      <line x1="460" y1="0" x2="460" y2="11" />
+      <line x1="480" y1="0" x2="480" y2="18" />
+      <line x1="500" y1="0" x2="500" y2="22" />
+    </g>
+    <text x="518" y="29" font-family="JetBrains Mono, monospace" font-size="11" fill="#4A3B1E">1:50</text>
+  </g>
+</svg>
+

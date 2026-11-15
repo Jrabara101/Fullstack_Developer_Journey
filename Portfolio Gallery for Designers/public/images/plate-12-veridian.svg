@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1200" width="960" height="1200">
+  <defs>
+    <linearGradient id="skyGlass" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#DCE4DA" />
+      <stop offset="52%" stop-color="#BAC7B8" />
+      <stop offset="100%" stop-color="#6F8470" />
+    </linearGradient>
+    <linearGradient id="mistBeam" x1="0.1" y1="0" x2="0.85" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.42" />
+      <stop offset="65%" stop-color="#F1F4EE" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#222B23" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="floorSlate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B342C" />
+      <stop offset="100%" stop-color="#171C18" />
+    </linearGradient>
+    <radialGradient id="leafGlow" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#98AD94" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#2B392D" stop-opacity="0" />
+    </radialGradient>
+    <filter id="softBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="8" />
+    </filter>
+    <filter id="microBlur" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="2.4" />
+    </filter>
+  </defs>
+
+  <!-- Misted Conservatory Background -->
+  <rect width="960" height="1200" fill="url(#skyGlass)" />
+  <circle cx="520" cy="480" r="420" fill="url(#leafGlow)" />
+
+  <!-- Soft diffused botanical silhouettes behind glass -->
+  <g filter="url(#softBlur)" opacity="0.65">
+    <path d="M120 960 C160 710 260 560 400 410 C350 610 290 790 250 960 Z" fill="#4E6350" />
+    <path d="M460 960 C480 650 580 420 750 240 C690 520 620 760 590 960 Z" fill="#3D5240" />
+    <path d="M270 960 C340 720 430 570 590 480 C500 660 440 820 410 960 Z" fill="#5D755F" />
+    <ellipse cx="690" cy="540" rx="140" ry="220" transform="rotate(-18 690 540)" fill="#4B624E" opacity="0.7" />
+    <ellipse cx="260" cy="510" rx="110" ry="210" transform="rotate(14 260 510)" fill="#587059" opacity="0.55" />
+  </g>
+
+  <!-- Mid-ground sharper botanical fronds -->
+  <g filter="url(#microBlur)" opacity="0.82">
+    <path d="M510 960 Q530 620 695 360" stroke="#2D3C2F" stroke-width="10" fill="none" stroke-linecap="round" />
+    <ellipse cx="625" cy="480" rx="46" ry="18" transform="rotate(-32 625 480)" fill="#445A47" />
+    <ellipse cx="660" cy="420" rx="40" ry="15" transform="rotate(-24 660 420)" fill="#536B55" />
+    <ellipse cx="585" cy="545" rx="52" ry="20" transform="rotate(-38 585 545)" fill="#384C3B" />
+    <ellipse cx="552" cy="615" rx="56" ry="21" transform="rotate(-44 552 615)" fill="#445A47" />
+    <ellipse cx="705" cy="515" rx="48" ry="18" transform="rotate(18 705 515)" fill="#3B4F3E" />
+    <ellipse cx="665" cy="585" rx="54" ry="19" transform="rotate(14 665 585)" fill="#4D6350" />
+    <ellipse cx="622" cy="655" rx="58" ry="20" transform="rotate(10 622 655)" fill="#354837" />
+  </g>
+
+  <!-- Condensation sheen & Nordic skylight rays -->
+  <polygon points="0,0 560,0 960,680 960,1040 180,1040 0,720" fill="url(#mistBeam)" />
+
+  <!-- Architectural Steel Conservatory Mullions & Arched Truss -->
+  <g stroke="#1D231E" fill="none">
+    <!-- Outer frame -->
+    <rect x="64" y="56" width="832" height="924" stroke-width="14" />
+    <!-- Vertical mullions -->
+    <line x1="272" y1="56" x2="272" y2="980" stroke-width="9" />
+    <line x1="480" y1="56" x2="480" y2="980" stroke-width="12" />
+    <line x1="688" y1="56" x2="688" y2="980" stroke-width="9" />
+    <!-- Horizontal transoms -->
+    <line x1="64" y1="286" x2="896" y2="286" stroke-width="8" />
+    <line x1="64" y1="530" x2="896" y2="530" stroke-width="10" />
+    <line x1="64" y1="766" x2="896" y2="766" stroke-width="8" />
+    <!-- Subtle diagonal tension brace -->
+    <line x1="64" y1="286" x2="480" y2="56" stroke-width="4" opacity="0.7" />
+    <line x1="896" y1="286" x2="480" y2="56" stroke-width="4" opacity="0.7" />
+  </g>
+
+  <!-- Foreground Crisp Botanical Silhouette -->
+  <g fill="#19211A">
+    <path d="M180 980 C210 850 245 770 302 680 C268 785 245 875 232 980 Z" />
+    <path d="M242 820 C190 770 155 752 108 754 C155 785 198 818 232 845 Z" />
+    <path d="M262 768 C312 720 345 698 386 694 C346 728 308 760 255 792 Z" />
+  </g>
+
+  <!-- Wet Basalt Gallery Floor & Reflections -->
+  <rect x="0" y="980" width="960" height="220" fill="url(#floorSlate)" />
+  <rect x="64" y="980" width="832" height="6" fill="#121613" />
+  <!-- Floor light reflection -->
+  <g opacity="0.18" fill="#E4ECE2">
+    <polygon points="74,992 262,992 248,1200 42,1200" />
+    <polygon points="282,992 470,992 465,1200 270,1200" />
+    <polygon points="492,992 678,992 694,1200 495,1200" />
+    <polygon points="700,992 888,992 918,1200 712,1200" />
+  </g>
+
+  <!-- Subtle architectural plate frame border inside -->
+  <rect x="0.5" y="0.5" width="959" height="1199" fill="none" stroke="rgba(24,24,22,0.12)" />
+</svg>
+

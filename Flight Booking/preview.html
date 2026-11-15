@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Calm Airflow · Flight Booking App (Android Capacitor)</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', -apple-system, 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            canvas: '#F6F5F2',
+            primary: '#1C2DC4',
+            'primary-container': '#3B4BDB',
+            'primary-fixed': '#DFE0FF',
+            'primary-tint': '#EEF0FB',
+            'on-surface': '#14161A',
+            'on-surface-variant': '#6B7078',
+            outline: '#757686',
+            'outline-variant': '#E3E1DC',
+            success: '#1F8A5B',
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style>
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      box-sizing: border-box;
+      font-feature-settings: 'tnum' on, 'lnum' on;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: #EDEDF3;
+      margin: 0;
+      padding: 0;
+      overscroll-behavior-y: none;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+    .animate-slideUp {
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+
+  <!-- React 18 & Babel for standalone preview -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- MOCK DATA ---
+    const DATES_STRIP = [
+      { day: 'Wed', date: '9', price: '€151' },
+      { day: 'Thu', date: '10', price: '€139' },
+      { day: 'Fri', date: '11', price: '€148', isSelected: true },
+      { day: 'Sat', date: '12', price: '€124' },
+      { day: 'Sun', date: '13', price: '€162' },
+    ];
+
+    const FLIGHTS_DATA = [
+      {
+        id: 'fl-402',
+        airline: 'Tern Air',
+        flightNumber: 'TN 402',
+        aircraft: 'Airbus A321neo',
+        departureTime: '07:15',
+        departureCode: 'LIS',
+        departureAirport: 'Lisbon Portela T1',
+        arrivalTime: '12:40',
+        arrivalCode: 'CPH',
+        arrivalAirport: 'Copenhagen T3',
+        duration: '4h 25m',
+        isDirect: true,
+        co2Reduction: '-18% CO₂',
+        basePrice: 148,
+        badge: 'Selected',
+      },
+      {
+        id: 'fl-406',
+        airline: 'Tern Air',
+        flightNumber: 'TN 406',
+        aircraft: 'Boeing 737-800',
+        departureTime: '13:20',
+        departureCode: 'LIS',
+        departureAirport: 'Lisbon Portela T1',
+        arrivalTime: '18:45',
+        arrivalCode: 'CPH',
+        arrivalAirport: 'Copenhagen T3',
+        duration: '4h 25m',
+        isDirect: true,
+        basePrice: 172,
+      },
+      {
+        id: 'fl-410',
+        airline: 'Tern Air',
+        flightNumber: 'TN 410',
+        aircraft: 'Airbus A320',
+        departureTime: '19:05',
+        departureCode: 'LIS',
+        departureAirport: 'Lisbon Portela T1',
+        arrivalTime: '00:30',
+        arrivalCode: 'CPH',
+        arrivalAirport: 'Copenhagen T3',
+        duration: '4h 25m',
+        isDirect: true,
+        basePrice: 135,
+      },
+      {
+        id: 'fl-881',
+        airline: 'Aster Air',
+        flightNumber: 'AS 214',
+        aircraft: 'Airbus A320',
+        departureTime: '09:30',
+        departureCode: 'LIS',
+        departureAirport: 'Lisbon Portela T1',
+        arrivalTime: '14:10',
+        arrivalCode: 'CPH',
+        arrivalAirport: 'Copenhagen T3',
+        duration: '3h 40m',
+        isDirect: true,
+        basePrice: 158,
+      },
+    ];
+
+    const FARE_TIERS = [
+      {
+        id: 'light',
+        name: 'Light',
+        subtitle: 'Essential travel, carry-on only',
+        priceDelta: 0,
+        inclusions: [
+          { label: 'Small cabin bag (under seat)', included: true },
+          { label: 'Taxes & airport fees included', included: true },
+          { label: 'Overhead cabin bag (10kg)', included: false },
+          { label: 'Checked bag (23kg)', included: false },
+          { label: 'Seat selection', included: false },
+        ],
+      },
+      {
+        id: 'standard',
+        name: 'Standard',
+        subtitle: 'Balanced comfort with cabin allowance',
+        priceDelta: 36,
+        isPopular: true,
+        inclusions: [
+          { label: 'Small cabin bag + 10kg overhead trolley', included: true },
+          { label: 'Standard seat selection (Rows 8–24)', included: true },
+          { label: 'Taxes & fees included', included: true },
+          { label: 'Checked bag (23kg)', included: false },
+          { label: 'Ticket refundability', included: false },
+        ],
+      },
+      {
+        id: 'plus',
+        name: 'Plus',
+        subtitle: 'Maximum flexibility & heavy luggage',
+        priceDelta: 90,
+        inclusions: [
+          { label: 'Cabin bag + 10kg overhead trolley', included: true },
+          { label: '23kg checked bag included', included: true },
+          { label: 'Free seat selection (any row)', included: true },
+          { label: 'Free ticket exchange & cancellation', included: true },
+        ],
+      },
+    ];
+
+    const INITIAL_SEATS = [
+      { id: '10A', row: 10, letter: 'A', type: 'Window', isExitRow: false, price: 0, isOccupied: true },
+      { id: '10B', row: 10, letter: 'B', type: 'Middle', isExitRow: false, price: 0, isOccupied: true },
+      { id: '10C', row: 10, letter: 'C', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '10D', row: 10, letter: 'D', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '10E', row: 10, letter: 'E', type: 'Middle', isExitRow: false, price: 0, isOccupied: true },
+      { id: '10F', row: 10, letter: 'F', type: 'Window', isExitRow: false, price: 0, isOccupied: true },
+
+      { id: '11A', row: 11, letter: 'A', type: 'Window', isExitRow: false, price: 0, isOccupied: true },
+      { id: '11B', row: 11, letter: 'B', type: 'Middle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '11C', row: 11, letter: 'C', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '11D', row: 11, letter: 'D', type: 'Aisle', isExitRow: false, price: 0, isOccupied: true },
+      { id: '11E', row: 11, letter: 'E', type: 'Middle', isExitRow: false, price: 0, isOccupied: true },
+      { id: '11F', row: 11, letter: 'F', type: 'Window', isExitRow: false, price: 0, isOccupied: true },
+
+      { id: '12A', row: 12, letter: 'A', type: 'Window', isExitRow: true, price: 15, isOccupied: false },
+      { id: '12B', row: 12, letter: 'B', type: 'Middle', isExitRow: true, price: 15, isOccupied: false },
+      { id: '12C', row: 12, letter: 'C', type: 'Aisle', isExitRow: true, price: 15, isOccupied: false },
+      { id: '12D', row: 12, letter: 'D', type: 'Aisle', isExitRow: true, price: 15, isOccupied: false },
+      { id: '12E', row: 12, letter: 'E', type: 'Middle', isExitRow: true, price: 15, isOccupied: false },
+      { id: '12F', row: 12, letter: 'F', type: 'Window', isExitRow: true, price: 15, isOccupied: false },
+
+      { id: '14A', row: 14, letter: 'A', type: 'Window', isExitRow: false, price: 0, isOccupied: false },
+      { id: '14B', row: 14, letter: 'B', type: 'Middle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '14C', row: 14, letter: 'C', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '14D', row: 14, letter: 'D', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '14E', row: 14, letter: 'E', type: 'Middle', isExitRow: false, price: 0, isOccupied: true },
+      { id: '14F', row: 14, letter: 'F', type: 'Window', isExitRow: false, price: 0, isOccupied: false },
+
+      { id: '15A', row: 15, letter: 'A', type: 'Window', isExitRow: false, price: 0, isOccupied: false },
+      { id: '15B', row: 15, letter: 'B', type: 'Middle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '15C', row: 15, letter: 'C', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '15D', row: 15, letter: 'D', type: 'Aisle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '15E', row: 15, letter: 'E', type: 'Middle', isExitRow: false, price: 0, isOccupied: false },
+      { id: '15F', row: 15, letter: 'F', type: 'Window', isExitRow: false, price: 0, isOccupied: false },
+    ];
+
+    const triggerHaptic = () => {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try { navigator.vibrate(12); } catch(e) {}
+      }
+    };
+
+    const IconCheck = ({ className = 'w-4 h-4 text-[#1F8A5B]' }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    );
+
+    const IconShield = ({ className = 'w-4 h-4 text-[#1F8A5B]' }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 3.582-7.5 9-7.5c5.418 0 9 2.53 9 7.5z" />
+      </svg>
+    );
+
+    const IconPlane = ({ className = 'w-4 h-4' }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+      </svg>
+    );
+
+    const IconBack = ({ className = 'w-5 h-5' }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.25} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    );
+
+    const IconCreditCard = () => (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+        <rect x="2" y="5" width="20" height="14" rx="2.5" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+        <line x1="6" y1="15" x2="10" y2="15" />
+      </svg>
+    );
+
+    function App() {
+      const [currentStep, setCurrentStep] = useState('flight');
+      const [selectedFlight, setSelectedFlight] = useState(FLIGHTS_DATA[0]);
+      const [selectedFareTier, setSelectedFareTier] = useState(FARE_TIERS[1]);
+      const [seats, setSeats] = useState(INITIAL_SEATS);
+      const [selectedSeatId, setSelectedSeatId] = useState('14A');
+      const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
+      const [showBookingSuccess, setShowBookingSuccess] = useState(false);
+      const [bookingPnr, setBookingPnr] = useState('');
+
+      const passenger = { fullName: 'Anna Silva', type: '1 Adult' };
+
+      const currentSeat = useMemo(() => {
+        return seats.find(s => s.id === selectedSeatId) || seats[12];
+      }, [seats, selectedSeatId]);
+
+      const totalPrice = useMemo(() => {
+        return selectedFlight.basePrice + selectedFareTier.priceDelta + (currentSeat ? currentSeat.price : 0);
+      }, [selectedFlight, selectedFareTier, currentSeat]);
+
+      const handleNavBack = () => {
+        triggerHaptic();
+        if (currentStep === 'pay') setCurrentStep('seat');
+        else if (currentStep === 'seat') setCurrentStep('fare');
+        else if (currentStep === 'fare') setCurrentStep('flight');
+      };
+
+      const handleConfirmAndPay = () => {
+        triggerHaptic();
+        setBookingPnr('TRN-' + Math.floor(1000 + Math.random() * 9000) + 'K');
+        setShowBookingSuccess(true);
+      };
+
+      const handleReset = () => {
+        setShowBookingSuccess(false);
+        setCurrentStep('flight');
+        setSelectedFlight(FLIGHTS_DATA[0]);
+        setSelectedFareTier(FARE_TIERS[1]);
+        setSelectedSeatId('14A');
+      };
+
+      const stepIndex = currentStep === 'flight' ? 0 : currentStep === 'fare' ? 1 : currentStep === 'seat' ? 2 : 3;
+
+      return (
+        <div className="min-h-screen w-full flex justify-center bg-[#EDEDF3] text-[#14161A]">
+          <div className="w-full max-w-[430px] min-h-screen bg-[#F6F5F2] flex flex-col relative shadow-2xl overflow-x-hidden select-none">
+            
+            {/* Header & Android Status Bar */}
+            <header className="sticky top-0 z-40 bg-[#F6F5F2]/95 backdrop-blur-md border-b border-[#E3E1DC]">
+              <div className="w-full h-8 px-6 pt-2 flex justify-between items-center text-[12px] font-semibold text-[#14161A]">
+                <span>9:41</span>
+                <div className="flex items-center gap-1.5 opacity-80">
+                  <span className="text-[10px]">5G</span>
+                  <div className="w-3.5 h-2 border border-current rounded-sm p-[1px] flex items-center">
+                    <div className="w-full h-full bg-current rounded-[1px]" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-12 px-4 flex items-center justify-between">
+                {currentStep !== 'flight' ? (
+                  <button
+                    type="button"
+                    onClick={handleNavBack}
+                    className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-[#14161A] active:bg-[#E3E1DC]/50 transition-colors"
+                  >
+                    <IconBack />
+                  </button>
+                ) : <div className="w-8" />}
+
+                <div className="text-center">
+                  <h1 className="text-[15px] font-semibold tracking-tight text-[#14161A]">
+                    {currentStep === 'flight' && 'Lisbon → Copenhagen'}
+                    {currentStep === 'fare' && 'Choose Your Fare'}
+                    {currentStep === 'seat' && 'Select Your Seat'}
+                    {currentStep === 'pay' && 'Review & Payment'}
+                  </h1>
+                  <p className="text-[11px] text-[#6B7078] leading-tight">Fri 11 Dec · 1 Adult</p>
+                </div>
+
+                <div className="w-8 h-8 rounded-full bg-[#1C2DC4] flex items-center justify-center text-white text-[12px] font-bold">
+                  AS
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="px-5 pb-3">
+                <div className="grid grid-cols-4 gap-1.5 h-1">
+                  <div className={`h-1 rounded-full transition-all ${stepIndex >= 0 ? 'bg-[#3B4BDB]' : 'bg-[#E3E1DC]'}`} />
+                  <div className={`h-1 rounded-full transition-all ${stepIndex >= 1 ? 'bg-[#3B4BDB]' : 'bg-[#E3E1DC]'}`} />
+                  <div className={`h-1 rounded-full transition-all ${stepIndex >= 2 ? 'bg-[#3B4BDB]' : 'bg-[#E3E1DC]'}`} />
+                  <div className={`h-1 rounded-full transition-all ${stepIndex >= 3 ? 'bg-[#3B4BDB]' : 'bg-[#E3E1DC]'}`} />
+                </div>
+                <div className="grid grid-cols-4 gap-1.5 text-center mt-1.5 text-[11px] font-medium">
+                  <span className={stepIndex === 0 ? 'text-[#3B4BDB] font-semibold' : 'text-[#6B7078]'}>Flight</span>
+                  <span className={stepIndex === 1 ? 'text-[#3B4BDB] font-semibold' : 'text-[#6B7078]'}>Fare</span>
+                  <span className={stepIndex === 2 ? 'text-[#3B4BDB] font-semibold' : 'text-[#6B7078]'}>Seat</span>
+                  <span className={stepIndex === 3 ? 'text-[#3B4BDB] font-semibold' : 'text-[#6B7078]'}>Pay</span>
+                </div>
+              </div>
+            </header>
+
+            {/* Screen Content */}
+            <main className="flex-1 px-4 py-4 pb-28 overflow-y-auto">
+              {currentStep === 'flight' && (
+                <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="bg-white rounded-full border border-[#E3E1DC] px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[13px]">
+                      <span className="font-semibold text-[#14161A]">LIS → CPH</span>
+                      <span className="text-[#6B7078]">· Fri 11 Dec · 1 Adult</span>
+                    </div>
+                    <span className="text-[11px] font-semibold uppercase text-[#3B4BDB] bg-[#EEF0FB] px-2 py-0.5 rounded-full">
+                      Direct
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-2">
+                    {DATES_STRIP.map((item, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={triggerHaptic}
+                        className={`rounded-2xl border flex flex-col items-center justify-center py-2 transition-all ${
+                          item.isSelected
+                            ? 'bg-[#3B4BDB] border-[#3B4BDB] text-white shadow-sm'
+                            : 'bg-white border-[#E3E1DC] text-[#14161A] active:bg-[#F3F3F9]'
+                        }`}
+                      >
+                        <span className={`text-[11px] ${item.isSelected ? 'text-white/80' : 'text-[#6B7078]'}`}>{item.day}</span>
+                        <span className="text-[15px] font-bold leading-tight my-0.5">{item.date}</span>
+                        <span className={`text-[11px] font-medium ${item.isSelected ? 'text-white' : 'text-[#6B7078]'}`}>{item.price}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-1.5 text-[12px] text-[#6B7078]">
+                      <IconShield className="w-4 h-4 text-[#1F8A5B]" />
+                      <span>Fixed price with all taxes</span>
+                    </div>
+                    <span className="bg-white border border-[#E3E1DC] rounded-full px-3 py-1 text-[11px] font-medium text-[#14161A]">
+                      Sort: Best
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    {FLIGHTS_DATA.map((flight) => {
+                      const isSelected = selectedFlight.id === flight.id;
+                      return (
+                        <div
+                          key={flight.id}
+                          onClick={() => { triggerHaptic(); setSelectedFlight(flight); }}
+                          className={`cursor-pointer rounded-[16px] border p-3.5 transition-all flex flex-col justify-between ${
+                            isSelected ? 'bg-[#EEF0FB] border-[#3B4BDB] shadow-sm' : 'bg-white border-[#E3E1DC]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[12px] font-semibold text-[#14161A]">{flight.airline} · {flight.flightNumber}</span>
+                              {flight.badge && (
+                                <span className="bg-[#3B4BDB] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                                  {flight.badge}
+                                </span>
+                              )}
+                              <span className="text-[11px] text-[#6B7078]">{flight.aircraft}</span>
+                            </div>
+                            {flight.co2Reduction && (
+                              <span className="text-[10px] font-medium text-[#1F8A5B] bg-[#1F8A5B]/10 px-2 py-0.5 rounded-full">
+                                {flight.co2Reduction}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-1">
+                            <div>
+                              <span className="text-[20px] font-bold text-[#14161A] tabular-nums block">{flight.departureTime}</span>
+                              <span className="text-[13px] font-semibold text-[#14161A]">{flight.departureCode}</span>
+                              <span className="text-[11px] text-[#6B7078] block truncate">{flight.departureAirport}</span>
+                            </div>
+
+                            <div className="flex flex-col items-center px-2 min-w-[90px]">
+                              <span className="text-[11px] text-[#6B7078] font-medium mb-1">{flight.duration}</span>
+                              <div className="w-full h-[1px] bg-[#E3E1DC] relative flex items-center justify-center">
+                                <div className="w-2 h-2 rounded-full bg-[#3B4BDB]" />
+                              </div>
+                              <span className="text-[11px] text-[#1F8A5B] font-medium mt-1">Non-stop</span>
+                            </div>
+
+                            <div className="text-right">
+                              <span className="text-[20px] font-bold text-[#14161A] tabular-nums block">{flight.arrivalTime}</span>
+                              <span className="text-[13px] font-semibold text-[#14161A]">{flight.arrivalCode}</span>
+                              <span className="text-[11px] text-[#6B7078] block truncate">{flight.arrivalAirport}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 pt-2.5 border-t border-[#E3E1DC]/70 flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-[11px] text-[#6B7078]">
+                              <div className="flex items-center gap-1">
+                                <IconCheck className="w-3.5 h-3.5 text-[#1F8A5B]" />
+                                <span>Cabin bag</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <IconCheck className="w-3.5 h-3.5 text-[#1F8A5B]" />
+                                <span>Seat included</span>
+                              </div>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[11px] text-[#6B7078]">all-in from</span>
+                              <span className={`text-[19px] font-bold tabular-nums ${isSelected ? 'text-[#3B4BDB]' : 'text-[#14161A]'}`}>
+                                €{flight.basePrice}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'fare' && (
+                <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-3.5">
+                    <div className="flex items-center justify-between text-[11px] text-[#6B7078] mb-1">
+                      <span className="font-semibold uppercase tracking-wider text-[#3B4BDB]">Selected Flight</span>
+                      <span>Direct · {selectedFlight.duration}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[16px] font-bold text-[#14161A]">
+                        {selectedFlight.departureTime} – {selectedFlight.arrivalTime} · {selectedFlight.flightNumber}
+                      </span>
+                      <span className="text-[13px] font-semibold text-[#14161A]">
+                        {selectedFlight.departureCode} → {selectedFlight.arrivalCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 className="text-[18px] font-bold tracking-tight text-[#14161A]">Choose your fare</h2>
+                    <p className="text-[13px] text-[#6B7078] mt-0.5">Clear, transparent pricing with included allowances.</p>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    {FARE_TIERS.map((tier) => {
+                      const isSelected = selectedFareTier.id === tier.id;
+                      const tierPrice = selectedFlight.basePrice + tier.priceDelta;
+                      return (
+                        <div
+                          key={tier.id}
+                          onClick={() => { triggerHaptic(); setSelectedFareTier(tier); }}
+                          className={`cursor-pointer rounded-2xl border p-4 transition-all ${
+                            isSelected ? 'bg-[#EEF0FB] border-[#3B4BDB] shadow-sm' : 'bg-white border-[#E3E1DC]'
+                          }`}
+                        >
+                          {tier.isPopular && (
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[11px] font-semibold text-white bg-[#3B4BDB] px-2.5 py-0.5 rounded-full">
+                                Most popular
+                              </span>
+                              {isSelected && (
+                                <span className="w-5 h-5 rounded-full bg-[#3B4BDB] text-white flex items-center justify-center">
+                                  <IconCheck className="w-3.5 h-3.5 text-white" />
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-[16px] font-bold text-[#14161A]">{tier.name}</h3>
+                              <span className="text-[12px] text-[#6B7078]">{tier.subtitle}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-[20px] font-bold tabular-nums ${isSelected ? 'text-[#3B4BDB]' : 'text-[#14161A]'}`}>
+                                €{tierPrice}
+                              </span>
+                              <span className="block text-[11px] text-[#6B7078]">per traveler</span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-2 pt-3 border-t border-[#E3E1DC]/80 mt-3">
+                            {tier.inclusions.map((inc, i) => (
+                              <div key={i} className="flex items-center gap-2.5 text-[12px]">
+                                {inc.included ? (
+                                  <IconCheck className="w-4 h-4 text-[#1F8A5B] shrink-0" />
+                                ) : (
+                                  <span className="w-4 text-center text-[#6B7078] font-bold shrink-0">—</span>
+                                )}
+                                <span className={inc.included ? 'text-[#14161A] font-medium' : 'text-[#6B7078]'}>
+                                  {inc.label}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'seat' && (
+                <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-3 flex items-center justify-around text-[11px] text-[#6B7078]">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-white border border-[#E3E1DC]" />
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-[#FFF4E5] border border-[#F5B875]" />
+                      <span>+€15 Exit Row</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-[#E3E1DC]" />
+                      <span>Occupied</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-[#3B4BDB]" />
+                      <span className="text-[#3B4BDB] font-semibold">Selected</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-[#E3E1DC] p-4 flex flex-col items-center">
+                    <div className="w-24 h-5 rounded-t-full bg-[#EDEDF3] flex items-center justify-center mb-1">
+                      <IconPlane className="w-3.5 h-3.5 text-[#3B4BDB]" />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#6B7078] font-semibold mb-3">
+                      Front of Aircraft · Cockpit
+                    </span>
+
+                    <div className="w-full max-w-[320px] grid grid-cols-7 gap-1.5 text-center text-[12px] font-bold text-[#6B7078] mb-2">
+                      <span>A</span><span>B</span><span>C</span>
+                      <span className="text-[9px] text-[#6B7078]/60 uppercase tracking-widest self-center">AISLE</span>
+                      <span>D</span><span>E</span><span>F</span>
+                    </div>
+
+                    <div className="w-full max-w-[320px] flex flex-col gap-2">
+                      {[10, 11, 12, 14, 15].map((rowNum) => {
+                        const rowSeats = seats.filter(s => s.row === rowNum);
+                        const isExitRow = rowNum === 12;
+                        return (
+                          <div key={rowNum} className="flex flex-col gap-1">
+                            {isExitRow && (
+                              <div className="bg-[#FFF4E5] border border-[#F5B875]/40 rounded-lg px-2 py-0.5 my-1 flex justify-between items-center text-[10px]">
+                                <span className="font-semibold text-[#B45309]">Emergency Exit Row</span>
+                                <span className="font-bold text-[#B45309]">+7cm Legroom</span>
+                              </div>
+                            )}
+                            <div className="grid grid-cols-7 gap-1.5 items-center">
+                              {['A', 'B', 'C'].map((col) => {
+                                const seat = rowSeats.find(s => s.letter === col);
+                                if (!seat) return <div key={col} className="h-9" />;
+                                const isSelected = selectedSeatId === seat.id;
+                                if (seat.isOccupied) {
+                                  return (
+                                    <div key={seat.id} className="h-9 rounded-lg bg-[#E3E1DC] flex items-center justify-center text-[11px] text-[#6B7078]/60 font-semibold">
+                                      {seat.id}
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <button
+                                    key={seat.id}
+                                    type="button"
+                                    onClick={() => { triggerHaptic(); setSelectedSeatId(seat.id); }}
+                                    className={`h-9 rounded-lg flex flex-col items-center justify-center font-bold text-[11px] transition-all active:scale-95 ${
+                                      isSelected
+                                        ? 'bg-[#3B4BDB] text-white shadow-sm'
+                                        : seat.isExitRow
+                                        ? 'bg-[#FFF4E5] border border-[#F5B875] text-[#B45309]'
+                                        : 'bg-white border border-[#E3E1DC] text-[#14161A]'
+                                    }`}
+                                  >
+                                    <span>{seat.id}</span>
+                                    {seat.isExitRow && !isSelected && <span className="text-[8px] leading-none text-[#B45309]">+€15</span>}
+                                  </button>
+                                );
+                              })}
+
+                              <div className="text-center text-[11px] font-bold text-[#6B7078]">{rowNum}</div>
+
+                              {['D', 'E', 'F'].map((col) => {
+                                const seat = rowSeats.find(s => s.letter === col);
+                                if (!seat) return <div key={col} className="h-9" />;
+                                const isSelected = selectedSeatId === seat.id;
+                                if (seat.isOccupied) {
+                                  return (
+                                    <div key={seat.id} className="h-9 rounded-lg bg-[#E3E1DC] flex items-center justify-center text-[11px] text-[#6B7078]/60 font-semibold">
+                                      {seat.id}
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <button
+                                    key={seat.id}
+                                    type="button"
+                                    onClick={() => { triggerHaptic(); setSelectedSeatId(seat.id); }}
+                                    className={`h-9 rounded-lg flex flex-col items-center justify-center font-bold text-[11px] transition-all active:scale-95 ${
+                                      isSelected
+                                        ? 'bg-[#3B4BDB] text-white shadow-sm'
+                                        : seat.isExitRow
+                                        ? 'bg-[#FFF4E5] border border-[#F5B875] text-[#B45309]'
+                                        : 'bg-white border border-[#E3E1DC] text-[#14161A]'
+                                    }`}
+                                  >
+                                    <span>{seat.id}</span>
+                                    {seat.isExitRow && !isSelected && <span className="text-[8px] leading-none text-[#B45309]">+€15</span>}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-3.5 flex items-center justify-between">
+                    <div>
+                      <span className="text-[14px] font-bold text-[#14161A] block">
+                        Seat {currentSeat.id} · {currentSeat.type} {currentSeat.isExitRow ? '(Exit Row)' : ''}
+                      </span>
+                      <span className="text-[12px] text-[#6B7078]">
+                        {currentSeat.price > 0 ? 'Extra Legroom upgrade (+€15.00)' : `Included with Standard fare (+€0.00)`}
+                      </span>
+                    </div>
+                    <span className="text-[15px] font-bold text-[#14161A] tabular-nums">
+                      +€{currentSeat.price.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'pay' && (
+                <div className="flex flex-col gap-4 animate-fadeIn">
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-3.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[#93F7BE]/40 flex items-center justify-center text-[#1F8A5B]">
+                        <IconShield className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-[13px] font-semibold text-[#14161A] block">Honest Price Promise</span>
+                        <span className="text-[11px] text-[#6B7078]">Zero credit card or payment surcharges</span>
+                      </div>
+                    </div>
+                    <IconCheck className="w-5 h-5 text-[#1F8A5B]" />
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7078]">Itinerary</span>
+                      <span className="text-[11px] font-semibold text-[#3B4BDB] bg-[#EEF0FB] px-2 py-0.5 rounded-full">
+                        Direct Flight
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <span className="text-[24px] font-bold text-[#14161A] leading-tight block">{selectedFlight.departureCode}</span>
+                        <span className="text-[12px] text-[#6B7078]">Lisbon</span>
+                      </div>
+                      <div className="flex-1 flex flex-col items-center px-4">
+                        <span className="text-[11px] font-medium text-[#6B7078] mb-1">{selectedFlight.duration}</span>
+                        <div className="w-full h-[1px] bg-[#E3E1DC] relative flex items-center justify-center">
+                          <IconPlane className="w-3.5 h-3.5 text-[#3B4BDB] rotate-90" />
+                        </div>
+                        <span className="text-[11px] font-semibold text-[#3B4BDB] mt-1">{selectedFlight.flightNumber}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[24px] font-bold text-[#14161A] leading-tight block">{selectedFlight.arrivalCode}</span>
+                        <span className="text-[12px] text-[#6B7078]">Copenhagen</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-[12px]">
+                      <div className="bg-[#F3F3F9] p-2.5 rounded-lg">
+                        <span className="text-[11px] text-[#6B7078] block">Passenger</span>
+                        <span className="font-bold text-[#14161A]">{passenger.fullName}</span>
+                      </div>
+                      <div className="bg-[#F3F3F9] p-2.5 rounded-lg">
+                        <span className="text-[11px] text-[#6B7078] block">Seat & Fare</span>
+                        <span className="font-bold text-[#14161A]">{currentSeat.id} ({selectedFareTier.name})</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-[#E3E1DC] p-4 flex flex-col gap-2.5">
+                    <span className="text-[14px] font-bold text-[#14161A] pb-1">Price Breakdown</span>
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-[#6B7078]">Flight ({selectedFareTier.name})</span>
+                      <span className="font-semibold text-[#14161A] tabular-nums">
+                        €{(selectedFlight.basePrice + selectedFareTier.priceDelta - 36).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-[#6B7078]">Taxes & airport charges</span>
+                      <span className="font-semibold text-[#14161A] tabular-nums">€36.00</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-[#6B7078]">Seat ({currentSeat.id})</span>
+                      <span className="font-semibold text-[#14161A] tabular-nums">€{currentSeat.price.toFixed(2)}</span>
+                    </div>
+                    <div className="h-[1px] bg-[#E3E1DC] my-1" />
+                    <div className="flex justify-between items-baseline pt-1">
+                      <span className="text-[15px] font-bold text-[#14161A]">Total due</span>
+                      <span className="text-[24px] font-bold text-[#3B4BDB] tabular-nums">€{totalPrice.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7078] px-1">Payment Method</span>
+                    <div
+                      onClick={() => { triggerHaptic(); setSelectedPaymentMethod('card'); }}
+                      className={`cursor-pointer rounded-xl border p-3 flex items-center justify-between ${
+                        selectedPaymentMethod === 'card' ? 'bg-[#EEF0FB] border-[#3B4BDB]' : 'bg-white border-[#E3E1DC]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#EDEDF3] flex items-center justify-center text-[#1C2DC4]">
+                          <IconCreditCard />
+                        </div>
+                        <div>
+                          <span className="text-[13px] font-bold text-[#14161A] block">Debit Mastercard ···· 4821</span>
+                          <span className="text-[11px] text-[#6B7078]">Expires 08/28 · Anna Silva</span>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${selectedPaymentMethod === 'card' ? 'bg-[#3B4BDB] text-white' : 'border border-[#E3E1DC]'}`}>
+                        {selectedPaymentMethod === 'card' && <IconCheck className="w-3.5 h-3.5 text-white" />}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+
+            {/* Persistent Sticky Bottom Anchor Bar */}
+            <footer className="fixed bottom-0 w-full max-w-[430px] z-50 bg-white/95 backdrop-blur-xl border-t border-[#E3E1DC] px-4 pt-3 pb-6 flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col justify-center min-w-0">
+                  <span className="text-[11px] text-[#6B7078] leading-none">Total · 1 adult</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-[24px] font-bold text-[#14161A] tracking-tight tabular-nums">
+                      €{totalPrice.toFixed(0)}
+                    </span>
+                    <span className="text-[11px] text-[#6B7078]">all-in</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic();
+                    if (currentStep === 'flight') setCurrentStep('fare');
+                    else if (currentStep === 'fare') setCurrentStep('seat');
+                    else if (currentStep === 'seat') setCurrentStep('pay');
+                    else if (currentStep === 'pay') handleConfirmAndPay();
+                  }}
+                  className="flex-1 max-w-[210px] h-[50px] bg-[#3B4BDB] hover:bg-[#1C2DC4] active:scale-[0.98] text-white rounded-[14px] text-[15px] font-bold tracking-tight shadow-none flex items-center justify-center transition-all"
+                >
+                  {currentStep === 'flight' && 'Select Fare'}
+                  {currentStep === 'fare' && 'Select Seat'}
+                  {currentStep === 'seat' && 'Review & Pay'}
+                  {currentStep === 'pay' && `Pay €${totalPrice.toFixed(2)}`}
+                </button>
+              </div>
+
+              <div className="w-full flex justify-center pt-1">
+                <div className="w-32 h-1 bg-[#14161A]/20 rounded-full" />
+              </div>
+            </footer>
+
+            {/* Success Modal */}
+            {showBookingSuccess && (
+              <div className="fixed inset-0 z-50 bg-[#14161A]/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+                <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center animate-slideUp">
+                  <div className="w-16 h-16 rounded-full bg-[#1F8A5B]/15 text-[#1F8A5B] flex items-center justify-center mb-4">
+                    <IconCheck className="w-8 h-8 text-[#1F8A5B]" />
+                  </div>
+
+                  <h3 className="text-[20px] font-bold text-[#14161A]">Booking Confirmed!</h3>
+                  <p className="text-[13px] text-[#6B7078] mt-1 mb-4">
+                    Your flight to Copenhagen has been ticketed.
+                  </p>
+
+                  <div className="w-full bg-[#F6F5F2] rounded-2xl p-4 mb-4 text-left border border-[#E3E1DC]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[11px] text-[#6B7078] uppercase font-semibold">Booking PNR</span>
+                      <span className="text-[13px] font-mono font-bold text-[#3B4BDB]">{bookingPnr}</span>
+                    </div>
+                    <div className="text-[14px] font-bold text-[#14161A] mb-1">
+                      {selectedFlight.departureCode} → {selectedFlight.arrivalCode} · {selectedFlight.flightNumber}
+                    </div>
+                    <div className="text-[12px] text-[#6B7078] flex justify-between">
+                      <span>Anna Silva</span>
+                      <span className="font-semibold text-[#14161A]">Seat: {currentSeat.id}</span>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-[#E3E1DC] flex justify-between items-center text-[13px]">
+                      <span className="text-[#6B7078]">Total Paid:</span>
+                      <span className="font-bold text-[#14161A] tabular-nums">€{totalPrice.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="w-full h-12 bg-[#3B4BDB] text-white rounded-[14px] font-bold text-[14px] hover:bg-[#1C2DC4] active:scale-[0.98] transition-all"
+                  >
+                    Done / Book Another Flight
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+@layer base {
+  html {
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    transition: background-color 420ms var(--ease-exhibition), color 420ms var(--ease-exhibition);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+}
+
+.font-serif-display {
+  font-family: var(--font-serif);
+}
+
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+.font-sans-ui {
+  font-family: var(--font-sans);
+}
+
+.font-mono-catalog {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.exhibition-grid-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: 56px;
+  padding-right: 56px;
+}
+
+@media (max-width: 768px) {
+  .exhibition-grid-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.exhibition-hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 4.5vw + 1rem, 4.25rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+
+.case-study-lead {
+  font-family: var(--font-editorial);
+  font-size: clamp(1.1875rem, 1.2vw + 0.8rem, 1.5rem);
+  font-style: italic;
+  line-height: 1.55;
+  max-width: 54ch;
+}
+
+.glass-whisper {
+  background: var(--surface-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.glass-darkroom {
+  background: rgba(13, 14, 16, 0.84);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Exhibition plate hover dimming of siblings without cropping the hovered image */
+.exhibition-gallery-dimming .exhibition-plate-card {
+  transition: opacity 420ms var(--ease-exhibition);
+}
+
+.exhibition-gallery-dimming:has(.exhibition-plate-card:hover) .exhibition-plate-card:not(:hover) {
+  opacity: 0.85;
+}
+
+.exhibition-flip-enter {
+  animation: exhibitionReveal var(--duration-flip) var(--ease-exhibition) both;
+}
+
+@keyframes exhibitionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseAvailability {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.86);
+  }
+}
+
+.pulse-availability {
+  animation: pulseAvailability 2.4s ease-in-out infinite;
+}
+
+/* Subtle custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-hairline-strong);
+  border-radius: 9999px;
+}
+

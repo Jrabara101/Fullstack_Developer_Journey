@@ -1,0 +1,66 @@
+:root,
+[data-theme='cotton'] {
+  --canvas-bg: #F6F4F0;
+  --canvas-elevated: #ECE9E2;
+  --canvas-card: #F1EEE8;
+  --surface-glass: rgba(246, 244, 240, 0.84);
+  --border-hairline: rgba(24, 24, 22, 0.09);
+  --border-hairline-strong: rgba(24, 24, 22, 0.18);
+  --text-primary: #181816;
+  --text-secondary: #5C5A55;
+  --text-muted: #8C8982;
+  --pill-active-bg: #181816;
+  --pill-active-ink: #F6F4F0;
+  --wall-backdrop: #EAE6DE;
+  --wall-bench: #D6CFC3;
+  --wall-shadow: rgba(24, 24, 22, 0.16);
+}
+
+[data-theme='white'] {
+  --canvas-bg: #FCFCFA;
+  --canvas-elevated: #F2F1EC;
+  --canvas-card: #F7F6F2;
+  --surface-glass: rgba(252, 252, 250, 0.84);
+  --border-hairline: rgba(24, 24, 22, 0.09);
+  --border-hairline-strong: rgba(24, 24, 22, 0.18);
+  --text-primary: #181816;
+  --text-secondary: #5C5A55;
+  --text-muted: #8C8982;
+  --pill-active-bg: #181816;
+  --pill-active-ink: #FCFCFA;
+  --wall-backdrop: #F0EFEA;
+  --wall-bench: #DDDAD2;
+  --wall-shadow: rgba(24, 24, 22, 0.13);
+}
+
+[data-theme='darkroom'] {
+  --canvas-bg: #0D0E10;
+  --canvas-elevated: #15171A;
+  --canvas-card: #121417;
+  --surface-glass: rgba(13, 14, 16, 0.84);
+  --border-hairline: rgba(255, 255, 255, 0.10);
+  --border-hairline-strong: rgba(255, 255, 255, 0.22);
+  --text-primary: #F4F4F2;
+  --text-secondary: #A1A09A;
+  --text-muted: #8C8982;
+  --pill-active-bg: #F4F4F2;
+  --pill-active-ink: #0D0E10;
+  --wall-backdrop: #16181C;
+  --wall-bench: #22252B;
+  --wall-shadow: rgba(0, 0, 0, 0.55);
+}
+
+:root {
+  --accent-vermilion: #D93829;
+  --accent-emerald: #10B981;
+  --accent-oak: #C8A97E;
+  --border-blueprint: rgba(37, 99, 235, 0.45);
+  --ease-exhibition: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-flip: 520ms;
+
+  --font-serif: 'Instrument Serif', 'Newsreader', Georgia, serif;
+  --font-editorial: 'Newsreader', 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+

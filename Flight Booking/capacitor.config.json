@@ -1,0 +1,9 @@
+{
+  "appId": "com.flightbooking.tern",
+  "appName": "Flight Booking",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
+

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#18181B"/>
+      <stop offset="55%" stop-color="#7C2D12"/>
+      <stop offset="100%" stop-color="#FB923C"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg)"/>
+  <circle cx="360" cy="540" r="240" fill="#FB923C" opacity="0.22"/>
+  <circle cx="520" cy="360" r="140" fill="#FFFFFF" opacity="0.09"/>
+  <rect x="90" y="340" width="540" height="520" rx="36" fill="#000000" opacity="0.22" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="2"/>
+  
+  <rect x="190" y="540" width="38" height="160" rx="19" fill="#FFFFFF" opacity="0.8"/><rect x="260" y="470" width="38" height="230" rx="19" fill="#FB923C" opacity="0.9"/><rect x="330" y="510" width="38" height="190" rx="19" fill="#FFFFFF" opacity="0.8"/><rect x="400" y="440" width="38" height="260" rx="19" fill="#FB923C" opacity="0.9"/><rect x="470" y="555" width="38" height="145" rx="19" fill="#FFFFFF" opacity="0.8"/>
+  
+  <text x="360" y="960" font-family="monospace" font-size="24" font-weight="700" fill="#FFFFFF" opacity="0.55" text-anchor="middle" letter-spacing="6">ANALOG SESSION</text>
+</svg>
