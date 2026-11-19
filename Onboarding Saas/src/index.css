@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --workspace-brand: #4F46E5;
+  --workspace-brand-hover: #4338CA;
+  --workspace-brand-ring: rgba(79, 70, 229, 0.22);
+  --workspace-brand-light: rgba(79, 70, 229, 0.08);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFFFFF;
+    color: #0F172A;
+    overflow-x: hidden;
+  }
+
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Dot matrix architectural grid for live preview well */
+.dot-matrix-bg {
+  background-image: radial-gradient(#CBD5E1 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+.dark .dot-matrix-bg {
+  background-image: radial-gradient(#262B3F 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Smooth brand background transitions */
+.bg-brand-custom {
+  background-color: var(--workspace-brand, #4F46E5);
+}
+
+.text-brand-custom {
+  color: var(--workspace-brand, #4F46E5);
+}
+
+.border-brand-custom {
+  border-color: var(--workspace-brand, #4F46E5);
+}
+
+.ring-brand-custom {
+  --tw-ring-color: var(--workspace-brand, #4F46E5);
+}
+
+/* Confetti trigger highlight animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--workspace-brand-ring, rgba(79, 70, 229, 0.4));
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
